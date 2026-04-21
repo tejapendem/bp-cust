@@ -1,0 +1,313 @@
+<mvc:View controllerName="bp.cust.ui.controller.Wizard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:mc="sap.suite.ui.microchart"
+    height="100%">
+
+    <Page id="wizardPage"
+          title="Create Business Partner"
+          showNavButton="true"
+          navButtonPress="onNavBack"
+          backgroundDesign="Solid">
+
+        <content>
+            <VBox class="wizardRedBoxFrame sapUiMediumMargin">
+                
+                <HBox alignItems="Center" class="progressHeaderBox">
+                    <mc:RadialMicroChart 
+                        id="progressChart" 
+                        size="M" 
+                        percentage="{wizardData>/progress}" 
+                        valueColor="Neutral"/>
+                    <Title 
+                        text="Completion Status: {wizardData>/progressText}" 
+                        level="H3" 
+                        class="sapUiMediumMarginBegin completionText"/>
+                </HBox>
+
+                <Wizard id="bpWizard"
+                        complete="onWizardCompleted"
+                        stepActivate="onStepActivate"
+                        showNextButton="false"
+                        renderMode="Page">
+
+                    <WizardStep id="step1" title="Basic Info" icon="sap-icon://customer" validated="true">
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                            <core:Title text="1. Basic Info"/>
+                            
+                            <Label text="BP Role"/>
+                            <Input value="{wizardData>/BPRole}" editable="false"/>
+                            
+                            <Label text="BP Type"/>
+                            <Input value="{wizardData>/BPType}" editable="false"/>
+                            
+                            <Label text="Grouping" required="true"/>
+                            <Select id="groupingSelect" selectedKey="{wizardData>/Grouping}" items="{path: '/VH_Grouping'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+                        </form:SimpleForm>
+                        <HBox justifyContent="End" class="sapUiMediumMarginTop">
+                            <Button text="Step 2" type="Emphasized" press="onNextStep" />
+                        </HBox>
+                    </WizardStep>
+
+                    <WizardStep id="step2" title="Address Details" icon="sap-icon://map-2" validated="true">
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                            <core:Title text="Identity"/>
+                            
+                            <Label text="Name" required="true"/>
+                            <Input id="nameInput" value="{wizardData>/Name}" placeholder="Full / Company Name"/>
+                            
+                            <Label text="Title"/>
+                            <Input value="{wizardData>/Title}" placeholder="e.g. Mr, Ms, Corp"/>
+                            
+                            <core:Title text="Location Details"/>
+
+                            <Label text="Street Address"/>
+                            <Input value="{wizardData>/StreetAddress}" placeholder="Street, Building, Floor"/>
+                            
+                            <Label text="Postal Code"/>
+                            <Input value="{wizardData>/PostalCode}" placeholder="ZIP / Postal Code"/>
+
+                            <Label text="Country" required="true"/>
+                            <Select id="countrySelect" selectedKey="{wizardData>/Country}" items="{path: '/VH_Country'}" change="onCountryChange" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+
+                            <Label text="Region"/>
+                            <Select id="regionSelect" selectedKey="{wizardData>/Region}" items="{path: '/VH_Region'}" forceSelection="false">
+                                <core:Item key="{code}" text="{name}"/>
+                            </Select>
+
+                            <core:Title text="Communication"/>
+
+                            <Label text="Language"/>
+                            <Select selectedKey="{wizardData>/Language}" items="{path: '/VH_Language'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+
+                            <Label text="Mobile Number"/>
+                            <HBox alignItems="Center" wrap="Wrap">
+                                <Select id="mobileCodeSelect" selectedKey="{wizardData>/MobileCountryCode}" width="110px" items="{path: '/VH_MobileCountryCode'}" forceSelection="false">
+                                    <core:Item key="{code}" text="{code}"/>
+                                </Select>
+                                <Input id="mobileInput" value="{wizardData>/MobileNumber}" placeholder="Digits only" width="170px" class="sapUiSmallMarginBegin"/>
+                                <Button id="sendOtpBtn" text="Send OTP" type="Attention" press="onSendOTP" class="sapUiSmallMarginBegin"/>
+                            </HBox>
+                            
+                            <Label text="OTP Code"/>
+                            <HBox alignItems="Center" visible="{wizardData>/otpSent}">
+                                <Input id="otpInput" value="{wizardData>/otpValue}" placeholder="4-digit OTP" width="140px" maxLength="4"/>
+                                <Button text="Verify" type="Emphasized" press="onVerifyOTP" class="sapUiSmallMarginBegin"/>
+                                <ObjectStatus id="otpStatus" text="{wizardData>/otpStatusText}" state="{wizardData>/otpStatusState}" visible="{wizardData>/otpVerified}" class="sapUiSmallMarginBegin"/>
+                            </HBox>
+
+                            <Label text="Telephone"/>
+                            <Input value="{wizardData>/Telephone}" placeholder="Landline, Office, etc."/>
+
+                            <Label text="Email" required="true"/>
+                            <Input id="emailInput" value="{wizardData>/Email}" type="Email" placeholder="user@example.com"/>
+                        </form:SimpleForm>
+                        <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
+                            <Button text="Previous" type="Transparent" press="onPrevStep" />
+                            <Button text="Step 3" type="Emphasized" press="onNextStep" />
+                        </HBox>
+                    </WizardStep>
+
+                    <WizardStep id="step3" title="Identification" icon="sap-icon://loan" validated="true">
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                            <core:Title text="3. Tax Information"/>
+                            
+                            <Label text="Tax Category" required="true"/>
+                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory'}" forceSelection="false">
+                                <core:Item key="{code}" text="{name}"/>
+                            </Select>
+                            
+                            <Label text="Tax Number"/>
+                            <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number"/>
+
+                            <Label text="Tax Status"/>
+                            <Input value="{wizardData>/TaxStatus}" placeholder="e.g. Active, Exempt"/>
+                        </form:SimpleForm>
+                        <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
+                            <Button text="Previous" type="Transparent" press="onPrevStep" />
+                            <Button text="Step 4" type="Emphasized" press="onNextStep" />
+                        </HBox>
+                    </WizardStep>
+
+                    <WizardStep id="step4" title="Sales Area" icon="sap-icon://sales-order" validated="true">
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                            <core:Title text="4. Sales Area (FLCU01)"/>
+                            
+                            <Label text="Sales Organization" required="true"/>
+                            <Select id="salesOrgSelect" selectedKey="{wizardData>/SalesOrganization}" items="{path: '/VH_SalesOrganization'}" change="onSalesOrgChange" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+                            
+                            <Label text="Distribution Channel"/>
+                            <Select selectedKey="{wizardData>/DistributionChannel}" items="{path: '/VH_DistributionChannel'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+
+                            <Label text="Division"/>
+                            <Select selectedKey="{wizardData>/Division}" items="{path: '/VH_Division'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+                        </form:SimpleForm>
+                        <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
+                            <Button text="Previous" type="Transparent" press="onPrevStep" />
+                            <Button text="Step 5" type="Emphasized" press="onNextStep" />
+                        </HBox>
+                    </WizardStep>
+
+                    <WizardStep id="step5" title="Customer Info" icon="sap-icon://money-bills" validated="true">
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                            <core:Title text="Sales Logic"/>
+                            
+                            <Label text="Customer Group"/>
+                            <Select selectedKey="{wizardData>/CustomerGroup}" items="{path: '/VH_CustomerGroup'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+                            
+                            <Label text="Currency (Auto)"/>
+                            <Input value="{wizardData>/Currency}" editable="false"/>
+                            
+                            <Label text="Exchange Rate Type (Auto)"/>
+                            <Input value="{wizardData>/ExchangeRateType}" editable="false"/>
+
+                            <Label text="Pricing Procedure (Auto)"/>
+                            <Input value="{wizardData>/CustomerPricingProcedure}" editable="false"/>
+
+                            <Label text="Statistics Group (Auto)"/>
+                            <Input value="{wizardData>/CustomerStatsGroup}" editable="false"/>
+
+                            <core:Title text="Billing &amp; Tax"/>
+
+                            <Label text="Payment Terms (Auto)"/>
+                            <Input value="{wizardData>/PaymentTerms}" editable="false"/>
+
+                            <Label text="Incoterms (Auto)"/>
+                            <Input value="{wizardData>/Incoterms}" editable="false"/>
+
+                            <Label text="Account Assignment Group"/>
+                            <Select selectedKey="{wizardData>/AccountAssignmentGroup}" items="{path: '/VH_AccountAssignmentGroup'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+
+                            <Label text="Tax Classification"/>
+                            <Select selectedKey="{wizardData>/TaxClassification}" items="{path: '/VH_TaxClassification'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+
+                            <Label text="Output Tax Country (Auto)"/>
+                            <Input value="{wizardData>/OutputTaxCountry}" editable="false"/>
+
+                            <Label text="Output Tax Category (Auto)"/>
+                            <Input value="{wizardData>/OutputTaxCategory}" editable="false"/>
+
+                            <Label text="Customer Data 2"/>
+                            <Select selectedKey="{wizardData>/CustomerData2}" items="{path: '/VH_CustomerData2'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+                        </form:SimpleForm>
+                        <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
+                            <Button text="Previous" type="Transparent" press="onPrevStep" />
+                            <Button text="Step 6" type="Emphasized" press="onNextStep" />
+                        </HBox>
+                    </WizardStep>
+
+                    <WizardStep id="step6" title="Company Details" icon="sap-icon://factory" validated="true">
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                            <core:Title text="6. Company Code (FLCU00)"/>
+                            
+                            <Label text="Company Code" required="true"/>
+                            <Select id="companyCodeSelect" selectedKey="{wizardData>/CompanyCode}" items="{path: '/VH_CompanyCode'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+
+                            <Label text="Is Business Partner"/>
+                            <CheckBox selected="{wizardData>/IsBP}" editable="false" text="Active by Default"/>
+
+                            <Label text="Is Customer"/>
+                            <CheckBox selected="{wizardData>/IsCustomer}" editable="false" text="Active by Default"/>
+                        </form:SimpleForm>
+                        <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
+                            <Button text="Previous" type="Transparent" press="onPrevStep" />
+                            <Button text="Step 7" type="Emphasized" press="onNextStep" />
+                        </HBox>
+                    </WizardStep>
+
+                    <WizardStep id="step7" title="Account Mgt" icon="sap-icon://manager" validated="true">
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                            <core:Title text="7. FI Reconciliation Account"/>
+                            
+                            <Label text="Reconciliation Account"/>
+                            <Select id="reconciliationSelect" selectedKey="{wizardData>/ReconciliationAccount}" items="{path: '/VH_ReconciliationAccount'}" forceSelection="false">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+                        </form:SimpleForm>
+                        <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
+                            <Button text="Previous" type="Transparent" press="onPrevStep" />
+                            <Button text="Review &amp; Submit" type="Accept" press="onOpenReview" />
+                        </HBox>
+                    </WizardStep>
+
+                </Wizard>
+            </VBox>
+        </content>
+    </Page>
+
+    <Dialog id="reviewDialog"
+            title="Review &amp; Submit"
+            contentWidth="600px"
+            draggable="true"
+            resizable="true">
+        <content>
+            <VBox class="sapUiMediumMargin">
+                <MessageStrip text="Review all data before submitting. The BP Number is auto-generated by the system." type="Warning" showIcon="true" class="sapUiSmallMarginBottom"/>
+                <form:SimpleForm layout="ColumnLayout" columnsL="2" columnsM="2" editable="false">
+                    <core:Title text="General Data"/>
+                    <Label text="BP Role"/><Text text="{wizardData>/BPRole}"/>
+                    <Label text="BP Type"/><Text text="{wizardData>/BPType}"/>
+                    <Label text="Grouping"/><Text text="{wizardData>/Grouping}"/>
+                    
+                    <core:Title text="Address &amp; Communication"/>
+                    <Label text="Name"/><Text text="{wizardData>/Name}"/>
+                    <Label text="Country"/><Text text="{wizardData>/Country}"/>
+                    <Label text="Region"/><Text text="{wizardData>/Region}"/>
+                    <Label text="Email"/><Text text="{wizardData>/Email}"/>
+                    <Label text="Mobile"/><Text text="{wizardData>/MobileNumber}"/>
+                    
+                    <core:Title text="Identification"/>
+                    <Label text="Tax Category"/><Text text="{wizardData>/TaxCategory}"/>
+                    <Label text="Tax Number"/><Text text="{wizardData>/TaxNumber}"/>
+                    
+                    <core:Title text="Sales Area"/>
+                    <Label text="Sales Organization"/><Text text="{wizardData>/SalesOrganization}"/>
+                    <Label text="Distribution Channel"/><Text text="{wizardData>/DistributionChannel}"/>
+                    <Label text="Division"/><Text text="{wizardData>/Division}"/>
+                    
+                    <core:Title text="Sales &amp; Billing"/>
+                    <Label text="Customer Group"/><Text text="{wizardData>/CustomerGroup}"/>
+                    <Label text="Currency"/><Text text="{wizardData>/Currency}"/>
+                    <Label text="Payment Terms"/><Text text="{wizardData>/PaymentTerms}"/>
+                    <Label text="Account Assignment"/><Text text="{wizardData>/AccountAssignmentGroup}"/>
+                    <Label text="Tax Classification"/><Text text="{wizardData>/TaxClassification}"/>
+                    
+                    <core:Title text="Company Code"/>
+                    <Label text="Company Code"/><Text text="{wizardData>/CompanyCode}"/>
+                    
+                    <core:Title text="Account Management"/>
+                    <Label text="Reconciliation Account"/><Text text="{wizardData>/ReconciliationAccount}"/>
+                </form:SimpleForm>
+            </VBox>
+        </content>
+        <buttons>
+            <Button text="Cancel" press="onCloseReview" type="Transparent"/>
+            <Button text="Submit for Creation" press="onWizardCompleted" type="Emphasized" icon="sap-icon://paper-plane"/>
+        </buttons>
+    </Dialog>
+</mvc:View>

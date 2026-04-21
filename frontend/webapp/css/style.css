@@ -1,0 +1,120 @@
+/* ========================================================
+   Business Partner Creation Wizard - Custom Styles
+   ======================================================== */
+
+/* === Page Background === */
+.pageGrayBackground {
+    background-color: #f5f6f8;
+}
+
+/* === Wizard Container === */
+.wizardRedBoxFrame {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    /* Soft drop shadow */
+    border: 1px solid #e0e0e0;
+}
+
+/* === Wizard itself: ensure full height renders === */
+.sapMWizard {
+    background: transparent !important;
+}
+
+.sapMWizardProgressNavigator {
+    background: #fff !important;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 0 16px;
+}
+
+
+/* === Progress Bar Area === */
+.bpProgressArea {
+    background: linear-gradient(135deg, #0a6ed1 0%, #0854a0 100%);
+    border-radius: 8px 8px 0 0;
+    padding: 16px 24px;
+    color: white;
+    margin-bottom: 0;
+}
+
+/* === Simple Form Styling === */
+.sapUiSimpleForm .sapUiFormElementLbl {
+    font-weight: 600;
+    color: #32363a;
+}
+
+/* === OTP Box === */
+.otpRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* === Review Step Summary === */
+.reviewSummaryBox {
+    background: #f0f4fa;
+    border-left: 4px solid #0a6ed1;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+}
+
+/* === Navigation Buttons === */
+.wizardNavButtons {
+    padding: 12px 24px;
+    border-top: 1px solid #e8e8e8;
+    margin-top: 16px;
+}
+
+/* === Default value Inputs (read-only shading) === */
+.sapMInputBaseDisabled .sapMInputBaseInner {
+    background-color: #f7f7f7 !important;
+    color: #666 !important;
+}
+
+/* === Status Bar at Top === */
+.bpStatusStrip {
+    background: linear-gradient(90deg, #0a6ed1, #0854a0);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 8px;
+}
+
+/* === Radial Chart fix === */
+.sapSuiteUiMicroChartRadialChart {
+    display: inline-block;
+}
+
+/* === Compact density fix for forms === */
+.sapUiSizeCompact .sapMSelectList {
+    font-size: 0.875rem;
+}
+
+/* === 1. Page Background (Grey outer area) === */
+.sapMPageBgSolid {
+    background-color: #f4f5f6 !important;
+}
+
+
+/* === 3. Progress Header Layout === */
+.progressHeaderBox {
+    padding: 24px 32px 16px 32px;
+}
+
+/* Match the exact bold text styling from Image 2 */
+.completionText {
+    font-weight: bold !important;
+    color: #1d2d3e;
+}
+
+/* === 4. Wizard Adjustments === */
+/* Make the wizard background transparent so it inherits the white box */
+.sapMWizard {
+    background: transparent !important;
+}
+
+/* Give the wizard steps proper padding inside the card */
+.sapMWizardStep {
+    padding: 0 32px 32px 32px !important;
+}

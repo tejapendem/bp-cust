@@ -1,0 +1,31 @@
+{
+  "name": "bp-cust",
+  "version": "1.0.0",
+  "description": "Business Partner Creation Wizard",
+  "dependencies": {
+    "@sap/cds": "^8",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^1"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "bp-cust.sqlite"
+        }
+      }
+    },
+    "folders": {
+      "db": "backend/db",
+      "srv": "backend/srv",
+      "app": "frontend"
+    }
+  },
+  "scripts": {
+    "start": "cds run",
+    "deploy": "cds deploy --to sqlite:bp-cust.sqlite"
+  }
+}

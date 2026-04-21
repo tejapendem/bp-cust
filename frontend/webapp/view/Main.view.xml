@@ -1,0 +1,156 @@
+<!-- <mvc:View controllerName="bp.cust.ui.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout">
+    <Page title="Business Partner Directory">
+        <headerContent>
+            <Button text="Create Business Partner" press="onCreatepress" type="Emphasized" icon="sap-icon://add" />
+        </headerContent>
+        <content>
+            <Table id="bpTable" items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <Title text="Available Partners" />
+                        <ToolbarSpacer />
+                        <SearchField width="30%" search="onSearch" />
+                    </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                    <Column><Text text="BP Number" /></Column>
+                    <Column><Text text="Name" /></Column>
+                    <Column><Text text="Country" /></Column>
+                    <Column><Text text="Type" /></Column>
+                    <Column><Text text="Created At" /></Column>
+                </columns>
+                <items>
+                    <ColumnListItem type="Navigation" press="onItemPress">
+                        <cells>
+                            <Text text="{BusinessPartnerNumber}" />
+                            <Text text="{Name}" />
+                            <Text text="{Country}" />
+                            <ObjectStatus text="{BPType}" state="Information" />
+                            <Text text="{createdAt}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View> -->
+
+
+
+<mvc:View controllerName="bp.cust.ui.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout">
+
+    <f:DynamicPage id="dynamicPageId" headerExpanded="true" showFooter="false">
+        
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <Title text="Business Partner Directory"/>
+                </f:heading>
+                <f:expandedContent>
+                    <Label text="Search and select a partner to initiate the data template wizard."/>
+                </f:expandedContent>
+                <f:actions>
+                    <Button text="Create Template" type="Accept" press="onCreatepress"/>
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <f:header>
+            <f:DynamicPageHeader pinnable="true">
+                <fb:FilterBar id="filterbar" search="onSearch" clear="onClear" showClearOnFB="true" useToolbar="false">
+                    <fb:filterGroupItems>
+                        <fb:FilterGroupItem groupName="G1" name="CompanyCode" label="Company Code" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="filterCompanyCode" placeholder="e.g. 1000..." />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        
+                        <fb:FilterGroupItem groupName="G1" name="SalesArea" label="Sales Area" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="filterSalesArea" placeholder="e.g. 1000..." />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                        
+                        <fb:FilterGroupItem groupName="G1" name="BPRole" label="BP Role" visibleInFilterBar="true">
+                            <fb:control>
+                                <Input id="filterBPRole" placeholder="e.g. FLCU00..." />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem groupName="G1" name="Grouping" label="Grouping" visibleInFilterBar="true">
+                            <fb:control>
+                                <Select id="filterGrouping" forceSelection="false">
+                                    <core:Item key="" text="All Groupings" />
+                                    <core:Item key="ZP01" text="ZP01" />
+                                    <core:Item key="ZP05" text="ZP05" />
+                                </Select>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                    </fb:filterGroupItems>
+                </fb:FilterBar>
+            </f:DynamicPageHeader>
+        </f:header>
+
+        <f:content>
+            <Table id="bpTable"
+                   items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }"
+                   sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
+                   autoPopinMode="true">
+                
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <Title text="Available Partners" level="H2"/>
+                        <ToolbarSpacer />
+                        <Button icon="sap-icon://sort" type="Transparent"/>
+                        <Button icon="sap-icon://filter" type="Transparent"/>
+                        <Button icon="sap-icon://action-settings" type="Transparent"/>
+                    </OverflowToolbar>
+                </headerToolbar>
+                
+                <columns>
+                    <Column width="25%"><Text text="Business Partner Details" /></Column>
+                    <Column width="15%"><Text text="Category" /></Column>
+                    <Column width="15%"><Text text="Grouping" /></Column>
+                    <Column width="20%"><Text text="Created At" /></Column>
+                    <Column width="25%"><Text text="Assigned Roles" /></Column>
+                </columns>
+                
+                <items>
+                    <ColumnListItem type="Navigation" press="onItemPress">
+                        <cells>
+                            
+                            <VBox class="sapUiTinyMarginTopBottom">
+                                <Title text="{Name}" titleStyle="H6" class="sapUiTinyMarginBottom" />
+                                <Text text="ID: {BusinessPartnerNumber}" />
+                            </VBox>
+                            
+                            <ObjectStatus text="{BPType}" icon="sap-icon://company-view" state="Success" inverted="true" />
+                            
+                            <Text text="{Grouping}" />
+                            
+                            <HBox alignItems="Center">
+                                <core:Icon src="sap-icon://calendar" class="sapUiTinyMarginEnd" color="#1873B6" />
+                                <Text text="{createdAt}" /> 
+                            </HBox>
+                            
+                            <HBox wrap="Wrap">
+                                <ObjectStatus text="FLCU01" state="Success" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                                <ObjectStatus text="FLCU00" state="Warning" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                                <ObjectStatus text="{BPRole}" state="Information" inverted="true" class="sapUiTinyMarginBottom"/>
+                            </HBox>
+
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </f:content>
+
+    </f:DynamicPage>
+</mvc:View>
