@@ -433,6 +433,7 @@ sap.ui.define([
                 progress: 14, // Exact integer percentage (1/7 = 14%)
                 progressText: "14%",
                 TemplateID: "",
+                isEdit: false,
 
                 // Step 1: General Data
                 BPRole: "000000", BPType: "Organization", Grouping: "ZP01",
@@ -456,10 +457,13 @@ sap.ui.define([
             this._oBusyDialog = new BusyDialog({ title: "Processing", text: "Communicating with backend..." });
             this.getView().addDependent(this._oBusyDialog);
 
-            this.getOwnerComponent().getRouter().getRoute("Wizard").attachPatternMatched(this._onObjectMatched, this);
+            var oRouter = this.getOwnerComponent().getRouter();
+            oRouter.getRoute("Wizard").attachPatternMatched(this._onObjectMatched, this);
+            oRouter.getRoute("WizardEdit").attachPatternMatched(this._onObjectMatched, this);
         },
 
         _onObjectMatched: function (oEvent) {
+            var oModel = this.getView().getModel("wizardData");
             var oWizard = this.byId("bpWizard");
             var oFirstStep = oWizard.getSteps()[0];
             oWizard.discardProgress(oFirstStep); // Reset wizard UI
@@ -467,40 +471,47 @@ sap.ui.define([
             this._updateProgress(1); // Reset percentage to Step 1
 
             var sBpID = oEvent.getParameter("arguments").bpID;
+            
             if (!sBpID || sBpID === "create") {
-                this.getView().getModel("wizardData").setProperty("/otpSent", false);
+                oModel.setProperty("/isEdit", false);
+                oModel.setProperty("/otpSent", false);
+                oModel.setProperty("/TemplateID", "");
+                
+                // Initialize default filters for domestic grouping
+                // Using a slight delay to ensure bindings are ready
+                setTimeout(function() {
+                    this._filterByGrouping("ZP01");
+                }.bind(this), 500);
+                
                 return;
             }
+
+            // Edit/View Mode
+            oModel.setProperty("/isEdit", true);
+            oModel.setProperty("/TemplateID", sBpID);
             this._loadFullData(sBpID);
         },
 
         _loadFullData: function (sBpID) {
             var oWizardModel = this.getView().getModel("wizardData");
-
-            // 1. CRITICAL FIX: Get the model from the Owner Component to guarantee it exists during routing
             var oODataModel = this.getOwnerComponent().getModel();
             var that = this;
 
             this._oBusyDialog.open();
 
-            // 2. Bind directly to the UUID path (OData V4 does not use quotes around UUIDs)
             var sPath = "/BusinessPartners(" + sBpID + ")";
             var oContext = oODataModel.bindContext(sPath);
 
-            // 3. CRITICAL FIX: requestObject("") forces OData V4 to fetch ALL properties for this record
             oContext.requestObject("").then(function (oData) {
                 that._oBusyDialog.close();
 
                 if (oData) {
-                    // Merge backend data with local UI state (preserves OTP fields, etc.)
-                    var oCurrentData = oWizardModel.getData();
-                    var oMergedData = Object.assign({}, oCurrentData, oData);
-
-                    oWizardModel.setData(oMergedData);
-
-                    // 4. CRITICAL FIX: Force the UI to instantly re-render with the new data
+                    // Update our JSON model with the fetched record
+                    oWizardModel.setData(Object.assign({}, oWizardModel.getData(), oData));
                     oWizardModel.refresh(true);
-
+                    
+                    // Filter based on retrieved grouping
+                    that._filterByGrouping(oData.Grouping);
                 } else {
                     MessageBox.error("No data returned for this Business Partner.");
                 }
@@ -512,10 +523,43 @@ sap.ui.define([
         },
 
         // ─────────────────────────────────────────────
-        // WIZARD NAVIGATION & EXACT PERCENTAGE
+        // WIZARD NAVIGATION & VALIDATION
         // ─────────────────────────────────────────────
         onNextStep: function () {
-            this.byId("bpWizard").nextStep();
+            var oWizard = this.byId("bpWizard");
+            var sCurrentStepId = oWizard.getCurrentStep();
+            
+            if (this._validateStep(sCurrentStepId)) {
+                oWizard.nextStep();
+            }
+        },
+
+        _validateStep: function (sStepId) {
+            var oModel = this.getView().getModel("wizardData");
+            var oData = oModel.getData();
+            var aMissing = [];
+
+            // Only validate in 'Create' mode
+            if (oModel.getProperty("/isEdit")) {
+                return true;
+            }
+
+            if (sStepId.includes("step2")) {
+                // Name, Country, Email
+                if (!oData.Name) aMissing.push("Name (Example: Google India)");
+                if (!oData.Country) aMissing.push("Country (Example: UG)");
+                if (!oData.Email) aMissing.push("Email (Example: info@google.com)");
+            } else if (sStepId.includes("step3")) {
+                // Tax Category, Tax Number
+                if (!oData.TaxCategory) aMissing.push("Tax Category (Example: UG1)");
+                if (!oData.TaxNumber) aMissing.push("Tax Number (Example: 123456789)");
+            }
+
+            if (aMissing.length > 0) {
+                MessageBox.error("Please fill the mandatory fields to proceed:\n\n" + aMissing.join("\n"));
+                return false;
+            }
+            return true;
         },
 
         onPrevStep: function () {
@@ -547,8 +591,51 @@ sap.ui.define([
         },
 
         // ─────────────────────────────────────────────
-        // VALUE HELP LOGIC
+        // VALUE HELP & FILTERING LOGIC
         // ─────────────────────────────────────────────
+        onGroupingChange: function (oEvent) {
+            var oSelectedItem = oEvent.getParameter("selectedItem");
+            if (!oSelectedItem) return;
+            
+            var sKey = oSelectedItem.getKey();
+            this._filterByGrouping(sKey);
+        },
+
+        _filterByGrouping: function (sGrouping) {
+            var oModel = this.getView().getModel("wizardData");
+            
+            // Patterns for filtering: 
+            // ZP01 (Domestic) -> 01 for Dist/Acc, 321000 for Recon
+            // ZP05 (Export)   -> 40 for Dist/Acc, 321001 for Recon
+            
+            var sGenPattern = (sGrouping === "ZP01") ? "01" : "40";
+            var sReconPattern = (sGrouping === "ZP01") ? "321000" : "321001";
+
+            var aGenFilter = [new Filter("code", FilterOperator.Contains, sGenPattern)];
+            var aReconFilter = [new Filter("code", FilterOperator.Contains, sReconPattern)];
+
+            // Distribution Channel (Step 4)
+            var oDistChannel = this.byId("distChannelSelect");
+            if (oDistChannel && oDistChannel.getBinding("items")) {
+                oDistChannel.getBinding("items").filter(aGenFilter);
+            }
+
+            // Account Assignment Group (Step 5)
+            var oAccAssignment = this.byId("accAssignmentSelect");
+            if (oAccAssignment && oAccAssignment.getBinding("items")) {
+                oAccAssignment.getBinding("items").filter(aGenFilter);
+            }
+
+            // Reconciliation Account (Step 7)
+            var oReconciliation = this.byId("reconciliationSelect");
+            if (oReconciliation && oReconciliation.getBinding("items")) {
+                oReconciliation.getBinding("items").filter(aReconFilter);
+                
+                // Auto-set the reconciliation account based on grouping
+                oModel.setProperty("/ReconciliationAccount", sReconPattern);
+            }
+        },
+
         onCountryChange: function (oEvent) {
             var sCountryKey = oEvent.getParameter("selectedItem") ? oEvent.getParameter("selectedItem").getKey() : "";
             var oModel = this.getView().getModel("wizardData");
@@ -659,6 +746,14 @@ sap.ui.define([
         // REVIEW DIALOG & SUBMISSION LOGIC
         // ─────────────────────────────────────────────
         onOpenReview: function () {
+            var oWizard = this.byId("bpWizard");
+            var sCurrentStepId = oWizard.getCurrentStep();
+            
+            // Final validation of the current step before opening review
+            if (!this._validateStep(sCurrentStepId)) {
+                return;
+            }
+
             if (!this._oReviewDialog) {
                 this._oReviewDialog = this.byId("reviewDialog");
             }
