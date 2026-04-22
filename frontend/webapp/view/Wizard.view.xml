@@ -21,7 +21,7 @@
                         id="progressChart" 
                         size="M" 
                         percentage="{wizardData>/progress}" 
-                        valueColor="Neutral"/>
+                        valueColor="{wizardData>/progressColor}"/>
                     <Title 
                         text="Completion Status: {wizardData>/progressText}" 
                         level="H3" 
@@ -95,7 +95,7 @@
                                     <core:Item key="{code}" text="{code}"/>
                                 </Select>
                                 <Input id="mobileInput" value="{wizardData>/MobileNumber}" placeholder="Digits only" width="170px" class="sapUiSmallMarginBegin" editable="{= !${wizardData>/isEdit} }"/>
-                                <Button id="sendOtpBtn" text="Send OTP" type="Attention" press="onSendOTP" class="sapUiSmallMarginBegin" visible="{= !${wizardData>/isEdit} }"/>
+                                <!-- <Button id="sendOtpBtn" text="Send OTP" type="Attention" press="onSendOTP" class="sapUiSmallMarginBegin" visible="{= !${wizardData>/isEdit} }"/> -->
                             </HBox>
                             
                             <Label text="OTP Code"/>

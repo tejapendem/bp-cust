@@ -54,10 +54,10 @@
                     <Title text="Business Partner Directory"/>
                 </f:heading>
                 <f:expandedContent>
-                    <Label text="Search and select a partner to initiate the data template wizard."/>
+                    <Label text="Search and select a partner to initiate the data."/>
                 </f:expandedContent>
                 <f:actions>
-                    <Button text="Create Template" type="Accept" press="onCreatepress"/>
+                    <Button text="Create Business Partner" type="Accept" press="onCreatepress"/>
                 </f:actions>
             </f:DynamicPageTitle>
         </f:title>

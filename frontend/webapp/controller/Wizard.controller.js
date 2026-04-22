@@ -432,6 +432,7 @@ sap.ui.define([
             var oViewModel = new JSONModel({
                 progress: 14, // Exact integer percentage (1/7 = 14%)
                 progressText: "14%",
+                progressColor: "Error", // Color state (Error=Red, Critical=Orange, Good=Green)
                 TemplateID: "",
                 isEdit: false,
 
@@ -471,18 +472,17 @@ sap.ui.define([
             this._updateProgress(1); // Reset percentage to Step 1
 
             var sBpID = oEvent.getParameter("arguments").bpID;
-            
+
             if (!sBpID || sBpID === "create") {
                 oModel.setProperty("/isEdit", false);
                 oModel.setProperty("/otpSent", false);
                 oModel.setProperty("/TemplateID", "");
-                
+
                 // Initialize default filters for domestic grouping
-                // Using a slight delay to ensure bindings are ready
-                setTimeout(function() {
+                setTimeout(function () {
                     this._filterByGrouping("ZP01");
                 }.bind(this), 500);
-                
+
                 return;
             }
 
@@ -494,23 +494,27 @@ sap.ui.define([
 
         _loadFullData: function (sBpID) {
             var oWizardModel = this.getView().getModel("wizardData");
-            var oODataModel = this.getOwnerComponent().getModel();
+            var oODataModel = this.getOwnerComponent().getModel(); // Get model from owner component
             var that = this;
 
             this._oBusyDialog.open();
 
+            // Bind directly to the UUID path
             var sPath = "/BusinessPartners(" + sBpID + ")";
             var oContext = oODataModel.bindContext(sPath);
 
+            // requestObject("") forces OData V4 to fetch ALL properties
             oContext.requestObject("").then(function (oData) {
                 that._oBusyDialog.close();
 
                 if (oData) {
-                    // Update our JSON model with the fetched record
-                    oWizardModel.setData(Object.assign({}, oWizardModel.getData(), oData));
-                    oWizardModel.refresh(true);
-                    
-                    // Filter based on retrieved grouping
+                    var oCurrentData = oWizardModel.getData();
+                    var oMergedData = Object.assign({}, oCurrentData, oData);
+
+                    oWizardModel.setData(oMergedData);
+                    oWizardModel.refresh(true); // Force UI to re-render
+
+                    // Filter dropdowns based on retrieved grouping
                     that._filterByGrouping(oData.Grouping);
                 } else {
                     MessageBox.error("No data returned for this Business Partner.");
@@ -528,10 +532,46 @@ sap.ui.define([
         onNextStep: function () {
             var oWizard = this.byId("bpWizard");
             var sCurrentStepId = oWizard.getCurrentStep();
-            
+
             if (this._validateStep(sCurrentStepId)) {
                 oWizard.nextStep();
+                // Force update progress immediately after navigation
+                this._updateProgress(oWizard.getProgress());
             }
+        },
+
+        onPrevStep: function () {
+            var oWizard = this.byId("bpWizard");
+            oWizard.previousStep();
+            // Force update progress immediately after navigation
+            this._updateProgress(oWizard.getProgress());
+        },
+
+        onStepActivate: function (oEvent) {
+            // Failsafe catch for native wizard step jumps
+            var oWizard = this.byId("bpWizard");
+            this._updateProgress(oWizard.getProgress());
+        },
+
+        _updateProgress: function (iStep) {
+            var oModel = this.getView().getModel("wizardData");
+            var iTotalSteps = 7;
+
+            iStep = iStep || 1; // Failsafe
+
+            var iPct = Math.round((iStep / iTotalSteps) * 100);
+
+            // Determine color based on percentage
+            var sColor = "Error"; // Red (14% - 30%)
+            if (iPct > 30 && iPct <= 70) {
+                sColor = "Critical"; // Orange (43% - 57%)
+            } else if (iPct > 70) {
+                sColor = "Good"; // Green (71% - 100%)
+            }
+
+            oModel.setProperty("/progress", iPct);
+            oModel.setProperty("/progressText", iPct + "%");
+            oModel.setProperty("/progressColor", sColor);
         },
 
         _validateStep: function (sStepId) {
@@ -539,18 +579,16 @@ sap.ui.define([
             var oData = oModel.getData();
             var aMissing = [];
 
-            // Only validate in 'Create' mode
+            // Only validate mandatory fields in 'Create' mode
             if (oModel.getProperty("/isEdit")) {
                 return true;
             }
 
             if (sStepId.includes("step2")) {
-                // Name, Country, Email
                 if (!oData.Name) aMissing.push("Name (Example: Google India)");
                 if (!oData.Country) aMissing.push("Country (Example: UG)");
                 if (!oData.Email) aMissing.push("Email (Example: info@google.com)");
             } else if (sStepId.includes("step3")) {
-                // Tax Category, Tax Number
                 if (!oData.TaxCategory) aMissing.push("Tax Category (Example: UG1)");
                 if (!oData.TaxNumber) aMissing.push("Tax Number (Example: 123456789)");
             }
@@ -562,76 +600,39 @@ sap.ui.define([
             return true;
         },
 
-        onPrevStep: function () {
-            this.byId("bpWizard").previousStep();
-        },
-
-        onStepActivate: function (oEvent) {
-            var sStepId = oEvent.getParameter("id");
-            var iStep = 1;
-
-            if (sStepId.includes("step1")) iStep = 1;
-            else if (sStepId.includes("step2")) iStep = 2;
-            else if (sStepId.includes("step3")) iStep = 3;
-            else if (sStepId.includes("step4")) iStep = 4;
-            else if (sStepId.includes("step5")) iStep = 5;
-            else if (sStepId.includes("step6")) iStep = 6;
-            else if (sStepId.includes("step7")) iStep = 7;
-
-            this._updateProgress(iStep);
-        },
-
-        _updateProgress: function (iStep) {
-            var oModel = this.getView().getModel("wizardData");
-            var iTotalSteps = 7;
-            var iPct = Math.round((iStep / iTotalSteps) * 100);
-
-            oModel.setProperty("/progress", iPct);
-            oModel.setProperty("/progressText", iPct + "%");
-        },
-
         // ─────────────────────────────────────────────
         // VALUE HELP & FILTERING LOGIC
         // ─────────────────────────────────────────────
         onGroupingChange: function (oEvent) {
             var oSelectedItem = oEvent.getParameter("selectedItem");
             if (!oSelectedItem) return;
-            
+
             var sKey = oSelectedItem.getKey();
             this._filterByGrouping(sKey);
         },
 
         _filterByGrouping: function (sGrouping) {
             var oModel = this.getView().getModel("wizardData");
-            
-            // Patterns for filtering: 
-            // ZP01 (Domestic) -> 01 for Dist/Acc, 321000 for Recon
-            // ZP05 (Export)   -> 40 for Dist/Acc, 321001 for Recon
-            
+
             var sGenPattern = (sGrouping === "ZP01") ? "01" : "40";
             var sReconPattern = (sGrouping === "ZP01") ? "321000" : "321001";
 
             var aGenFilter = [new Filter("code", FilterOperator.Contains, sGenPattern)];
             var aReconFilter = [new Filter("code", FilterOperator.Contains, sReconPattern)];
 
-            // Distribution Channel (Step 4)
             var oDistChannel = this.byId("distChannelSelect");
             if (oDistChannel && oDistChannel.getBinding("items")) {
                 oDistChannel.getBinding("items").filter(aGenFilter);
             }
 
-            // Account Assignment Group (Step 5)
             var oAccAssignment = this.byId("accAssignmentSelect");
             if (oAccAssignment && oAccAssignment.getBinding("items")) {
                 oAccAssignment.getBinding("items").filter(aGenFilter);
             }
 
-            // Reconciliation Account (Step 7)
             var oReconciliation = this.byId("reconciliationSelect");
             if (oReconciliation && oReconciliation.getBinding("items")) {
                 oReconciliation.getBinding("items").filter(aReconFilter);
-                
-                // Auto-set the reconciliation account based on grouping
                 oModel.setProperty("/ReconciliationAccount", sReconPattern);
             }
         },
@@ -748,8 +749,7 @@ sap.ui.define([
         onOpenReview: function () {
             var oWizard = this.byId("bpWizard");
             var sCurrentStepId = oWizard.getCurrentStep();
-            
-            // Final validation of the current step before opening review
+
             if (!this._validateStep(sCurrentStepId)) {
                 return;
             }
