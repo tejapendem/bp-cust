@@ -103,11 +103,19 @@
             "TargetWizard"
           ]
         },
+
         {
           "name": "WizardEdit",
           "pattern": "edit/{bpID}",
           "target": [
             "TargetWizard"
+          ]
+        },
+        {
+          "name": "Admin",
+          "pattern": "admin",
+          "target": [
+            "TargetAdmin"
           ]
         }
       ],
@@ -119,6 +127,10 @@
         "TargetWizard": {
           "viewType": "XML",
           "viewName": "Wizard"
+        },
+        "TargetAdmin": {
+          "viewType": "XML",
+          "viewName": "Admin"
         }
       }
     }

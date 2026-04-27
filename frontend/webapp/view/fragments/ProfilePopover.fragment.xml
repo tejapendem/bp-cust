@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <ResponsivePopover
+        placement="Bottom"
+        showHeader="false"
+        contentWidth="300px">
+        <content>
+            <VBox alignItems="Center" class="sapUiMediumMargin">
+                <Avatar initials="{userModel>/initials}" displaySize="XL" class="sapUiMediumMarginBottom" />
+                <Title text="{userModel>/name}" level="H2" />
+                <Text text="{userModel>/email}" class="sapUiTinyMarginBottom" />
+                
+                <VBox class="sapUiSmallMarginTop" width="100%">
+                    <HBox justifyContent="SpaceBetween">
+                        <Label text="Effective Role:" />
+                        <Text text="{userModel>/role}" />
+                    </HBox>
+                    <HBox justifyContent="SpaceBetween">
+                        <Label text="Assigned Roles:" />
+                        <Text text="{userModel>/assignedRoles}" />
+                    </HBox>
+                </VBox>
+
+                <HBox alignItems="Center" justifyContent="Start" width="100%" class="sapUiMediumMarginTop">
+                    <Switch state="{userModel>/isAdmin}" change=".onRoleToggle" customTextOn="ON" customTextOff="OFF" />
+                </HBox>
+
+                <VBox width="100%" class="sapUiMediumMarginTop" alignItems="Start">
+                    <Link text="Manage Access" press=".onManageAccessPress" />
+                </VBox>
+            </VBox>
+        </content>
+        <footer>
+            <Toolbar>
+                <ToolbarSpacer />
+                <Button text="Logout" type="Transparent" press=".onLogoutPress" color="Critical" />
+            </Toolbar>
+        </footer>
+    </ResponsivePopover>
+</core:FragmentDefinition>

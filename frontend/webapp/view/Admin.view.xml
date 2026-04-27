@@ -1,0 +1,99 @@
+<mvc:View controllerName="bp.cust.ui.controller.Admin"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout">
+    <Page title="Administration" showHeader="true">
+        <headerContent>
+             <core:Icon src="sap-icon://settings" size="1.5rem" color="#666" />
+        </headerContent>
+        <content>
+            <VBox class="sapUiSmallMargin">
+                
+                <!-- User Management Section -->
+                <VBox class="sapUiMediumMarginBottom">
+                    <Title text="User Management" level="H3" class="sapUiSmallMarginBottom" />
+                    <Table id="userTable" items="{ path: '/Users' }" growing="true" growingThreshold="20">
+                        <headerToolbar>
+                            <OverflowToolbar>
+                                <ToolbarSpacer />
+                                <Button icon="sap-icon://refresh" type="Transparent" press=".onRefreshUsers" />
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <columns>
+                            <Column><Text text="NAME" /></Column>
+                            <Column><Text text="ROLES" /></Column>
+                            <Column><Text text="EMAIL ID" /></Column>
+                            <Column><Text text="STATUS" /></Column>
+                            <Column><Text text="LAST UPDATED" /></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{name}" />
+                                    <Select selectedKey="{role}" change=".onUserRoleChange">
+                                        <core:Item key="admin" text="Admin" />
+                                        <core:Item key="viewer" text="Viewer" />
+                                    </Select>
+                                    <Text text="{email}" />
+                                    <ObjectStatus text="{status}" state="Success" />
+                                    <Text text="{modifiedAt}" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </VBox>
+
+                <!-- Pending Requests Section -->
+                <VBox class="sapUiMediumMarginBottom">
+                    <Title text="Pending Requests" level="H3" class="sapUiSmallMarginBottom" />
+                    <Table id="pendingRequestsTable" items="{ path: '/AccessRequests', filters: [{ path: 'status', operator: 'EQ', value1: 'pending' }] }">
+                        <columns>
+                            <Column><Text text="USER" /></Column>
+                            <Column><Text text="REQUESTED ROLE" /></Column>
+                            <Column><Text text="REASON" /></Column>
+                            <Column><Text text="ACTIONS" /></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{userName}" />
+                                    <ObjectStatus text="{requestedRole}" state="Information" />
+                                    <Text text="{reason}" />
+                                    <HBox>
+                                        <Button text="Approve" type="Accept" press=".onApproveRequest" class="sapUiTinyMarginEnd" />
+                                        <Button text="Reject" type="Reject" press=".onRejectRequest" />
+                                    </HBox>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </VBox>
+
+                <!-- Request History Section -->
+                <VBox>
+                    <Title text="Request History" level="H3" class="sapUiSmallMarginBottom" />
+                    <Table id="requestHistoryTable" items="{ path: '/AccessRequests', filters: [{ path: 'status', operator: 'NE', value1: 'pending' }] }">
+                        <columns>
+                            <Column><Text text="USER" /></Column>
+                            <Column><Text text="REQUESTED ROLE" /></Column>
+                            <Column><Text text="STATUS" /></Column>
+                            <Column><Text text="UPDATED" /></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{userName}" />
+                                    <ObjectStatus text="{requestedRole}" state="Information" />
+                                    <ObjectStatus text="{status}" state="{= ${status} === 'approved' ? 'Success' : 'Error' }" />
+                                    <Text text="{modifiedAt}" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </VBox>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

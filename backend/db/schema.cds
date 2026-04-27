@@ -78,8 +78,24 @@ entity VH_CustomerData2 { key code: String(2); name: String(50); }
 entity VH_CompanyCode { key code: String(4); name: String(50); }
 entity VH_ReconciliationAccount { key code: String(6); name: String(50); }
 
+
 entity VH_Region { 
     key code: String(3); 
     key country: String(2); 
     name: String(50); 
+}
+
+entity Users : managed {
+    key email : String(100);
+    name      : String(100);
+    role      : String(20); // 'admin', 'viewer'
+    status    : String(20) default 'active'; // 'active', 'inactive'
+}
+
+entity AccessRequests : cuid, managed {
+    userEmail     : String(100);
+    userName      : String(100);
+    requestedRole : String(20);
+    reason        : String(500);
+    status        : String(20) default 'pending'; // 'pending', 'approved', 'rejected'
 }

@@ -18,7 +18,11 @@ service BusinessPartnerService {
     @readonly entity VH_CustomerData2 as projection on cust.VH_CustomerData2;
     @readonly entity VH_CompanyCode as projection on cust.VH_CompanyCode;
     @readonly entity VH_ReconciliationAccount as projection on cust.VH_ReconciliationAccount;
+
     @readonly entity VH_Region as projection on cust.VH_Region;
+
+    entity Users as projection on cust.Users;
+    entity AccessRequests as projection on cust.AccessRequests;
 
     action sendOTP(mobileNumber: String) returns String;
     action verifyOTP(mobileNumber: String, otp: String) returns Boolean;

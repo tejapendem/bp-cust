@@ -1,7 +1,33 @@
 <mvc:View controllerName="bp.cust.ui.controller.App"
-    xmlns:html="http://www.w3.org/1999/xhtml"
-    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
-    xmlns="sap.m">
-    <App id="appContainer">
-    </App>
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:tnt="sap.tnt"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+    <tnt:ToolPage id="toolPage">
+        <tnt:header>
+            <tnt:ToolHeader>
+                <Button id="sideNavigationToggleButton" icon="sap-icon://menu2" type="Transparent" press=".onSideNavButtonPress" />
+                <ToolbarSpacer width="10px" />
+                <Image src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" height="1.5rem" />
+                <Title text="Activation Dashboard" level="H1" />
+                <ToolbarSpacer />
+                <Button icon="sap-icon://bell" type="Transparent" />
+                <Avatar id="profileAvatar" displaySize="XS" initials="{userModel>/initials}" press=".onProfilePress" class="sapUiSmallMarginEnd" />
+            </tnt:ToolHeader>
+        </tnt:header>
+        <tnt:sideContent>
+            <tnt:SideNavigation id="sideNavigation" selectedKey="home" itemSelect=".onItemSelect">
+                <tnt:NavigationList>
+                    <tnt:NavigationListItem text="Home" icon="sap-icon://home" key="home" />
+                    <tnt:NavigationListItem text="Request Management" icon="sap-icon://request" key="requests" />
+                    <tnt:NavigationListItem text="Activation Queue" icon="sap-icon://list" key="queue" />
+                    <tnt:NavigationListItem text="Admin" icon="sap-icon://admin" key="admin" visible="{userModel>/isAdmin}" />
+                </tnt:NavigationList>
+            </tnt:SideNavigation>
+        </tnt:sideContent>
+        <tnt:mainContents>
+            <App id="appContainer" />
+        </tnt:mainContents>
+    </tnt:ToolPage>
 </mvc:View>
