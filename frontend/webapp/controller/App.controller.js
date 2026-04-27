@@ -9,7 +9,8 @@ sap.ui.define(
   
       return BaseController.extend("bp.cust.ui.controller.App", {
         onInit: function() {
-            var bIsLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+            var sHostname = window.location.hostname;
+            var bIsLocal = sHostname === "localhost" || sHostname === "127.0.0.1" || sHostname.includes("applicationstudio.cloud.sap");
             
             // Default guest user for deployed version
             var oUserData = {
@@ -122,14 +123,20 @@ sap.ui.define(
         onSubmitRequest: function() {
             var oView = this.getView();
             var oModel = oView.getModel();
-            var oUserModel = oView.getModel("userModel");
             
+            var sName = this.byId("requestName").getValue();
+            var sEmail = this.byId("requestEmail").getValue();
             var sRequestedRole = this.byId("requestedRole").getSelectedKey();
             var sReason = this.byId("requestReason").getValue();
 
+            if (!sName || !sEmail || !sReason) {
+                sap.m.MessageBox.error("Please fill in all mandatory fields.");
+                return;
+            }
+
             var oPayload = {
-                userEmail: oUserModel.getProperty("/email"),
-                userName: oUserModel.getProperty("/name"),
+                userEmail: sEmail,
+                userName: sName,
                 requestedRole: sRequestedRole,
                 reason: sReason,
                 status: "pending"
