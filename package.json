@@ -4,6 +4,7 @@
   "description": "Business Partner Creation Wizard",
   "dependencies": {
     "@sap/cds": "^8",
+    "better-sqlite3": "^12.9.0",
     "express": "^4"
   },
   "devDependencies": {

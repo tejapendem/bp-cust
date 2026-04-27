@@ -123,7 +123,7 @@
                             
                             <Label text="Tax Category" required="true"/>
                             <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
-                                <core:Item key="{code}" text="{name}"/>
+                                <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
                             <Label text="Tax Number"/>
