@@ -14,10 +14,11 @@
                 <!-- User Management Section -->
                 <VBox class="sapUiMediumMarginBottom">
                     <Title text="User Management" level="H3" class="sapUiSmallMarginBottom" />
-                    <Table id="userTable" items="{ path: '/Users' }" growing="true" growingThreshold="20">
+                    <Table id="userTable" items="{ path: '/Users' }" growing="true" growingThreshold="20" mode="MultiSelect">
                         <headerToolbar>
                             <OverflowToolbar>
                                 <ToolbarSpacer />
+                                <Button icon="sap-icon://delete" type="Reject" press=".onDeleteUsers" text="Delete" tooltip="Delete Selected Users" />
                                 <Button icon="sap-icon://refresh" type="Transparent" press=".onRefreshUsers" />
                             </OverflowToolbar>
                         </headerToolbar>

@@ -8,11 +8,13 @@
     height="100%">
 
     <Page id="wizardPage"
-          title="{= ${wizardData>/isEdit} ? 'Business Partner Details' : 'Create Business Partner' }"
+          title="{= ${wizardData>/isReadOnly} ? 'Business Partner Details' : 'Create Business Partner' }"
           showNavButton="true"
           navButtonPress="onNavBack"
           backgroundDesign="Solid">
-
+        <headerContent>
+            <Button text="Save as Draft" type="Ghost" icon="sap-icon://save" press="onSaveDraft" visible="{= !${wizardData>/isReadOnly} }" />
+        </headerContent>
         <content>
             <VBox class="wizardRedBoxFrame sapUiMediumMargin">
                 
@@ -45,7 +47,7 @@
                             <Input value="{wizardData>/BPType}" editable="false"/>
                             
                             <Label text="Grouping" required="true"/>
-                            <Select id="groupingSelect" selectedKey="{wizardData>/Grouping}" items="{path: '/VH_Grouping'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }" change="onGroupingChange">
+                            <Select id="groupingSelect" selectedKey="{wizardData>/Grouping}" items="{path: '/VH_Grouping'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }" change="onGroupingChange">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                         </form:SimpleForm>
@@ -59,57 +61,57 @@
                             <core:Title text="Identity"/>
                             
                             <Label text="Name" required="true"/>
-                            <Input id="nameInput" value="{wizardData>/Name}" placeholder="Full / Company Name" editable="{= !${wizardData>/isEdit} }"/>
+                            <Input id="nameInput" value="{wizardData>/Name}" placeholder="Full / Company Name" editable="{= !${wizardData>/isReadOnly} }"/>
                             
                             <Label text="Title"/>
-                            <Input value="{wizardData>/Title}" placeholder="e.g. Mr, Ms, Corp" editable="{= !${wizardData>/isEdit} }"/>
+                            <Input value="{wizardData>/Title}" placeholder="e.g. Mr, Ms, Corp" editable="{= !${wizardData>/isReadOnly} }"/>
                             
                             <core:Title text="Location Details"/>
 
                             <Label text="Street Address"/>
-                            <Input value="{wizardData>/StreetAddress}" placeholder="Street, Building, Floor" editable="{= !${wizardData>/isEdit} }"/>
+                            <Input value="{wizardData>/StreetAddress}" placeholder="Street, Building, Floor" editable="{= !${wizardData>/isReadOnly} }"/>
                             
                             <Label text="Postal Code"/>
-                            <Input value="{wizardData>/PostalCode}" placeholder="ZIP / Postal Code" editable="{= !${wizardData>/isEdit} }"/>
+                            <Input value="{wizardData>/PostalCode}" placeholder="ZIP / Postal Code" editable="{= !${wizardData>/isReadOnly} }"/>
 
                             <Label text="Country" required="true"/>
-                            <Select id="countrySelect" selectedKey="{wizardData>/Country}" items="{path: '/VH_Country'}" change="onCountryChange" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select id="countrySelect" selectedKey="{wizardData>/Country}" items="{path: '/VH_Country'}" change="onCountryChange" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
                             <Label text="Region"/>
-                            <Select id="regionSelect" selectedKey="{wizardData>/Region}" items="{path: '/VH_Region'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select id="regionSelect" selectedKey="{wizardData>/Region}" items="{path: '/VH_Region'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{name}"/>
                             </Select>
 
                             <core:Title text="Communication"/>
 
                             <Label text="Language"/>
-                            <Select selectedKey="{wizardData>/Language}" items="{path: '/VH_Language'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select selectedKey="{wizardData>/Language}" items="{path: '/VH_Language'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
                             <Label text="Mobile Number"/>
                             <HBox alignItems="Center" wrap="Wrap">
-                                <Select id="mobileCodeSelect" selectedKey="{wizardData>/MobileCountryCode}" width="110px" items="{path: '/VH_MobileCountryCode'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                                <Select id="mobileCodeSelect" selectedKey="{wizardData>/MobileCountryCode}" width="110px" items="{path: '/VH_MobileCountryCode'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                     <core:Item key="{code}" text="{code}"/>
                                 </Select>
-                                <Input id="mobileInput" value="{wizardData>/MobileNumber}" placeholder="Digits only" width="170px" class="sapUiSmallMarginBegin" editable="{= !${wizardData>/isEdit} }"/>
-                                <!-- <Button id="sendOtpBtn" text="Send OTP" type="Attention" press="onSendOTP" class="sapUiSmallMarginBegin" visible="{= !${wizardData>/isEdit} }"/> -->
+                                <Input id="mobileInput" value="{wizardData>/MobileNumber}" placeholder="Digits only" width="170px" class="sapUiSmallMarginBegin" editable="{= !${wizardData>/isReadOnly} }"/>
+                                <!-- <Button id="sendOtpBtn" text="Send OTP" type="Attention" press="onSendOTP" class="sapUiSmallMarginBegin" visible="{= !${wizardData>/isReadOnly} }"/> -->
                             </HBox>
                             
                             <Label text="OTP Code"/>
                             <HBox alignItems="Center" visible="{wizardData>/otpSent}">
-                                <Input id="otpInput" value="{wizardData>/otpValue}" placeholder="4-digit OTP" width="140px" maxLength="4"/>
+                                <Input id="otpInput" value="{wizardData>/otpValue}" placeholder="4-digit OTP" width="140px" maxLength="4" editable="{= !${wizardData>/isReadOnly} }"/>
                                 <Button text="Verify" type="Emphasized" press="onVerifyOTP" class="sapUiSmallMarginBegin"/>
                                 <ObjectStatus id="otpStatus" text="{wizardData>/otpStatusText}" state="{wizardData>/otpStatusState}" visible="{wizardData>/otpVerified}" class="sapUiSmallMarginBegin"/>
                             </HBox>
 
                             <Label text="Telephone"/>
-                            <Input value="{wizardData>/Telephone}" placeholder="Landline, Office, etc."/>
+                            <Input value="{wizardData>/Telephone}" placeholder="Landline, Office, etc." editable="{= !${wizardData>/isReadOnly} }"/>
 
                             <Label text="Email" required="true"/>
-                            <Input id="emailInput" value="{wizardData>/Email}" type="Email" placeholder="user@example.com" editable="{= !${wizardData>/isEdit} }"/>
+                            <Input id="emailInput" value="{wizardData>/Email}" type="Email" placeholder="user@example.com" editable="{= !${wizardData>/isReadOnly} }"/>
                         </form:SimpleForm>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
@@ -122,15 +124,15 @@
                             <core:Title text="3. Tax Information"/>
                             
                             <Label text="Tax Category" required="true"/>
-                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
                             <Label text="Tax Number"/>
-                            <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number" editable="{= !${wizardData>/isEdit} }"/>
+                            <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number" editable="{= !${wizardData>/isReadOnly} }"/>
 
                             <Label text="Tax Status"/>
-                            <Input value="{wizardData>/TaxStatus}" placeholder="e.g. Active, Exempt" editable="{= !${wizardData>/isEdit} }"/>
+                            <Input value="{wizardData>/TaxStatus}" placeholder="e.g. Active, Exempt" editable="{= !${wizardData>/isReadOnly} }"/>
                         </form:SimpleForm>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
@@ -143,17 +145,17 @@
                             <core:Title text="4. Sales Area (FLCU01)"/>
                             
                             <Label text="Sales Organization" required="true"/>
-                            <Select id="salesOrgSelect" selectedKey="{wizardData>/SalesOrganization}" items="{path: '/VH_SalesOrganization'}" change="onSalesOrgChange" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select id="salesOrgSelect" selectedKey="{wizardData>/SalesOrganization}" items="{path: '/VH_SalesOrganization'}" change="onSalesOrgChange" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
                             <Label text="Distribution Channel"/>
-                            <Select id="distChannelSelect" selectedKey="{wizardData>/DistributionChannel}" items="{path: '/VH_DistributionChannel'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select id="distChannelSelect" selectedKey="{wizardData>/DistributionChannel}" items="{path: '/VH_DistributionChannel'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
                             <Label text="Division"/>
-                            <Select selectedKey="{wizardData>/Division}" items="{path: '/VH_Division'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select selectedKey="{wizardData>/Division}" items="{path: '/VH_Division'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                         </form:SimpleForm>
@@ -168,7 +170,7 @@
                             <core:Title text="Sales Logic"/>
                             
                             <Label text="Customer Group"/>
-                            <Select selectedKey="{wizardData>/CustomerGroup}" items="{path: '/VH_CustomerGroup'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select selectedKey="{wizardData>/CustomerGroup}" items="{path: '/VH_CustomerGroup'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
@@ -193,12 +195,12 @@
                             <Input value="{wizardData>/Incoterms}" editable="false"/>
 
                             <Label text="Account Assignment Group"/>
-                            <Select id="accAssignmentSelect" selectedKey="{wizardData>/AccountAssignmentGroup}" items="{path: '/VH_AccountAssignmentGroup'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select id="accAssignmentSelect" selectedKey="{wizardData>/AccountAssignmentGroup}" items="{path: '/VH_AccountAssignmentGroup'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
                             <Label text="Tax Classification"/>
-                            <Select selectedKey="{wizardData>/TaxClassification}" items="{path: '/VH_TaxClassification'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select selectedKey="{wizardData>/TaxClassification}" items="{path: '/VH_TaxClassification'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
@@ -209,7 +211,7 @@
                             <Input value="{wizardData>/OutputTaxCategory}" editable="false"/>
 
                             <Label text="Customer Data 2"/>
-                            <Select selectedKey="{wizardData>/CustomerData2}" items="{path: '/VH_CustomerData2'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select selectedKey="{wizardData>/CustomerData2}" items="{path: '/VH_CustomerData2'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                         </form:SimpleForm>
@@ -224,7 +226,7 @@
                             <core:Title text="6. Company Code (FLCU00)"/>
                             
                             <Label text="Company Code" required="true"/>
-                            <Select id="companyCodeSelect" selectedKey="{wizardData>/CompanyCode}" items="{path: '/VH_CompanyCode'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select id="companyCodeSelect" selectedKey="{wizardData>/CompanyCode}" items="{path: '/VH_CompanyCode'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
@@ -245,7 +247,7 @@
                             <core:Title text="7. FI Reconciliation Account"/>
                             
                             <Label text="Reconciliation Account"/>
-                            <Select id="reconciliationSelect" selectedKey="{wizardData>/ReconciliationAccount}" items="{path: '/VH_ReconciliationAccount'}" forceSelection="false" editable="{= !${wizardData>/isEdit} }">
+                            <Select id="reconciliationSelect" selectedKey="{wizardData>/ReconciliationAccount}" items="{path: '/VH_ReconciliationAccount'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                         </form:SimpleForm>
@@ -307,7 +309,7 @@
         </content>
         <buttons>
             <Button text="Cancel" press="onCloseReview" type="Transparent"/>
-            <Button text="Submit for Creation" press="onWizardCompleted" type="Emphasized" icon="sap-icon://paper-plane" visible="{= !${wizardData>/isEdit} }"/>
+            <Button text="Submit for Creation" press="onWizardCompleted" type="Emphasized" icon="sap-icon://paper-plane" visible="{= !${wizardData>/isReadOnly} }"/>
         </buttons>
     </Dialog>
 </mvc:View>

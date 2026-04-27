@@ -1,6 +1,1 @@
 ID,userEmail,userName,requestedRole,reason,status,createdAt
-f1b9a1b1-1234-4567-8901-234567890abc,teja.pendem@sap.com,Teja Pendem,admin,Need admin access for testing,approved,2026-04-21 09:12:36.727826
-f1b9a1b1-1234-4567-8901-234567890abd,sreelakshmi.r@sap.com,Sreelakshmi,viewer,Access for viewing dashboard,approved,2026-04-21 09:12:22.975862
-f1b9a1b1-1234-4567-8901-234567890abe,mahalakshmi.pj@sap.com,Mahalakshmi,viewer,General access,approved,2026-04-21 09:12:20.048085
-f1b9a1b1-1234-4567-8901-234567890abf,nivedita.tibrewala@sap.com,Nivedita,viewer,Viewing reports,approved,2026-04-07 10:43:19.374949
-f1b9a1b1-1234-4567-8901-234567890ac0,nivedita.tibrewala@sap.com,Nivedita,admin,Requesting admin access,rejected,2026-04-07 08:11:23.362940

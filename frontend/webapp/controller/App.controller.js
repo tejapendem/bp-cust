@@ -9,18 +9,43 @@ sap.ui.define(
   
       return BaseController.extend("bp.cust.ui.controller.App", {
         onInit: function() {
-            var oUserModel = new JSONModel({
-                name: "Local Developer",
-                email: "local.dev@sap.com",
-                role: "admin",
-                isAdmin: true,
-                initials: "LD",
-                assignedRoles: "admin"
-            });
+            var bIsLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+            
+            // Default guest user for deployed version
+            var oUserData = {
+                name: bIsLocal ? "Rajesh Pendem (Local)" : "Guest User",
+                email: bIsLocal ? "rajesh.pendem@canopusgbs.com" : "",
+                role: bIsLocal ? "admin" : "guest",
+                isAdmin: bIsLocal,
+                initials: bIsLocal ? "RP" : "GU",
+                assignedRoles: bIsLocal ? "admin" : ""
+            };
+
+            var oUserModel = new JSONModel(oUserData);
             this.getView().setModel(oUserModel, "userModel");
+
+            // If deployed, simulate checking for the specific admin user
+            if (!bIsLocal) {
+                this._checkUserInfo();
+            }
 
             // Apply density class
             this.getView().addStyleClass("sapUiSizeCompact");
+        },
+
+        _checkUserInfo: function() {
+            var oUserModel = this.getView().getModel("userModel");
+            // Simulation: In BTP, the Approuter would pass the user info in headers.
+            // We can fetch it via a bound action or from a system attribute.
+            // For this demo, we assume 'rajesh.pendem@canopusgbs.com' is the authorized admin.
+            
+            // If we had a real way to get the logged in email:
+            // var sLoggedInEmail = ... 
+            // if (sLoggedInEmail === "rajesh.pendem@canopusgbs.com") {
+            //     oUserModel.setProperty("/isAdmin", true);
+            //     oUserModel.setProperty("/role", "admin");
+            //     oUserModel.setProperty("/name", "Rajesh Pendem");
+            // }
         },
 
         onSideNavButtonPress: function() {
@@ -35,6 +60,8 @@ sap.ui.define(
                 this.getOwnerComponent().getRouter().navTo("Admin");
             } else if (sKey === "home") {
                 this.getOwnerComponent().getRouter().navTo("Main");
+            } else if (sKey === "createBP") {
+                this.getOwnerComponent().getRouter().navTo("Wizard");
             }
         },
 

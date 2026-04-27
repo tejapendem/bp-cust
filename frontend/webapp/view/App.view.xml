@@ -20,7 +20,7 @@
             <tnt:SideNavigation id="sideNavigation" selectedKey="home" itemSelect=".onItemSelect">
                 <tnt:NavigationList>
                     <tnt:NavigationListItem text="Home" icon="sap-icon://home" key="home" />
-                    <tnt:NavigationListItem text="Request Management" icon="sap-icon://request" key="requests" />
+                    <tnt:NavigationListItem text="Create Business Partner" icon="sap-icon://add" key="createBP" visible="{= ${userModel>/role} !== 'guest' }" />
                     <tnt:NavigationListItem text="Activation Queue" icon="sap-icon://list" key="queue" />
                     <tnt:NavigationListItem text="Admin" icon="sap-icon://admin" key="admin" visible="{userModel>/isAdmin}" />
                 </tnt:NavigationList>

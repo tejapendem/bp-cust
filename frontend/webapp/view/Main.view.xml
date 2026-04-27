@@ -49,7 +49,7 @@
     <f:DynamicPage id="dynamicPageId" headerExpanded="true" showFooter="false">
         
         <f:title>
-            <f:DynamicPageTitle>
+            <f:DynamicPageTitle visible="{= ${userModel>/role} !== 'guest' }">
                 <f:heading>
                     <Title text="Business Partner Directory"/>
                 </f:heading>
@@ -63,7 +63,7 @@
         </f:title>
 
         <f:header>
-            <f:DynamicPageHeader pinnable="true">
+            <f:DynamicPageHeader pinnable="true" visible="{= ${userModel>/role} !== 'guest' }">
                 <fb:FilterBar id="filterbar" search="onSearch" clear="onClear" showClearOnFB="true" useToolbar="false">
                     <fb:filterGroupItems>
                         <fb:FilterGroupItem groupName="G1" name="CompanyCode" label="Company Code" visibleInFilterBar="true">
@@ -99,57 +99,73 @@
         </f:header>
 
         <f:content>
-            <Table id="bpTable"
-                   items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }"
-                   sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
-                   autoPopinMode="true">
-                
-                <headerToolbar>
-                    <OverflowToolbar>
-                        <Title text="Available Partners" level="H2"/>
-                        <ToolbarSpacer />
-                        <Button icon="sap-icon://sort" type="Transparent"/>
-                        <Button icon="sap-icon://filter" type="Transparent"/>
-                        <Button icon="sap-icon://action-settings" type="Transparent"/>
-                    </OverflowToolbar>
-                </headerToolbar>
-                
-                <columns>
-                    <Column width="25%"><Text text="Business Partner Details" /></Column>
-                    <Column width="15%"><Text text="Category" /></Column>
-                    <Column width="15%"><Text text="Grouping" /></Column>
-                    <Column width="20%"><Text text="Created At" /></Column>
-                    <Column width="25%"><Text text="Assigned Roles" /></Column>
-                </columns>
-                
-                <items>
-                    <ColumnListItem type="Navigation" press="onItemPress">
-                        <cells>
-                            
-                            <VBox class="sapUiTinyMarginTopBottom">
-                                <Title text="{Name}" titleStyle="H6" class="sapUiTinyMarginBottom" />
-                                <Text text="ID: {BusinessPartnerNumber}" />
-                            </VBox>
-                            
-                            <ObjectStatus text="{BPType}" icon="sap-icon://company-view" state="Success" inverted="true" />
-                            
-                            <Text text="{Grouping}" />
-                            
-                            <HBox alignItems="Center">
-                                <core:Icon src="sap-icon://calendar" class="sapUiTinyMarginEnd" color="#1873B6" />
-                                <Text text="{createdAt}" /> 
-                            </HBox>
-                            
-                            <HBox wrap="Wrap">
-                                <ObjectStatus text="FLCU01" state="Success" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                <ObjectStatus text="FLCU00" state="Warning" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                <ObjectStatus text="{BPRole}" state="Information" inverted="true" class="sapUiTinyMarginBottom"/>
-                            </HBox>
+            <VBox>
+                <!-- Restricted Access View -->
+                <VBox visible="{= ${userModel>/role} === 'guest' }" alignItems="Center" justifyContent="Center" class="sapUiLargeMargin">
+                    <core:Icon src="sap-icon://locked" size="5rem" color="#777777" class="sapUiLargeMarginBottom"/>
+                    <Title text="Access Restricted" level="H2" class="sapUiSmallMarginBottom"/>
+                    <Text text="You are currently signed in as a Guest. Access to the Business Partner Directory is restricted." class="sapUiSmallMarginBottom"/>
+                    <Button text="Request Access" type="Emphasized" press="onManageAccessPress" icon="sap-icon://key"/>
+                </VBox>
 
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
+                <!-- Data Table View -->
+                <Table id="bpTable"
+                    visible="{= ${userModel>/role} !== 'guest' }"
+                    items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }"
+                    sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
+                    autoPopinMode="true">
+                    
+                    <headerToolbar>
+                        <OverflowToolbar>
+                            <Title text="Available Partners" level="H2"/>
+                            <ToolbarSpacer />
+                            <Button icon="sap-icon://refresh" type="Transparent" press="onRefresh" tooltip="Refresh Data"/>
+                            <Button icon="sap-icon://sort" type="Transparent"/>
+                            <Button icon="sap-icon://filter" type="Transparent"/>
+                            <Button icon="sap-icon://action-settings" type="Transparent"/>
+                        </OverflowToolbar>
+                    </headerToolbar>
+                    
+                    <columns>
+                        <Column width="25%"><Text text="Business Partner Details" /></Column>
+                        <Column width="15%"><Text text="Category" /></Column>
+                        <Column width="10%"><Text text="Grouping" /></Column>
+                        <Column width="15%"><Text text="Status" /></Column>
+                        <Column width="15%"><Text text="Created At" /></Column>
+                        <Column width="20%"><Text text="Assigned Roles" /></Column>
+                    </columns>
+                    
+                    <items>
+                        <ColumnListItem type="Navigation" press="onItemPress">
+                            <cells>
+                                
+                                <VBox class="sapUiTinyMarginTopBottom">
+                                    <Title text="{Name}" titleStyle="H6" class="sapUiTinyMarginBottom" />
+                                    <Text text="ID: {BusinessPartnerNumber}" />
+                                </VBox>
+                                
+                                <ObjectStatus text="{BPType}" icon="sap-icon://company-view" state="Success" inverted="true" />
+                                
+                                <Text text="{Grouping}" />
+                                
+                                <ObjectStatus text="{LifecycleStatus}" state="{= ${LifecycleStatus} === 'draft' ? 'Warning' : 'Success' }" inverted="true" />
+
+                                <HBox alignItems="Center">
+                                    <core:Icon src="sap-icon://calendar" class="sapUiTinyMarginEnd" color="#1873B6" />
+                                    <Text text="{createdAt}" /> 
+                                </HBox>
+                                
+                                <HBox wrap="Wrap">
+                                    <ObjectStatus text="FLCU01" state="Success" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                                    <ObjectStatus text="FLCU00" state="Warning" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                                    <ObjectStatus text="{BPRole}" state="Information" inverted="true" class="sapUiTinyMarginBottom"/>
+                                </HBox>
+
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
         </f:content>
 
     </f:DynamicPage>

@@ -41,6 +41,31 @@ sap.ui.define([
             var oContext = oEvent.getSource().getBindingContext();
             oContext.setProperty("status", "rejected");
             MessageToast.show("Request rejected.");
+        },
+
+        onDeleteUsers: function () {
+            var oTable = this.byId("userTable");
+            var aSelectedContexts = oTable.getSelectedContexts();
+
+            if (aSelectedContexts.length === 0) {
+                MessageToast.show("Please select at least one user to delete.");
+                return;
+            }
+
+            sap.m.MessageBox.confirm("Are you sure you want to delete the selected user(s)?", {
+                onClose: function (sAction) {
+                    if (sAction === sap.m.MessageBox.Action.OK) {
+                        aSelectedContexts.forEach(function (oContext) {
+                            oContext.delete().then(function () {
+                                MessageToast.show("User deleted successfully.");
+                            }).catch(function (oError) {
+                                sap.m.MessageBox.error("Error deleting user: " + oError.message);
+                            });
+                        });
+                        oTable.removeSelections();
+                    }
+                }
+            });
         }
     });
 });

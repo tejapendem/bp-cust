@@ -54,6 +54,13 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend("bp.cust.ui.controller.Main", {
+        onInit: function () {
+            this.getOwnerComponent().getRouter().getRoute("Main").attachPatternMatched(this._onMainMatched, this);
+        },
+
+        _onMainMatched: function () {
+            this.onRefresh();
+        },
 
         onCreatepress: function () {
             this.getOwnerComponent().getRouter().navTo("Wizard");
@@ -126,6 +133,13 @@ sap.ui.define([
                 this.getOwnerComponent().getRouter().navTo("WizardEdit", {
                     bpID: sId
                 });
+            }
+        },
+
+        onRefresh: function () {
+            var oBinding = this.byId("bpTable").getBinding("items");
+            if (oBinding) {
+                oBinding.refresh();
             }
         }
     });

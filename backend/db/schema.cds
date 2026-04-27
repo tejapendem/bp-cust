@@ -60,6 +60,7 @@ entity BusinessPartners : cuid, managed {
     
     // Step 7: Account Management
     ReconciliationAccount : String(6);
+    LifecycleStatus : String(20) default 'active'; // 'active', 'draft'
 }
 
 // Value Helps
