@@ -1,0 +1,140 @@
+_schema-version: 3.3.0
+ID: bp-cust
+version: 1.0.0
+description: "Business Partner Creation Wizard"
+parameters:
+  enable-parallel-deployments: true
+  deploy_mode: html5-repo
+
+modules:
+  - name: bp-cust-srv
+    type: nodejs
+    path: .
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+      memory: 1G
+      disk-quota: 1G
+    build-parameters:
+      builder: custom
+      commands:
+        - npm ci --omit=dev
+      ignore:
+        - "node_modules/"
+        - "mta_archives/"
+        - "gen/"
+        - ".git/"
+        - ".vscode/"
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: bp-cust-auth
+
+  - name: bp-cust
+    type: approuter.nodejs
+    path: frontend/router
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: bp-cust-auth
+      - name: bp-cust-html5-runtime
+    provides:
+      - name: app-api
+        properties:
+          app-protocol: ${protocol}
+          app-uri: ${default-uri}
+
+  - name: bp-cust-app-deployer
+    type: com.sap.application.content
+    path: gen
+    build-parameters:
+      build-result: frontend
+      requires:
+        - name: bpcustwebapp
+          artifacts:
+            - webapp.zip
+          target-path: frontend
+    requires:
+      - name: bp-cust-auth
+      - name: srv-api
+      - name: bp-cust-html5-repo-host
+        parameters:
+          content-target: true
+          config:
+            HTML5Runtime_enabled: true
+
+  - name: bpcustwebapp
+    type: html5
+    path: frontend/webapp
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+      supported-platforms:
+        []
+  - name: bp-cust-srv
+    type: nodejs
+    path: gen/backend/srv
+    requires:
+      - name: bp-cust-auth
+
+  - name: bpcustwebapp
+    type: html5
+    path: frontendwebapp
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm ci
+        - npm run build
+      supported-platforms:
+        []
+
+resources:
+  - name: bp-cust-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: bp-cust-app-poc
+        tenant-mode: dedicated
+        oauth2-configuration:
+          credential-types:
+            - "binding-secret"
+            - "x509"
+          redirect-uris:
+            - https://*~{app-api/app-uri}/**
+    requires:
+      - name: app-api
+
+  - name: bp-cust-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+
+  - name: bp-cust-html5-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production

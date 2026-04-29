@@ -171,17 +171,35 @@ sap.ui.define([
             var oModel = this.getView().getModel("wizardData");
             var sGenPattern = (sGrouping === "ZP01") ? "01" : "40";
             var sReconPattern = (sGrouping === "ZP01") ? "321000" : "321001";
-            var aGenFilter = [new Filter("code", FilterOperator.Contains, sGenPattern)];
-            var aReconFilter = [new Filter("code", FilterOperator.Contains, sReconPattern)];
+            
+            // Base filter: only active records
+            var oActiveFilter = new Filter("isActive", FilterOperator.EQ, true);
+
+            var aGenFilter = [
+                oActiveFilter,
+                new Filter("code", FilterOperator.Contains, sGenPattern)
+            ];
+            var aReconFilter = [
+                oActiveFilter,
+                new Filter("code", FilterOperator.Contains, sReconPattern)
+            ];
 
             ["distChannelSelect", "accAssignmentSelect"].forEach(function(sId) {
                 var oCtrl = this.byId(sId);
-                if (oCtrl && oCtrl.getBinding("items")) oCtrl.getBinding("items").filter(aGenFilter);
+                if (oCtrl && oCtrl.getBinding("items")) {
+                    oCtrl.getBinding("items").filter(new Filter({
+                        filters: aGenFilter,
+                        and: true
+                    }));
+                }
             }.bind(this));
 
             var oRecon = this.byId("reconciliationSelect");
             if (oRecon && oRecon.getBinding("items")) {
-                oRecon.getBinding("items").filter(aReconFilter);
+                oRecon.getBinding("items").filter(new Filter({
+                    filters: aReconFilter,
+                    and: true
+                }));
                 oModel.setProperty("/ReconciliationAccount", sReconPattern);
             }
         },
@@ -195,7 +213,16 @@ sap.ui.define([
             var sKey = oEvent.getParameter("selectedItem") ? oEvent.getParameter("selectedItem").getKey() : "";
             this.getView().getModel("wizardData").setProperty("/Region", "");
             var oBinding = this.byId("regionSelect").getBinding("items");
-            if (oBinding) oBinding.filter(sKey ? [new Filter("country", FilterOperator.EQ, sKey)] : []);
+            if (oBinding) {
+                var aFilters = [new Filter("isActive", FilterOperator.EQ, true)];
+                if (sKey) {
+                    aFilters.push(new Filter("country", FilterOperator.EQ, sKey));
+                }
+                oBinding.filter(new Filter({
+                    filters: aFilters,
+                    and: true
+                }));
+            }
         },
 
         onSalesOrgChange: function (oEvent) {

@@ -1,0 +1,94 @@
+<mvc:View controllerName="bp.cust.ui.controller.Dashboard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout"
+    xmlns:mc="sap.suite.ui.microchart"
+    height="100%">
+    <Page title="Admin Dashboard" backgroundDesign="Transparent">
+        <headerContent>
+            <Button icon="sap-icon://refresh" type="Transparent" press="onRefresh" />
+        </headerContent>
+        <content>
+            <VBox class="sapUiMediumMargin">
+                
+                <Title text="Business Partner Overview" level="H2" class="sapUiSmallMarginBottom" />
+                <f:GridContainer class="sapUiSmallMarginBottom">
+                    <f:layout>
+                        <f:GridContainerSettings rowSize="80px" columnSize="80px" gap="1rem" />
+                    </f:layout>
+                    
+                    <GenericTile header="Active Partners" subheader="Total Live" frameType="OneByOne" press="onNavToPartners">
+                        <TileContent>
+                            <NumericContent value="{stats>/activeBPs}" icon="sap-icon://customer" valueColor="Good" />
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile header="Draft Partners" subheader="Pending Review" frameType="OneByOne" press="onNavToPartners">
+                        <TileContent>
+                            <NumericContent value="{stats>/draftBPs}" icon="sap-icon://edit" valueColor="Critical" />
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile header="Lifecycle" subheader="Distribution" frameType="TwoByOne">
+                        <TileContent>
+                            <mc:ComparisonMicroChart size="M" press="press">
+                                <mc:data>
+                                    <mc:ComparisonMicroChartData title="Active" value="{stats>/activeBPs}" color="Good" />
+                                    <mc:ComparisonMicroChartData title="Draft" value="{stats>/draftBPs}" color="Critical" />
+                                </mc:data>
+                            </mc:ComparisonMicroChart>
+                        </TileContent>
+                    </GenericTile>
+                </f:GridContainer>
+
+                <Title text="User &amp; Access Management" level="H2" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                <f:GridContainer>
+                    <f:layout>
+                        <f:GridContainerSettings rowSize="80px" columnSize="80px" gap="1rem" />
+                    </f:layout>
+
+                    <GenericTile header="Total Admins" subheader="System Config" frameType="OneByOne" press="onNavToUsers">
+                        <TileContent>
+                            <NumericContent value="{stats>/totalAdmins}" icon="sap-icon://manager" valueColor="Neutral" />
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile header="Total Viewers" subheader="App Users" frameType="OneByOne" press="onNavToUsers">
+                        <TileContent>
+                            <NumericContent value="{stats>/totalViewers}" icon="sap-icon://group" valueColor="Neutral" />
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile header="Pending Requests" subheader="Waiting Approval" frameType="OneByOne" press="onNavToUsers">
+                        <TileContent>
+                            <NumericContent value="{stats>/pendingRequests}" icon="sap-icon://pushpull" valueColor="Error" indicator="{= ${stats>/pendingRequests} > 0 ? 'Up' : 'None'}" />
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile header="User Split" subheader="Role Distribution" frameType="TwoByOne">
+                        <TileContent>
+                            <mc:ComparisonMicroChart size="M" press="press">
+                                <mc:data>
+                                    <mc:ComparisonMicroChartData title="Admin" value="{stats>/totalAdmins}" color="Neutral" />
+                                    <mc:ComparisonMicroChartData title="Viewer" value="{stats>/totalViewers}" color="Neutral" />
+                                </mc:data>
+                            </mc:ComparisonMicroChart>
+                        </TileContent>
+                    </GenericTile>
+                </f:GridContainer>
+
+                <VBox class="sapUiMediumMarginTop dashboardWelcomeBox">
+                    <Title text="Quick Actions" level="H3" class="sapUiSmallMarginBottom" />
+                    <HBox wrap="Wrap">
+                        <Button text="Configure Master Data" icon="sap-icon://list" press="onNavToQueue" type="Emphasized" class="sapUiSmallMarginEnd" />
+                        <Button text="Manage User Roles" icon="sap-icon://admin" press="onNavToUsers" type="Default" class="sapUiSmallMarginEnd" />
+                        <Button text="View All Partners" icon="sap-icon://customer" press="onNavToPartners" type="Default" />
+                    </HBox>
+                </VBox>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

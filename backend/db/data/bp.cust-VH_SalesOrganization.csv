@@ -1,3 +1,3 @@
-code;name
-1000;Roofings Limited
-2000;Roofings Limited (Export)
+code;name;isActive
+1000;Roofings Limited;true
+2000;Roofings Limited (Export);true

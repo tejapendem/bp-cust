@@ -1,4 +1,4 @@
-code;name
-0;Tax Exempt
-1;Liable for Taxes
-2;Exempted Taxes
+code;name;isActive
+0;Tax Exempt;true
+1;Liable for Taxes;true
+2;Exempted Taxes;true

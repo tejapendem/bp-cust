@@ -1,5 +1,5 @@
-code;name
-UG;Uganda
-UY;Uruguay
-IN;India
-US;United States
+code;name;isActive
+UG;Uganda;true
+UY;Uruguay;true
+IN;India;true
+US;United States;true

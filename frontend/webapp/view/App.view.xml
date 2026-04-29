@@ -10,7 +10,7 @@
                 <Button id="sideNavigationToggleButton" icon="sap-icon://menu2" type="Transparent" press=".onSideNavButtonPress" />
                 <ToolbarSpacer width="10px" />
                 <Image src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" height="1.5rem" />
-                <Title text="Activation Dashboard" level="H1" />
+                <Title text="Business Partner" level="H1" />
                 <ToolbarSpacer />
                 <Button icon="sap-icon://bell" type="Transparent" />
                 <Avatar id="profileAvatar" displaySize="XS" initials="{userModel>/initials}" press=".onProfilePress" class="sapUiSmallMarginEnd" />
@@ -20,9 +20,10 @@
             <tnt:SideNavigation id="sideNavigation" selectedKey="home" itemSelect=".onItemSelect">
                 <tnt:NavigationList>
                     <tnt:NavigationListItem text="Home" icon="sap-icon://home" key="home" />
-                    <tnt:NavigationListItem text="Create Business Partner" icon="sap-icon://add" key="createBP" visible="{= ${userModel>/role} !== 'guest' }" />
-                    <tnt:NavigationListItem text="Activation Queue" icon="sap-icon://list" key="queue" />
-                    <tnt:NavigationListItem text="Admin" icon="sap-icon://admin" key="admin" visible="{userModel>/isAdmin}" />
+                    <tnt:NavigationListItem text="Create Business Partner" icon="sap-icon://create" key="createBP" visible="{= ${userModel>/role} !== 'guest' }" />
+                    <tnt:NavigationListItem text="Admin Dashboard" icon="sap-icon://manager-insight" key="dashboard" visible="{userModel>/isAdmin}" />
+                    <tnt:NavigationListItem text="Activation Queue" icon="sap-icon://activate" key="queue" visible="{userModel>/isAdmin}" />
+                    <tnt:NavigationListItem text="User Management" icon="sap-icon://group" key="admin" visible="{userModel>/isAdmin}" />
                 </tnt:NavigationList>
             </tnt:SideNavigation>
         </tnt:sideContent>

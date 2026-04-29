@@ -1,21 +1,21 @@
-code;name
-KE_PASS;Kenya Passport ID
-KR_CORP;South Korea Corporate ID
-VAT_REG;VAT Registration Number
-MX_VAT;Mexico VAT Liability
-MY_GST;Malaysia GST Number
-NL_VAT;Netherlands VAT Registration
-NO_VAT;Norway VAT
-PH_TAX;Philippines Taxpayer ID
-PL_NIP;Poland NIP Number
-PT_VAT;Portugal VAT Registration
-RU_INN;Russia INN
-SE_VAT;Sweden VAT Registration
-SI_ORG;Slovenia Organization Registration
-SK_ICO;Slovakia ICO Number
-TH_ID;Thailand Personal ID
-UG_ID;Uganda National ID
-UG_TAX;Uganda Income Tax Registration No
-UG_PASS;Uganda Passport Number
-US_SSN;USA Social Security Number
-VE_RIF;Venezuela RIF Number
+code;name;isActive
+KE_PASS;Kenya Passport ID;true
+KR_CORP;South Korea Corporate ID;true
+VAT_REG;VAT Registration Number;true
+MX_VAT;Mexico VAT Liability;true
+MY_GST;Malaysia GST Number;true
+NL_VAT;Netherlands VAT Registration;true
+NO_VAT;Norway VAT;true
+PH_TAX;Philippines Taxpayer ID;true
+PL_NIP;Poland NIP Number;true
+PT_VAT;Portugal VAT Registration;true
+RU_INN;Russia INN;true
+SE_VAT;Sweden VAT Registration;true
+SI_ORG;Slovenia Organization Registration;true
+SK_ICO;Slovakia ICO Number;true
+TH_ID;Thailand Personal ID;true
+UG_ID;Uganda National ID;true
+UG_TAX;Uganda Income Tax Registration No;true
+UG_PASS;Uganda Passport Number;true
+US_SSN;USA Social Security Number;true
+VE_RIF;Venezuela RIF Number;true

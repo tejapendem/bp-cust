@@ -1,14 +1,14 @@
-code;country;name
-C;UG;Central
-E;UG;Eastern
-N;UG;Northern
-W;UG;Western
-AR;UY;Artigas
-CA;UY;Canelones
-MO;UY;Montevideo
-CA;US;California
-NY;US;New York
-TX;US;Texas
-MH;IN;Maharashtra
-DL;IN;Delhi
-KA;IN;Karnataka
+code;country;name;isActive
+C;UG;Central;true
+E;UG;Eastern;true
+N;UG;Northern;true
+W;UG;Western;true
+AR;UY;Artigas;true
+CA;UY;Canelones;true
+MO;UY;Montevideo;true
+CA;US;California;true
+NY;US;New York;true
+TX;US;Texas;true
+MH;IN;Maharashtra;true
+DL;IN;Delhi;true
+KA;IN;Karnataka;true

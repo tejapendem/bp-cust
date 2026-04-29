@@ -12,7 +12,7 @@ sap.ui.define(
             var sHostname = window.location.hostname;
             var bIsLocal = sHostname === "localhost" || sHostname === "127.0.0.1" || sHostname.includes("applicationstudio.cloud.sap");
             
-            // Default guest user for deployed version
+            // Initial default state
             var oUserData = {
                 name: bIsLocal ? "Rajesh Pendem (Local)" : "Guest User",
                 email: bIsLocal ? "rajesh.pendem@canopusgbs.com" : "",
@@ -25,10 +25,8 @@ sap.ui.define(
             var oUserModel = new JSONModel(oUserData);
             this.getView().setModel(oUserModel, "userModel");
 
-            // If deployed, simulate checking for the specific admin user
-            if (!bIsLocal) {
-                this._checkUserInfo();
-            }
+            // Always try to fetch the actual user info from the database
+            this._checkUserInfo();
 
             // Apply density class
             this.getView().addStyleClass("sapUiSizeCompact");
@@ -36,17 +34,25 @@ sap.ui.define(
 
         _checkUserInfo: function() {
             var oUserModel = this.getView().getModel("userModel");
-            // Simulation: In BTP, the Approuter would pass the user info in headers.
-            // We can fetch it via a bound action or from a system attribute.
-            // For this demo, we assume 'rajesh.pendem@canopusgbs.com' is the authorized admin.
-            
-            // If we had a real way to get the logged in email:
-            // var sLoggedInEmail = ... 
-            // if (sLoggedInEmail === "rajesh.pendem@canopusgbs.com") {
-            //     oUserModel.setProperty("/isAdmin", true);
-            //     oUserModel.setProperty("/role", "admin");
-            //     oUserModel.setProperty("/name", "Rajesh Pendem");
-            // }
+            var oODataModel = this.getOwnerComponent().getModel();
+            var that = this;
+
+            // Call the backend function to get the logged-in user details
+            var oCtx = oODataModel.bindContext("/getUserInfo(...)");
+            oCtx.execute().then(function() {
+                var oData = oCtx.getBoundContext().getObject();
+                if (oData && oData.email) {
+                    oUserModel.setProperty("/email", oData.email);
+                    oUserModel.setProperty("/name", oData.name);
+                    oUserModel.setProperty("/role", oData.role);
+                    oUserModel.setProperty("/isAdmin", oData.isAdmin);
+                    oUserModel.setProperty("/initials", (oData.name || "GU").substring(0, 2).toUpperCase());
+                    oUserModel.setProperty("/assignedRoles", oData.role);
+                }
+            }).catch(function(oErr) {
+                // If it fails, we keep the default local/guest state
+                console.log("UserInfo fetch skipped or failed: using defaults.");
+            });
         },
 
         onSideNavButtonPress: function() {
@@ -63,6 +69,10 @@ sap.ui.define(
                 this.getOwnerComponent().getRouter().navTo("Main");
             } else if (sKey === "createBP") {
                 this.getOwnerComponent().getRouter().navTo("Wizard");
+            } else if (sKey === "queue") {
+                this.getOwnerComponent().getRouter().navTo("ActivationQueue");
+            } else if (sKey === "dashboard") {
+                this.getOwnerComponent().getRouter().navTo("Dashboard");
             }
         },
 

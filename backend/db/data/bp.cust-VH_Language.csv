@@ -1,4 +1,4 @@
-code;name
-EN;English
-FR;French
-SW;Swahili
+code;name;isActive
+EN;English;true
+FR;French;true
+SW;Swahili;true

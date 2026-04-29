@@ -1,4 +1,4 @@
-code;name
-+91;India
-+256;Uganda
-+1;USA
+code;name;isActive
++91;India;true
++256;Uganda;true
++1;USA;true

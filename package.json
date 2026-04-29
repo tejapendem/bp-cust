@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "Business Partner Creation Wizard",
   "dependencies": {
+    "@cap-js/sqlite": "^1.11.1",
     "@sap/cds": "^8",
+    "@sap/xssec": "^4",
     "better-sqlite3": "^12.9.0",
     "express": "^4"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^1"
+    "@sap/cds-dk": "^9"
   },
   "cds": {
     "requires": {
@@ -17,7 +19,11 @@
         "credentials": {
           "url": "bp-cust.sqlite"
         }
-      }
+      },
+      "[production]": {
+        "auth": "xsuaa"
+      },
+      "html5-repo": true
     },
     "folders": {
       "db": "backend/db",
@@ -26,7 +32,7 @@
     }
   },
   "scripts": {
-    "start": "cds run",
+    "start": "cds-serve",
     "deploy": "cds deploy --to sqlite:bp-cust.sqlite"
   }
 }

@@ -83,4 +83,51 @@ module.exports = cds.service.impl(async function() {
         }
         return false;
     });
+    
+    this.on('getUserInfo', async (req) => {
+        const userEmail = req.user.id; // CAP's id for the current user
+        if (!userEmail || userEmail === 'anonymous') {
+            return { email: "", name: "Guest User", role: "guest", isAdmin: false };
+        }
+        
+        const { Users } = this.entities;
+        const user = await SELECT.one.from(Users).where({ email: userEmail });
+        
+        if (user) {
+            return {
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                isAdmin: user.role === 'admin'
+            };
+        }
+        
+        // If user is authenticated via BTP but not in our Users table yet
+        return {
+            email: userEmail,
+            name: userEmail,
+            role: 'guest',
+            isAdmin: false
+        };
+    });
+
+    this.on('getAdminStats', async (req) => {
+        const { BusinessPartners, Users, AccessRequests } = this.entities;
+
+        const activeBPs = await SELECT.from(BusinessPartners).where({ LifecycleStatus: 'active' });
+        const draftBPs = await SELECT.from(BusinessPartners).where({ LifecycleStatus: 'draft' });
+        
+        const totalAdmins = await SELECT.from(Users).where({ role: 'admin' });
+        const totalViewers = await SELECT.from(Users).where({ role: 'viewer' });
+        
+        const pendingRequests = await SELECT.from(AccessRequests).where({ status: 'pending' });
+
+        return {
+            activeBPs: activeBPs.length,
+            draftBPs: draftBPs.length,
+            totalAdmins: totalAdmins.length,
+            totalViewers: totalViewers.length,
+            pendingRequests: pendingRequests.length
+        };
+    });
 });

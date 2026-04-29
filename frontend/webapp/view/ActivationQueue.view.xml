@@ -1,0 +1,424 @@
+<mvc:View controllerName="bp.cust.ui.controller.ActivationQueue"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    height="100%">
+
+    <Page id="activationPage" title="Activation Queue - Master Data Config" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button icon="sap-icon://refresh" text="Refresh Data" press="onRefresh" />
+        </headerContent>
+        <content>
+            <VBox class="sapUiMediumMargin">
+                <Wizard id="configWizard" showNextButton="true" renderMode="Page">
+                    
+                    <WizardStep id="step1" title="General Data Config" icon="sap-icon://settings">
+                        <VBox>
+                            <Title text="Manage Groupings" level="H3" class="sapUiSmallMarginBottom" />
+                            <Table id="groupingTable" items="{path: '/VH_Grouping'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Grouping" press="onAddVH('VH_Grouping')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </WizardStep>
+
+                    <WizardStep id="step2" title="Address Config" icon="sap-icon://map">
+                        <VBox>
+                            <Title text="Manage Countries" level="H3" class="sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_Country'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Country" press="onAddVH('VH_Country')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Languages" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_Language'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Language" press="onAddVH('VH_Language')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </WizardStep>
+
+                    <WizardStep id="step3" title="Identification Config" icon="sap-icon://loan">
+                        <VBox>
+                            <Title text="Manage Tax Categories" level="H3" class="sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_TaxCategory'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Category" press="onAddVH('VH_TaxCategory')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </WizardStep>
+
+                    <WizardStep id="step4" title="Sales Area Config" icon="sap-icon://sales-order">
+                        <VBox>
+                            <Title text="Manage Sales Organizations" level="H3" class="sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_SalesOrganization'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Org" press="onAddVH('VH_SalesOrganization')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Distribution Channels" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_DistributionChannel'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Channel" press="onAddVH('VH_DistributionChannel')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                            <Title text="Manage Divisions" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_Division'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Division" press="onAddVH('VH_Division')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </WizardStep>
+
+                    <WizardStep id="step5" title="Billing Config" icon="sap-icon://money-bills">
+                        <VBox>
+                            <Title text="Manage Customer Groups" level="H3" class="sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_CustomerGroup'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Group" press="onAddVH('VH_CustomerGroup')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Account Assignment Groups" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_AccountAssignmentGroup'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Assignment" press="onAddVH('VH_AccountAssignmentGroup')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Tax Classifications" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_TaxClassification'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Tax Class" press="onAddVH('VH_TaxClassification')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Customer Data 2" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_CustomerData2'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Data" press="onAddVH('VH_CustomerData2')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </WizardStep>
+
+                    <WizardStep id="step6" title="Company Config" icon="sap-icon://factory">
+                        <VBox>
+                            <Title text="Manage Company Codes" level="H3" class="sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_CompanyCode'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Company" press="onAddVH('VH_CompanyCode')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </WizardStep>
+
+                    <WizardStep id="step7" title="Account Mgt Config" icon="sap-icon://manager">
+                        <VBox>
+                            <Title text="Manage Reconciliation Accounts" level="H3" class="sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_ReconciliationAccount'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Account" press="onAddVH('VH_ReconciliationAccount')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </WizardStep>
+
+                </Wizard>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

@@ -117,6 +117,20 @@
           "target": [
             "TargetAdmin"
           ]
+        },
+        {
+          "name": "ActivationQueue",
+          "pattern": "activation-queue",
+          "target": [
+            "TargetActivationQueue"
+          ]
+        },
+        {
+          "name": "Dashboard",
+          "pattern": "dashboard",
+          "target": [
+            "TargetDashboard"
+          ]
         }
       ],
       "targets": {
@@ -131,6 +145,14 @@
         "TargetAdmin": {
           "viewType": "XML",
           "viewName": "Admin"
+        },
+        "TargetActivationQueue": {
+          "viewType": "XML",
+          "viewName": "ActivationQueue"
+        },
+        "TargetDashboard": {
+          "viewType": "XML",
+          "viewName": "Dashboard"
         }
       }
     }

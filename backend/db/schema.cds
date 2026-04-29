@@ -64,26 +64,27 @@ entity BusinessPartners : cuid, managed {
 }
 
 // Value Helps
-entity VH_Grouping { key code: String(4); name: String(50); }
-entity VH_Country { key code: String(2); name: String(50); }
-entity VH_Language { key code: String(2); name: String(50); }
-entity VH_MobileCountryCode { key code: String(5); name: String(50); }
-entity VH_TaxCategory { key code: String(50); name: String(100); }
-entity VH_SalesOrganization { key code: String(4); name: String(50); }
-entity VH_DistributionChannel { key code: String(2); name: String(50); }
-entity VH_Division { key code: String(2); name: String(50); }
-entity VH_CustomerGroup { key code: String(2); name: String(50); }
-entity VH_AccountAssignmentGroup { key code: String(2); name: String(50); }
-entity VH_TaxClassification { key code: String(1); name: String(50); }
-entity VH_CustomerData2 { key code: String(2); name: String(50); }
-entity VH_CompanyCode { key code: String(4); name: String(50); }
-entity VH_ReconciliationAccount { key code: String(6); name: String(50); }
+entity VH_Grouping { key code: String(4); name: String(50); isActive: Boolean default true; }
+entity VH_Country { key code: String(2); name: String(50); isActive: Boolean default true; }
+entity VH_Language { key code: String(2); name: String(50); isActive: Boolean default true; }
+entity VH_MobileCountryCode { key code: String(5); name: String(50); isActive: Boolean default true; }
+entity VH_TaxCategory { key code: String(50); name: String(100); isActive: Boolean default true; }
+entity VH_SalesOrganization { key code: String(4); name: String(50); isActive: Boolean default true; }
+entity VH_DistributionChannel { key code: String(2); name: String(50); isActive: Boolean default true; }
+entity VH_Division { key code: String(2); name: String(50); isActive: Boolean default true; }
+entity VH_CustomerGroup { key code: String(2); name: String(50); isActive: Boolean default true; }
+entity VH_AccountAssignmentGroup { key code: String(2); name: String(50); isActive: Boolean default true; }
+entity VH_TaxClassification { key code: String(1); name: String(50); isActive: Boolean default true; }
+entity VH_CustomerData2 { key code: String(2); name: String(50); isActive: Boolean default true; }
+entity VH_CompanyCode { key code: String(4); name: String(50); isActive: Boolean default true; }
+entity VH_ReconciliationAccount { key code: String(6); name: String(50); isActive: Boolean default true; }
 
 
 entity VH_Region { 
     key code: String(3); 
     key country: String(2); 
     name: String(50); 
+    isActive: Boolean default true;
 }
 
 entity Users : managed {

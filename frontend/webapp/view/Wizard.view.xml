@@ -47,7 +47,7 @@
                             <Input value="{wizardData>/BPType}" editable="false"/>
                             
                             <Label text="Grouping" required="true"/>
-                            <Select id="groupingSelect" selectedKey="{wizardData>/Grouping}" items="{path: '/VH_Grouping'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }" change="onGroupingChange">
+                            <Select id="groupingSelect" selectedKey="{wizardData>/Grouping}" items="{path: '/VH_Grouping', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }" change="onGroupingChange">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                         </form:SimpleForm>
@@ -75,25 +75,25 @@
                             <Input value="{wizardData>/PostalCode}" placeholder="ZIP / Postal Code" editable="{= !${wizardData>/isReadOnly} }"/>
 
                             <Label text="Country" required="true"/>
-                            <Select id="countrySelect" selectedKey="{wizardData>/Country}" items="{path: '/VH_Country'}" change="onCountryChange" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="countrySelect" selectedKey="{wizardData>/Country}" items="{path: '/VH_Country', parameters: {$filter: 'isActive eq true'}}" change="onCountryChange" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
                             <Label text="Region"/>
-                            <Select id="regionSelect" selectedKey="{wizardData>/Region}" items="{path: '/VH_Region'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="regionSelect" selectedKey="{wizardData>/Region}" items="{path: '/VH_Region', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{name}"/>
                             </Select>
 
                             <core:Title text="Communication"/>
 
                             <Label text="Language"/>
-                            <Select selectedKey="{wizardData>/Language}" items="{path: '/VH_Language'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select selectedKey="{wizardData>/Language}" items="{path: '/VH_Language', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
                             <Label text="Mobile Number"/>
                             <HBox alignItems="Center" wrap="Wrap">
-                                <Select id="mobileCodeSelect" selectedKey="{wizardData>/MobileCountryCode}" width="110px" items="{path: '/VH_MobileCountryCode'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <Select id="mobileCodeSelect" selectedKey="{wizardData>/MobileCountryCode}" width="110px" items="{path: '/VH_MobileCountryCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                     <core:Item key="{code}" text="{code}"/>
                                 </Select>
                                 <Input id="mobileInput" value="{wizardData>/MobileNumber}" placeholder="Digits only" width="170px" class="sapUiSmallMarginBegin" editable="{= !${wizardData>/isReadOnly} }"/>
@@ -124,7 +124,7 @@
                             <core:Title text="3. Tax Information"/>
                             
                             <Label text="Tax Category" required="true"/>
-                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
@@ -145,17 +145,17 @@
                             <core:Title text="4. Sales Area (FLCU01)"/>
                             
                             <Label text="Sales Organization" required="true"/>
-                            <Select id="salesOrgSelect" selectedKey="{wizardData>/SalesOrganization}" items="{path: '/VH_SalesOrganization'}" change="onSalesOrgChange" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="salesOrgSelect" selectedKey="{wizardData>/SalesOrganization}" items="{path: '/VH_SalesOrganization', parameters: {$filter: 'isActive eq true'}}" change="onSalesOrgChange" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
                             <Label text="Distribution Channel"/>
-                            <Select id="distChannelSelect" selectedKey="{wizardData>/DistributionChannel}" items="{path: '/VH_DistributionChannel'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="distChannelSelect" selectedKey="{wizardData>/DistributionChannel}" items="{path: '/VH_DistributionChannel', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
                             <Label text="Division"/>
-                            <Select selectedKey="{wizardData>/Division}" items="{path: '/VH_Division'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select selectedKey="{wizardData>/Division}" items="{path: '/VH_Division', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                         </form:SimpleForm>
@@ -170,7 +170,7 @@
                             <core:Title text="Sales Logic"/>
                             
                             <Label text="Customer Group"/>
-                            <Select selectedKey="{wizardData>/CustomerGroup}" items="{path: '/VH_CustomerGroup'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select selectedKey="{wizardData>/CustomerGroup}" items="{path: '/VH_CustomerGroup', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
@@ -195,12 +195,12 @@
                             <Input value="{wizardData>/Incoterms}" editable="false"/>
 
                             <Label text="Account Assignment Group"/>
-                            <Select id="accAssignmentSelect" selectedKey="{wizardData>/AccountAssignmentGroup}" items="{path: '/VH_AccountAssignmentGroup'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="accAssignmentSelect" selectedKey="{wizardData>/AccountAssignmentGroup}" items="{path: '/VH_AccountAssignmentGroup', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
                             <Label text="Tax Classification"/>
-                            <Select selectedKey="{wizardData>/TaxClassification}" items="{path: '/VH_TaxClassification'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select selectedKey="{wizardData>/TaxClassification}" items="{path: '/VH_TaxClassification', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
@@ -211,7 +211,7 @@
                             <Input value="{wizardData>/OutputTaxCategory}" editable="false"/>
 
                             <Label text="Customer Data 2"/>
-                            <Select selectedKey="{wizardData>/CustomerData2}" items="{path: '/VH_CustomerData2'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select selectedKey="{wizardData>/CustomerData2}" items="{path: '/VH_CustomerData2', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                         </form:SimpleForm>
@@ -226,7 +226,7 @@
                             <core:Title text="6. Company Code (FLCU00)"/>
                             
                             <Label text="Company Code" required="true"/>
-                            <Select id="companyCodeSelect" selectedKey="{wizardData>/CompanyCode}" items="{path: '/VH_CompanyCode'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="companyCodeSelect" selectedKey="{wizardData>/CompanyCode}" items="{path: '/VH_CompanyCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
 
@@ -247,7 +247,7 @@
                             <core:Title text="7. FI Reconciliation Account"/>
                             
                             <Label text="Reconciliation Account"/>
-                            <Select id="reconciliationSelect" selectedKey="{wizardData>/ReconciliationAccount}" items="{path: '/VH_ReconciliationAccount'}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="reconciliationSelect" selectedKey="{wizardData>/ReconciliationAccount}" items="{path: '/VH_ReconciliationAccount', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                         </form:SimpleForm>

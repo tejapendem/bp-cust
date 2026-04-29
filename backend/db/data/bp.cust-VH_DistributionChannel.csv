@@ -1,3 +1,3 @@
-code;name
-01;Domestic
-40;Export
+code;name;isActive
+01;Domestic;true
+40;Export;true

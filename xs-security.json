@@ -1,0 +1,21 @@
+{
+  "xsappname": "bp-cust-app-poc",
+  "tenant-mode": "dedicated",
+  "description": "Security configuration for Business Partner app",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.Viewer",
+      "description": "Ability to read application data"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "Viewer",
+      "description": "Read application data",
+      "default-role-name": "General Viewer Role",
+      "scope-references": [
+        "$XSAPPNAME.Viewer"
+      ]
+    }
+  ]
+}
