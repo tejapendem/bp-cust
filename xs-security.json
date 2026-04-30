@@ -6,6 +6,10 @@
     {
       "name": "$XSAPPNAME.Viewer",
       "description": "Ability to read application data"
+    },
+    {
+      "name": "$XSAPPNAME.Admin",
+      "description": "Full admin access to application"
     }
   ],
   "role-templates": [
@@ -14,6 +18,31 @@
       "description": "Read application data",
       "default-role-name": "General Viewer Role",
       "scope-references": [
+        "$XSAPPNAME.Viewer"
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Administer the Business Partner application",
+      "default-role-name": "Administrator Role",
+      "scope-references": [
+        "$XSAPPNAME.Viewer",
+        "$XSAPPNAME.Admin"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "BP_Admin",
+      "description": "Business Partner Administrator",
+      "role-template-references": [
+        "$XSAPPNAME.Admin"
+      ]
+    },
+    {
+      "name": "BP_Viewer",
+      "description": "Business Partner Viewer",
+      "role-template-references": [
         "$XSAPPNAME.Viewer"
       ]
     }

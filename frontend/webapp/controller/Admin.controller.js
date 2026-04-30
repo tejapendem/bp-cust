@@ -31,8 +31,8 @@ sap.ui.define([
             // 1. Mark request as approved
             oContext.setProperty("status", "approved");
 
-            // 2. Update user role (optional, depends if user exists in Users table)
-            // In a real app, you'd trigger a backend action or update the User entity
+            // 2. Refresh the tables to show the new user and remove the request
+            this.onRefreshUsers();
             
             MessageToast.show("Request approved. User role updated.");
         },

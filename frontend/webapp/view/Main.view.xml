@@ -122,7 +122,7 @@
                             <Button icon="sap-icon://refresh" type="Transparent" press="onRefresh" tooltip="Refresh Data"/>
                             <Button icon="sap-icon://sort" type="Transparent"/>
                             <Button icon="sap-icon://filter" type="Transparent"/>
-                            <Button icon="sap-icon://action-settings" type="Transparent"/>
+                            <Button icon="sap-icon://action-settings" type="Transparent" visible="{userModel>/isAdmin}"/>
                         </OverflowToolbar>
                     </headerToolbar>
                     

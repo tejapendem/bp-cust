@@ -11,7 +11,7 @@
     "description": "{{appDescription}}",
     "dataSources": {
       "mainService": {
-        "uri": "/service/bpcust/",
+        "uri": "service/bpcust/",
         "type": "OData",
         "settings": {
           "odataVersion": "4.0"

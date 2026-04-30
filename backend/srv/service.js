@@ -85,27 +85,62 @@ module.exports = cds.service.impl(async function() {
     });
     
     this.on('getUserInfo', async (req) => {
-        const userEmail = req.user.id; // CAP's id for the current user
+        const userEmail = req.user?.id;
+
         if (!userEmail || userEmail === 'anonymous') {
             return { email: "", name: "Guest User", role: "guest", isAdmin: false };
         }
-        
+
+        let hasAdminScope = false;
+        try {
+            hasAdminScope = req.user.is('Admin') ||
+                           req.user.is('admin') ||
+                           req.user.attr?.role === 'admin' ||
+                           (Array.isArray(req.user.roles) && req.user.roles.some(r => r.toLowerCase().includes('admin'))) ||
+                           (Array.isArray(req.user.scopes) && req.user.scopes.some(s => s.toLowerCase().includes('admin')));
+        } catch (e) {
+            console.error("Error checking scopes:", e);
+        }
+
         const { Users } = this.entities;
-        const user = await SELECT.one.from(Users).where({ email: userEmail });
-        
+        let user;
+        try {
+            user = await SELECT.one.from(Users).where({ email: userEmail });
+        } catch (dbErr) {
+            console.error("Database query failed (likely schema not deployed):", dbErr.message);
+            // Fallback: Use JWT scopes only if DB is not ready
+            if (hasAdminScope) {
+                return { email: userEmail, name: userEmail.split('@')[0], role: 'admin', isAdmin: true };
+            }
+            return { email: userEmail, name: userEmail.split('@')[0], role: 'guest', isAdmin: false };
+        }
+
         if (user) {
+            // If user exists in DB, use DB role but also check JWT for admin override
+            const effectiveRole = (user.role === 'admin' || hasAdminScope) ? 'admin' : user.role;
             return {
                 email: user.email,
                 name: user.name,
-                role: user.role,
-                isAdmin: user.role === 'admin'
+                role: effectiveRole,
+                isAdmin: effectiveRole === 'admin'
             };
         }
-        
-        // If user is authenticated via BTP but not in our Users table yet
+
+        // 2. User authenticated via BTP but not in Users table yet
+        //    Use XSUAA scope to determine role
+        if (hasAdminScope) {
+            return {
+                email: userEmail,
+                name: userEmail.split('@')[0],
+                role: 'admin',
+                isAdmin: true
+            };
+        }
+
+        // 3. Authenticated but no role assigned yet — return guest
         return {
             email: userEmail,
-            name: userEmail,
+            name: userEmail.split('@')[0],
             role: 'guest',
             isAdmin: false
         };
@@ -129,5 +164,29 @@ module.exports = cds.service.impl(async function() {
             totalViewers: totalViewers.length,
             pendingRequests: pendingRequests.length
         };
+    });
+
+    this.after('CREATE', 'AccessRequests', async (data) => {
+        console.log("SUCCESS: New Access Request created for:", data.userEmail);
+    });
+
+    this.after('UPDATE', 'AccessRequests', async (data, req) => {
+        if (data.status === 'approved') {
+            const { Users, AccessRequests } = this.entities;
+            
+            // 1. Fetch the full request data (since 'data' only contains changed fields)
+            const fullRequest = await SELECT.one.from(AccessRequests).where({ ID: data.ID });
+            
+            if (fullRequest) {
+                // 2. Promote the user to the Users table
+                await UPSERT.into(Users).entries({
+                    email: fullRequest.userEmail,
+                    name: fullRequest.userName,
+                    role: fullRequest.requestedRole,
+                    status: 'active'
+                });
+                console.log(`PROMOTION SUCCESS: User ${fullRequest.userEmail} promoted to ${fullRequest.requestedRole}`);
+            }
+        }
     });
 });

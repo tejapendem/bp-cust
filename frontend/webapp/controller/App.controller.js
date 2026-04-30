@@ -152,7 +152,7 @@ sap.ui.define(
                 status: "pending"
             };
 
-            var oListBinding = oModel.bindList("/AccessRequests");
+            var oListBinding = oModel.bindList("/AccessRequests", null, null, null, { $$updateGroupId: "$auto" });
             oListBinding.create(oPayload);
 
             sap.m.MessageToast.show("Access request submitted successfully.");

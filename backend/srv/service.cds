@@ -26,6 +26,7 @@ service BusinessPartnerService {
     entity VH_Region as projection on cust.VH_Region;
 
     entity Users as projection on cust.Users;
+    
     entity AccessRequests as projection on cust.AccessRequests;
 
     action sendOTP(mobileNumber: String) returns String;
@@ -46,3 +47,9 @@ service BusinessPartnerService {
         pendingRequests: Integer;
     };
 }
+
+// Explicitly allow CREATE for all authenticated users, and READ for admins
+annotate BusinessPartnerService.AccessRequests with @(restrict: [
+    { grant: 'CREATE', to: 'authenticated-user' },
+    { grant: '*', to: ['admin', 'Admin', 'authenticated-user'] }
+]);

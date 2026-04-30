@@ -8,6 +8,15 @@ resources:
     propertiesFileSourceEncoding: UTF-8
     paths:
       webapp: "."
+server:
+  customMiddleware:
+    - name: fiori-tools-proxy
+      afterMiddleware: compression
+      configuration:
+        ignoreCertError: false
+        backend:
+          - path: /service/bpcust
+            destination: srv-api
 builder:
   resources:
     excludes:

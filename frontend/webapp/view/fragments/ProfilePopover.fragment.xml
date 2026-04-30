@@ -22,7 +22,7 @@
                     </HBox>
                 </VBox>
 
-                <HBox alignItems="Center" justifyContent="Start" width="100%" class="sapUiMediumMarginTop">
+                <HBox alignItems="Center" justifyContent="Start" width="100%" class="sapUiMediumMarginTop" visible="{userModel>/isAdmin}">
                     <Switch state="{userModel>/isAdmin}" change=".onRoleToggle" customTextOn="ON" customTextOff="OFF" />
                 </HBox>
 
