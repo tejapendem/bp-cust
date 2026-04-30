@@ -25,13 +25,16 @@ sap.ui.define([
                 otpStatusState: "None",
                 
                 // Fields
-                BPRole: "000000", BPType: "Organization", Grouping: "ZP01",
-                Name: "", Title: "", StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
+                BPRole: "000000", 
+                BusinessPartnerCategory: "Organization",
+                BPType: "Customer",
+                Grouping: "ZP01",
+                Name: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
+                StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
                 TaxCategory: "", TaxNumber: "", TaxStatus: "",
-                SalesOrganization: "1000", DistributionChannel: "01", Division: "10",
-                CustomerGroup: "10", Currency: "UGX", ExchangeRateType: "S", CustomerPricingProcedure: "1", CustomerStatsGroup: "+", PaymentTerms: "Z001", Incoterms: "EXW", AccountAssignmentGroup: "01", TaxClassification: "1", OutputTaxCountry: "UG", OutputTaxCategory: "MWST", CustomerData2: "02",
-                CompanyCode: "1000", IsBP: true, IsCustomer: true,
-                ReconciliationAccount: "321000"
+                
+                SalesAreas: [],
+                CompanyCodes: []
             });
             this.getView().setModel(oViewModel, "wizardData");
 
@@ -58,6 +61,8 @@ sap.ui.define([
                 oModel.setProperty("/otpSent", false);
                 oModel.setProperty("/TemplateID", "");
                 
+                this._refreshValueHelps();
+
                 // Reset fields to default
                 oModel.setData(Object.assign(oModel.getData(), this._getDefaultData()));
                 oModel.refresh();
@@ -79,7 +84,9 @@ sap.ui.define([
 
             this._oBusyDialog.open();
             var sPath = "/BusinessPartners(" + sBpID + ")";
-            var oContext = oODataModel.bindContext(sPath);
+            var oContext = oODataModel.bindContext(sPath, null, {
+                "$expand": "SalesAreas,CompanyCodes"
+            });
 
             oContext.requestObject().then(function (oData) {
                 that._oBusyDialog.close();
@@ -104,14 +111,67 @@ sap.ui.define([
 
         _getDefaultData: function() {
             return {
-                BPRole: "000000", BPType: "Organization", Grouping: "ZP01",
-                Name: "", Title: "", StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
+                BPRole: "000000", 
+                BusinessPartnerCategory: "Organization",
+                BPType: "Customer",
+                Grouping: "ZP01",
+                Name: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
+                StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
                 TaxCategory: "", TaxNumber: "", TaxStatus: "",
-                SalesOrganization: "1000", DistributionChannel: "01", Division: "10",
-                CustomerGroup: "10", Currency: "UGX", ExchangeRateType: "S", CustomerPricingProcedure: "1", CustomerStatsGroup: "+", PaymentTerms: "Z001", Incoterms: "EXW", AccountAssignmentGroup: "01", TaxClassification: "1", OutputTaxCountry: "UG", OutputTaxCategory: "MWST", CustomerData2: "02",
-                CompanyCode: "1000", IsBP: true, IsCustomer: true,
-                ReconciliationAccount: "321000"
+                SalesAreas: [this._getDefaultSalesAreaData()],
+                CompanyCodes: [this._getDefaultCompanyCodeData()]
             };
+        },
+
+        _getDefaultSalesAreaData: function() {
+            return {
+                SalesOrganization: "1000", DistributionChannel: "01", Division: "10",
+                CustomerGroup: "10", Currency: "UGX", ExchangeRateType: "S", CustomerPricingProcedure: "1", CustomerStatsGroup: "+", PaymentTerms: "Z001", Incoterms: "EXW", AccountAssignmentGroup: "01", TaxClassification: "1", OutputTaxCountry: "UG", OutputTaxCategory: "MWST", CustomerData2: "02"
+            };
+        },
+
+        _getDefaultCompanyCodeData: function() {
+            return {
+                CompanyCode: "1000", IsBP: true, IsCustomer: true, ReconciliationAccount: "321000"
+            };
+        },
+
+        onAddSalesArea: function() {
+            var oModel = this.getView().getModel("wizardData");
+            var aSalesAreas = oModel.getProperty("/SalesAreas");
+            aSalesAreas.push(this._getDefaultSalesAreaData());
+            oModel.setProperty("/SalesAreas", aSalesAreas);
+            oModel.refresh();
+        },
+
+        onRemoveSalesArea: function(oEvent) {
+            var oItem = oEvent.getSource().getParent();
+            var oTable = oItem.getParent();
+            var iIndex = oTable.indexOfItem(oItem);
+            var oModel = this.getView().getModel("wizardData");
+            var aSalesAreas = oModel.getProperty("/SalesAreas");
+            aSalesAreas.splice(iIndex, 1);
+            oModel.setProperty("/SalesAreas", aSalesAreas);
+            oModel.refresh();
+        },
+
+        onAddCompanyCode: function() {
+            var oModel = this.getView().getModel("wizardData");
+            var aCompanyCodes = oModel.getProperty("/CompanyCodes");
+            aCompanyCodes.push(this._getDefaultCompanyCodeData());
+            oModel.setProperty("/CompanyCodes", aCompanyCodes);
+            oModel.refresh();
+        },
+
+        onRemoveCompanyCode: function(oEvent) {
+            var oItem = oEvent.getSource().getParent();
+            var oTable = oItem.getParent();
+            var iIndex = oTable.indexOfItem(oItem);
+            var oModel = this.getView().getModel("wizardData");
+            var aCompanyCodes = oModel.getProperty("/CompanyCodes");
+            aCompanyCodes.splice(iIndex, 1);
+            oModel.setProperty("/CompanyCodes", aCompanyCodes);
+            oModel.refresh();
         },
 
         onNextStep: function () {
@@ -154,7 +214,14 @@ sap.ui.define([
             if (sStepId.includes("step2")) {
                 if (!oData.Name) aMissing.push("Name");
                 if (!oData.Country) aMissing.push("Country");
-                if (!oData.Email) aMissing.push("Email");
+                if (!oData.Email) {
+                    aMissing.push("Email");
+                } else {
+                    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(oData.Email)) {
+                        aMissing.push("Email (Invalid format)");
+                    }
+                }
             } else if (sStepId.includes("step3")) {
                 if (!oData.TaxCategory) aMissing.push("Tax Category");
                 if (!oData.TaxNumber) aMissing.push("Tax Number");
@@ -226,8 +293,36 @@ sap.ui.define([
         },
 
         onSalesOrgChange: function (oEvent) {
-            var sKey = oEvent.getParameter("selectedItem") ? oEvent.getParameter("selectedItem").getKey() : "";
-            this.getView().getModel("wizardData").setProperty("/ExchangeRateType", sKey === "1000" ? "S" : "SALE");
+            var oItem = oEvent.getParameter("selectedItem");
+            var sKey = oItem ? oItem.getKey() : "";
+            var oContext = oEvent.getSource().getBindingContext("wizardData");
+            if (oContext) {
+                var sPath = oContext.getPath();
+                this.getView().getModel("wizardData").setProperty(sPath + "/ExchangeRateType", sKey === "1000" ? "S" : "SALE");
+            }
+        },
+
+        _refreshValueHelps: function() {
+            var aSelectIds = [
+                "groupingSelect", "categorySelect", "bpTypeSelect", "countrySelect", 
+                "regionSelect", "taxCategorySelect", "companyCodeSelect"
+            ];
+            
+            aSelectIds.forEach(function(sId) {
+                var oSelect = this.byId(sId);
+                if (oSelect) {
+                    var oBinding = oSelect.getBinding("items");
+                    if (oBinding) {
+                        oBinding.refresh();
+                    }
+                }
+            }.bind(this));
+
+            // Also refresh table-based selects in Steps 4 and 6
+            // Note: Since these are in tables, their internal Selects will be refreshed if the table items are refreshed,
+            // but here we just want to ensure the metadata/data for the VH entities is fresh.
+            // In V4, refreshing the binding of one control usually refreshes others sharing the same collection path 
+            // if they are in the same model and use the same parameters.
         },
 
         onSendOTP: function () {
@@ -303,12 +398,15 @@ sap.ui.define([
 
         _preparePayload: function (oData) {
             return {
-                BPRole: oData.BPRole, BPType: oData.BPType, Grouping: oData.Grouping,
-                Name: oData.Name, Title: oData.Title, StreetAddress: oData.StreetAddress, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
+                BPRole: oData.BPRole,
+                BusinessPartnerCategory: oData.BusinessPartnerCategory,
+                BPType: oData.BPType,
+                Grouping: oData.Grouping,
+                Name: oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
+                StreetAddress: oData.StreetAddress, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
                 TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus,
-                SalesOrganization: oData.SalesOrganization, DistributionChannel: oData.DistributionChannel, Division: oData.Division,
-                CustomerGroup: oData.CustomerGroup, Currency: oData.Currency, ExchangeRateType: oData.ExchangeRateType, CustomerPricingProcedure: oData.CustomerPricingProcedure, CustomerStatsGroup: oData.CustomerStatsGroup, PaymentTerms: oData.PaymentTerms, Incoterms: oData.Incoterms, AccountAssignmentGroup: oData.AccountAssignmentGroup, TaxClassification: oData.TaxClassification, OutputTaxCountry: oData.OutputTaxCountry, OutputTaxCategory: oData.OutputTaxCategory, CustomerData2: oData.CustomerData2,
-                CompanyCode: oData.CompanyCode, IsBP: true, IsCustomer: true, ReconciliationAccount: oData.ReconciliationAccount
+                SalesAreas: (oData.SalesAreas || []).map(function(s) { delete s.parent; return s; }),
+                CompanyCodes: (oData.CompanyCodes || []).map(function(c) { delete c.parent; return c; })
             };
         },
 
@@ -342,7 +440,7 @@ sap.ui.define([
                 }).catch(function(oErr) {
                     that._oBusyDialog.close();
                     var sError = that._getErrorMessage(oErr);
-                    MessageBox.error(sError || "Error updating draft.");
+                    MessageBox.error("Update failed: " + sError);
                 });
             } else {
                 // Create new record (POST)
@@ -359,22 +457,36 @@ sap.ui.define([
                 }).catch(function (oErr) {
                     that._oBusyDialog.close();
                     var sError = that._getErrorMessage(oErr);
-                    MessageBox.error(sError || "Error occurred.");
+                    MessageBox.error("Submission failed: " + sError);
                 });
             }
         },
 
         _getErrorMessage: function(oError) {
             if (!oError) return "Unknown error";
+            
+            // OData V4 errors often have getMessage or are in a specific structure
+            if (oError.getBoundContext && oError.getBoundContext()) {
+                var oMsgModel = this.getView().getModel("messages");
+                // Usually V4 errors are also in the MessageManager
+            }
+
             if (oError.message) return oError.message;
             
-            // For OData V4 errors, the message might be buried
+            // Try to parse from responseText if available
             try {
-                var oResponse = JSON.parse(oError.responseText);
-                if (oResponse && oResponse.error && oResponse.error.message) {
-                    return oResponse.error.message;
+                if (oError.responseText) {
+                    var oResponse = JSON.parse(oError.responseText);
+                    if (oResponse && oResponse.error && oResponse.error.message) {
+                        return oResponse.error.message;
+                    }
                 }
             } catch (e) {}
+
+            // Handle technical error objects
+            if (typeof oError === "object") {
+                return JSON.stringify(oError);
+            }
             
             return oError.toString();
         },

@@ -3,6 +3,8 @@ using bp.cust as cust from '../db/schema';
 @path: '/service/bpcust'
 service BusinessPartnerService {
     entity BusinessPartners as projection on cust.BusinessPartners;
+    entity BPSalesAreas as projection on cust.BPSalesAreas;
+    entity BPCompanyCodes as projection on cust.BPCompanyCodes;
 
     entity VH_Grouping as projection on cust.VH_Grouping;
     entity VH_Country as projection on cust.VH_Country;
@@ -18,6 +20,8 @@ service BusinessPartnerService {
     entity VH_CustomerData2 as projection on cust.VH_CustomerData2;
     entity VH_CompanyCode as projection on cust.VH_CompanyCode;
     entity VH_ReconciliationAccount as projection on cust.VH_ReconciliationAccount;
+    entity VH_BPType as projection on cust.VH_BPType;
+    entity VH_BusinessPartnerCategory as projection on cust.VH_BusinessPartnerCategory;
 
     entity VH_Region as projection on cust.VH_Region;
 

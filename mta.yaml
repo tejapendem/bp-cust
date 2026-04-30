@@ -37,8 +37,8 @@ modules:
     path: frontend/router
     parameters:
       keep-existing-routes: true
-      disk-quota: 256M
-      memory: 256M
+      disk-quota: 1G
+      memory: 1G
     requires:
       - name: srv-api
         group: destinations
@@ -82,25 +82,7 @@ modules:
       commands:
         - npm install
         - npm run build
-      supported-platforms:
-        []
-  - name: bp-cust-srv
-    type: nodejs
-    path: gen/backend/srv
-    requires:
-      - name: bp-cust-auth
-
-  - name: bpcustwebapp
-    type: html5
-    path: frontendwebapp
-    build-parameters:
-      build-result: dist
-      builder: custom
-      commands:
-        - npm ci
-        - npm run build
-      supported-platforms:
-        []
+      supported-platforms: []
 
 resources:
   - name: bp-cust-auth
@@ -132,6 +114,7 @@ resources:
     parameters:
       service: html5-apps-repo
       service-plan: app-runtime
+
 build-parameters:
   before-all:
     - builder: custom

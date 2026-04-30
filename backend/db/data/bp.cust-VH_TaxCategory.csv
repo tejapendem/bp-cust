@@ -1,21 +1,67 @@
 code;name;isActive
-KE_PASS;Kenya Passport ID;true
-KR_CORP;South Korea Corporate ID;true
-VAT_REG;VAT Registration Number;true
-MX_VAT;Mexico VAT Liability;true
-MY_GST;Malaysia GST Number;true
-NL_VAT;Netherlands VAT Registration;true
-NO_VAT;Norway VAT;true
-PH_TAX;Philippines Taxpayer ID;true
-PL_NIP;Poland NIP Number;true
-PT_VAT;Portugal VAT Registration;true
-RU_INN;Russia INN;true
-SE_VAT;Sweden VAT Registration;true
-SI_ORG;Slovenia Organization Registration;true
-SK_ICO;Slovakia ICO Number;true
-TH_ID;Thailand Personal ID;true
-UG_ID;Uganda National ID;true
-UG_TAX;Uganda Income Tax Registration No;true
-UG_PASS;Uganda Passport Number;true
-US_SSN;USA Social Security Number;true
-VE_RIF;Venezuela RIF Number;true
+AR1A;Argentina CUIT Number;true
+AR1B;Argentina CUIL Number;true
+AR2;Argentina Income Tax Number;true
+AR3;NIP number or CM number;true
+AT0;Austria VAT Registration Number;true
+AU0;Australia ABN;true
+BE0;Belgium VAT Registration Number;true
+BE1;Belgium Enterprise Number;true
+BE2;Belgium VAT Reg No without country code;true
+BR1;Brazil CNPJ Number;true
+BR3;Brazil State Tax Number;true
+BR4;Brazil Municipal Tax Number;true
+CA1;Canada GST Number;true
+CA2;Canada Business Number;true
+CA3;Canada PST Number;true
+CA4;Canada QST Number;true
+CH1;Switzerland UID Number;true
+CL1;Chile RUT Number;true
+CN0;China Tax Number;true
+CZ1;Czech Republic DIC Number;true
+CZ2;Czech Republic ICO Number;true
+DE0;Germany VAT Identification Number;true
+DE1;Germany Tax Number;true
+DE2;Germany Identification Number;true
+DK0;Denmark VAT Registration Number;true
+DK2;Denmark Tax Number;true
+ES0;Spain VAT Registration Number;true
+ES1;Spain NIF Number;true
+FI0;Finland VAT Registration Number;true
+FR0;France VAT Registration Number;true
+FR1;France SIRET Number;true
+FR2;France SIREN Number;true
+GB0;United Kingdom VAT Registration Number;true
+GR1;Greece Personal ID;true
+GR2;Greece AFM Number;true
+IE0;Ireland VAT Registration Number;true
+IN04;India Passport ID;true
+IT0;Italy VAT Registration Number;true
+IT2;Italy IVA Code;true
+KE01;Kenya Personal Identification Number;true
+KE04;Kenya Passport ID;true
+KR1;South Korea Corporation ID or Personal;true
+KR2;South Korea VAT Registration Number;true
+LU0;Luxembourg VAT Registration Number;true
+MX2;Mexico VAT Liability;true
+MY1;Malaysia GST Number;true
+NL0;Netherlands VAT Registration Number;true
+NO2;Norway Tax Number;true
+PH1;Philippines Taxpayer ID Number;true
+PL1;Poland NIP Number;true
+PT0;Portugal VAT Registration Number;true
+RU1;Russia INN;true
+SE0;Sweden VAT Registration Number;true
+SE2;Sweden Organization Registration Number;true
+SK1;Slovakia DIC Number;true
+SK2;Slovakia ICO Number;true
+TH1;Thailand Personal ID;true
+UG01;Uganda VAT Registration Number;true
+UG02;Uganda Income Tax Registration Number;true
+UG03;Uganda National ID;true
+UG04;Uganda Passport Number;true
+UG05;Driving Permit;true
+UG06;Others Staff ID;true
+US1;USA Social Security Number;true
+US2;USA Employer ID Number;true
+VE1;Venezuela RIF Number;true

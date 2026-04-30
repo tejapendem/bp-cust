@@ -1,7 +1,7 @@
 {
   "_version": "1.49.0",
   "sap.app": {
-    "id": "bp.cust.ui",
+    "id": "bpcustui",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -103,7 +103,6 @@
             "TargetWizard"
           ]
         },
-
         {
           "name": "WizardEdit",
           "pattern": "edit/{bpID}",

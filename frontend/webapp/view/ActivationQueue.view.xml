@@ -15,12 +15,70 @@
                     
                     <WizardStep id="step1" title="General Data Config" icon="sap-icon://settings">
                         <VBox>
-                            <Title text="Manage Groupings" level="H3" class="sapUiSmallMarginBottom" />
                             <Table id="groupingTable" items="{path: '/VH_Grouping'}">
                                 <headerToolbar>
                                     <OverflowToolbar>
+                                        <Title text="Manage Groupings" />
                                         <ToolbarSpacer/>
                                         <Button icon="sap-icon://add" text="Add Grouping" press="onAddVH('VH_Grouping')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Table items="{path: '/VH_BusinessPartnerCategory'}" class="sapUiMediumMarginTop">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <Title text="Manage Business Partner Categories" />
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Category" press="onAddVH('VH_BusinessPartnerCategory')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Table items="{path: '/VH_BPType'}" class="sapUiMediumMarginTop">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <Title text="Manage BP Types" />
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Type" press="onAddVH('VH_BPType')" />
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>

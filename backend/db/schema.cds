@@ -7,12 +7,15 @@ entity BusinessPartners : cuid, managed {
     
     // Step 1: General Data
     BPRole : String(10) default '000000';
-    BPType : String(20) default 'Organization';
+    BusinessPartnerCategory : String(20); // Person, Organization
+    BPType : String(20); // Customer, Vendor
     Grouping : String(4); // ZP01, ZP05
     
     // Step 2: Address & Communication
     Name : String(100);
-    Title : String(20);
+    Title : String(20) default '0003'; // Default '0003' for Company
+    SearchTerm1 : String(20);
+    SearchTerm2 : String(20);
     StreetAddress : String(200);
     PostalCode : String(20);
     Country : String(2);
@@ -27,13 +30,21 @@ entity BusinessPartners : cuid, managed {
     TaxCategory : String(100);
     TaxNumber : String(50);
     TaxStatus : String(20);
-    
-    // Step 4: Sales Area (FLCU01)
+
+    // Multi-Entry Compositions
+    SalesAreas : Composition of many BPSalesAreas on SalesAreas.parent = $self;
+    CompanyCodes : Composition of many BPCompanyCodes on CompanyCodes.parent = $self;
+
+    LifecycleStatus : String(20) default 'active'; // 'active', 'draft'
+}
+
+entity BPSalesAreas : cuid {
+    parent : Association to BusinessPartners;
     SalesOrganization : String(4);
     DistributionChannel : String(2);
     Division : String(2);
     
-    // Step 5: Sales Data
+    // Step 5: Sales Data (repeats per Sales Area)
     CustomerGroup : String(2);
     Currency : String(3) default 'UGX';
     ExchangeRateType : String(4);
@@ -52,15 +63,16 @@ entity BusinessPartners : cuid, managed {
     
     // Additional Data
     CustomerData2 : String(2) default '02';
-    
-    // Step 6: Company Code Assignment (FLCU00)
+}
+
+entity BPCompanyCodes : cuid {
+    parent : Association to BusinessPartners;
     CompanyCode : String(4);
     IsBP : Boolean default true;
     IsCustomer : Boolean default true;
     
-    // Step 7: Account Management
+    // Step 7: Account Management (repeats per Company Code)
     ReconciliationAccount : String(6);
-    LifecycleStatus : String(20) default 'active'; // 'active', 'draft'
 }
 
 // Value Helps
@@ -69,16 +81,17 @@ entity VH_Country { key code: String(2); name: String(50); isActive: Boolean def
 entity VH_Language { key code: String(2); name: String(50); isActive: Boolean default true; }
 entity VH_MobileCountryCode { key code: String(5); name: String(50); isActive: Boolean default true; }
 entity VH_TaxCategory { key code: String(50); name: String(100); isActive: Boolean default true; }
-entity VH_SalesOrganization { key code: String(4); name: String(50); isActive: Boolean default true; }
+entity VH_SalesOrganization { key code: String(4); name: String(100); isActive: Boolean default true; }
 entity VH_DistributionChannel { key code: String(2); name: String(50); isActive: Boolean default true; }
 entity VH_Division { key code: String(2); name: String(50); isActive: Boolean default true; }
 entity VH_CustomerGroup { key code: String(2); name: String(50); isActive: Boolean default true; }
 entity VH_AccountAssignmentGroup { key code: String(2); name: String(50); isActive: Boolean default true; }
 entity VH_TaxClassification { key code: String(1); name: String(50); isActive: Boolean default true; }
 entity VH_CustomerData2 { key code: String(2); name: String(50); isActive: Boolean default true; }
-entity VH_CompanyCode { key code: String(4); name: String(50); isActive: Boolean default true; }
+entity VH_CompanyCode { key code: String(4); name: String(100); isActive: Boolean default true; }
 entity VH_ReconciliationAccount { key code: String(6); name: String(50); isActive: Boolean default true; }
-
+entity VH_BPType { key code: String(20); name: String(50); isActive: Boolean default true; }
+entity VH_BusinessPartnerCategory { key code: String(20); name: String(50); isActive: Boolean default true; }
 
 entity VH_Region { 
     key code: String(3); 

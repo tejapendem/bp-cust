@@ -6,9 +6,12 @@ type: application
 resources:
   configuration:
     propertiesFileSourceEncoding: UTF-8
+    paths:
+      webapp: "."
 builder:
   resources:
     excludes:
+      - "/node_modules/**"
       - "/test/**"
       - "/localService/**"
   customTasks:
