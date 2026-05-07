@@ -1,0 +1,4 @@
+code;name;isActive
+Z1;Default - All Check Active (stat. Credit limit);true
+01;Standard Check;true
+02;No Check;true

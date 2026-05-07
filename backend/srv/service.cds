@@ -5,6 +5,8 @@ service BusinessPartnerService {
     entity BusinessPartners as projection on cust.BusinessPartners;
     entity BPSalesAreas as projection on cust.BPSalesAreas;
     entity BPCompanyCodes as projection on cust.BPCompanyCodes;
+    entity BPCreditSegments as projection on cust.BPCreditSegments;
+    entity BPAssignedRoles as projection on cust.BPAssignedRoles;
 
     entity VH_Grouping as projection on cust.VH_Grouping;
     entity VH_Country as projection on cust.VH_Country;
@@ -23,7 +25,17 @@ service BusinessPartnerService {
     entity VH_BPType as projection on cust.VH_BPType;
     entity VH_BusinessPartnerCategory as projection on cust.VH_BusinessPartnerCategory;
 
+    // Credit Mgt VH
+    entity VH_RiskClass as projection on cust.VH_RiskClass;
+    entity VH_CheckRule as projection on cust.VH_CheckRule;
+    entity VH_CreditGroup as projection on cust.VH_CreditGroup;
+    entity VH_CreditSegment as projection on cust.VH_CreditSegment;
+    entity VH_CreditLimitRule as projection on cust.VH_CreditLimitRule;
+    entity VH_BPRole as projection on cust.VH_BPRole;
+
     entity VH_Region as projection on cust.VH_Region;
+    entity VH_Title as projection on cust.VH_Title;
+    entity VH_TaxStatus as projection on cust.VH_TaxStatus;
 
     entity Users as projection on cust.Users;
     

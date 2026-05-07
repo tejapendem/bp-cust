@@ -33,8 +33,15 @@ sap.ui.define([
                 StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
                 TaxCategory: "", TaxNumber: "", TaxStatus: "",
                 
+                // Credit Management
+                RiskClass: "D",
+                CheckRule: "Z1",
+                CreditGroup: "10",
+                
                 SalesAreas: [],
-                CompanyCodes: []
+                CompanyCodes: [],
+                CreditSegments: [],
+                AssignedRoles: []
             });
             this.getView().setModel(oViewModel, "wizardData");
 
@@ -116,10 +123,23 @@ sap.ui.define([
                 BPType: "Customer",
                 Grouping: "ZP01",
                 Name: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
-                StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
                 TaxCategory: "", TaxNumber: "", TaxStatus: "",
+                RiskClass: "D",
+                CheckRule: "Z1",
+                CreditGroup: "10",
                 SalesAreas: [this._getDefaultSalesAreaData()],
-                CompanyCodes: [this._getDefaultCompanyCodeData()]
+                CompanyCodes: [this._getDefaultCompanyCodeData()],
+                CreditSegments: [this._getDefaultCreditSegmentData()],
+                AssignedRoles: [
+                    { Role: "000000", Description: "Business Partner (Gen.)", ValidFrom: new Date().toISOString().split('T')[0], ValidTo: "9999-12-31" },
+                    { Role: "UKM000", Description: "SAP Credit Management", ValidFrom: new Date().toISOString().split('T')[0], ValidTo: "9999-12-31" }
+                ]
+            };
+        },
+
+        _getDefaultCreditSegmentData: function() {
+            return {
+                CreditSegment: "1000", CreditLimitRules: "B2B-NEW", LimitDefined: true, CreditLimit: 100, LimitCurrency: "UGX", ValidityDate: "9999-12-31"
             };
         },
 
@@ -172,6 +192,52 @@ sap.ui.define([
             aCompanyCodes.splice(iIndex, 1);
             oModel.setProperty("/CompanyCodes", aCompanyCodes);
             oModel.refresh();
+        },
+
+        onAddRole: function() {
+            var oModel = this.getView().getModel("wizardData");
+            var aRoles = oModel.getProperty("/AssignedRoles");
+            aRoles.push({ Role: "", Description: "", ValidFrom: new Date().toISOString().split('T')[0], ValidTo: "9999-12-31" });
+            oModel.setProperty("/AssignedRoles", aRoles);
+            oModel.refresh();
+        },
+
+        onRemoveRole: function(oEvent) {
+            var oItem = oEvent.getSource().getParent();
+            var oTable = oItem.getParent();
+            var iIndex = oTable.indexOfItem(oItem);
+            var oModel = this.getView().getModel("wizardData");
+            var aRoles = oModel.getProperty("/AssignedRoles");
+            aRoles.splice(iIndex, 1);
+            oModel.setProperty("/AssignedRoles", aRoles);
+            oModel.refresh();
+        },
+
+        onAddCreditSegment: function() {
+            var oModel = this.getView().getModel("wizardData");
+            var aSegments = oModel.getProperty("/CreditSegments");
+            aSegments.push(this._getDefaultCreditSegmentData());
+            oModel.setProperty("/CreditSegments", aSegments);
+            oModel.refresh();
+        },
+
+        onRemoveCreditSegment: function(oEvent) {
+            var oItem = oEvent.getSource().getParent();
+            var oTable = oItem.getParent();
+            var iIndex = oTable.indexOfItem(oItem);
+            var oModel = this.getView().getModel("wizardData");
+            var aSegments = oModel.getProperty("/CreditSegments");
+            aSegments.splice(iIndex, 1);
+            oModel.setProperty("/CreditSegments", aSegments);
+            oModel.refresh();
+        },
+
+        onLimitDefinedChange: function(oEvent) {
+            var iIndex = oEvent.getParameter("selectedIndex");
+            var oContext = oEvent.getSource().getBindingContext("wizardData");
+            if (oContext) {
+                oContext.getModel().setProperty(oContext.getPath() + "/LimitDefined", iIndex === 0);
+            }
         },
 
         onNextStep: function () {
@@ -405,8 +471,11 @@ sap.ui.define([
                 Name: oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
                 StreetAddress: oData.StreetAddress, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
                 TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus,
+                RiskClass: oData.RiskClass, CheckRule: oData.CheckRule, CreditGroup: oData.CreditGroup,
                 SalesAreas: (oData.SalesAreas || []).map(function(s) { delete s.parent; return s; }),
-                CompanyCodes: (oData.CompanyCodes || []).map(function(c) { delete c.parent; return c; })
+                CompanyCodes: (oData.CompanyCodes || []).map(function(c) { delete c.parent; return c; }),
+                CreditSegments: (oData.CreditSegments || []).map(function(s) { delete s.parent; return s; }),
+                AssignedRoles: (oData.AssignedRoles || []).map(function(r) { delete r.parent; return r; })
             };
         },
 

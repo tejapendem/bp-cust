@@ -68,7 +68,9 @@
                             <core:Title text="Identity"/>
                             
                             <Label text="Title" required="true"/>
-                            <Input value="{wizardData>/Title}" placeholder="e.g. 0003" editable="{= !${wizardData>/isReadOnly} }"/>
+                            <Select selectedKey="{wizardData>/Title}" items="{path: '/VH_Title', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
 
                             <Label text="Name" required="true"/>
                             <Input id="nameInput" value="{wizardData>/Name}" placeholder="Full / Company Name" editable="{= !${wizardData>/isReadOnly} }"/>
@@ -137,7 +139,9 @@
                             <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number" editable="{= !${wizardData>/isReadOnly} }"/>
 
                             <Label text="Tax Status"/>
-                            <Input value="{wizardData>/TaxStatus}" placeholder="e.g. Active, Exempt" editable="{= !${wizardData>/isReadOnly} }"/>
+                            <Select selectedKey="{wizardData>/TaxStatus}" items="{path: '/VH_TaxStatus', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <core:Item key="{code}" text="{name}"/>
+                            </Select>
                         </form:SimpleForm>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
@@ -145,7 +149,57 @@
                         </HBox>
                     </WizardStep>
 
-                    <WizardStep id="step4" title="Sales Area (FLCU01)" icon="sap-icon://sales-order" validated="true">
+                    <WizardStep id="step4" title="Company Details (FLCU00)" icon="sap-icon://factory" validated="true">
+                        <VBox>
+                            <Table items="{wizardData>/CompanyCodes}" noDataText="No Company Codes defined. Click '+' to add.">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <Title text="Company Code Assignments"/>
+                                        <ToolbarSpacer />
+                                        <Button icon="sap-icon://add" text="Add Company Code" press="onAddCompanyCode" type="Ghost" visible="{= !${wizardData>/isReadOnly} }"/>
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Company Code"/></Column>
+                                    <Column><Text text="Is BP"/></Column>
+                                    <Column><Text text="Is Customer"/></Column>
+                                    <Column hAlign="End" width="50px" visible="{= !${wizardData>/isReadOnly} }"></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Select selectedKey="{wizardData>CompanyCode}" items="{path: '/VH_CompanyCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                                <core:Item key="{code}" text="{code} - {name}"/>
+                                            </Select>
+                                            <CheckBox selected="{wizardData>IsBP}" editable="{= !${wizardData>/isReadOnly} }"/>
+                                            <CheckBox selected="{wizardData>IsCustomer}" editable="{= !${wizardData>/isReadOnly} }"/>
+                                            <Button icon="sap-icon://delete" type="Reject" press="onRemoveCompanyCode" visible="{= !${wizardData>/isReadOnly} }"/>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                            
+                            <IconTabBar items="{wizardData>/CompanyCodes}" expandable="false" applyContentPadding="false" class="sapUiMediumMarginTop">
+                                <items>
+                                    <IconTabFilter icon="sap-icon://factory" text="CC: {wizardData>CompanyCode}" design="Horizontal">
+                                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                                            <core:Title text="Account Management"/>
+                                            <Label text="Reconciliation Account"/>
+                                            <Select selectedKey="{wizardData>ReconciliationAccount}" items="{path: '/VH_ReconciliationAccount', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                                <core:Item key="{code}" text="{code} - {name}"/>
+                                            </Select>
+                                        </form:SimpleForm>
+                                    </IconTabFilter>
+                                </items>
+                            </IconTabBar>
+                        </VBox>
+                        <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
+                            <Button text="Previous" type="Transparent" press="onPrevStep" />
+                            <Button text="Step 5" type="Emphasized" press="onNextStep" />
+                        </HBox>
+                    </WizardStep>
+
+                    <WizardStep id="step5" title="Sales Area (FLCU01)" icon="sap-icon://sales-order" validated="true">
                         <VBox>
                             <Table items="{wizardData>/SalesAreas}" noDataText="No Sales Areas defined. Click '+' to add.">
                                 <headerToolbar>
@@ -181,11 +235,11 @@
                         </VBox>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
-                            <Button text="Step 5" type="Emphasized" press="onNextStep" />
+                            <Button text="Step 6" type="Emphasized" press="onNextStep" />
                         </HBox>
                     </WizardStep>
 
-                    <WizardStep id="step5" title="Customer Info" icon="sap-icon://money-bills" validated="true">
+                    <WizardStep id="step6" title="Customer Info" icon="sap-icon://money-bills" validated="true">
                         <IconTabBar items="{wizardData>/SalesAreas}" expandable="false" applyContentPadding="false">
                             <items>
                                 <IconTabFilter icon="sap-icon://org-chart" text="Sales Org: {wizardData>SalesOrganization}" design="Horizontal">
@@ -202,37 +256,37 @@
                                         
                                         <Label text="Exchange Rate Type (Auto)"/>
                                         <Input value="{wizardData>ExchangeRateType}" editable="false"/>
-
+ 
                                         <Label text="Pricing Procedure (Auto)"/>
                                         <Input value="{wizardData>CustomerPricingProcedure}" editable="false"/>
-
+ 
                                         <Label text="Statistics Group (Auto)"/>
                                         <Input value="{wizardData>CustomerStatsGroup}" editable="false"/>
-
+ 
                                         <core:Title text="Billing &amp; Tax"/>
-
+ 
                                         <Label text="Payment Terms (Auto)"/>
                                         <Input value="{wizardData>PaymentTerms}" editable="false"/>
-
+ 
                                         <Label text="Incoterms (Auto)"/>
                                         <Input value="{wizardData>Incoterms}" editable="false"/>
-
+ 
                                         <Label text="Account Assignment Group"/>
                                         <Select selectedKey="{wizardData>AccountAssignmentGroup}" items="{path: '/VH_AccountAssignmentGroup', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                             <core:Item key="{code}" text="{code} - {name}"/>
                                         </Select>
-
+ 
                                         <Label text="Tax Classification"/>
                                         <Select selectedKey="{wizardData>TaxClassification}" items="{path: '/VH_TaxClassification', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                             <core:Item key="{code}" text="{code} - {name}"/>
                                         </Select>
-
+ 
                                         <Label text="Output Tax Country (Auto)"/>
                                         <Input value="{wizardData>OutputTaxCountry}" editable="false"/>
-
+ 
                                         <Label text="Output Tax Category (Auto)"/>
                                         <Input value="{wizardData>OutputTaxCategory}" editable="false"/>
-
+ 
                                         <Label text="Customer Data 2"/>
                                         <Select selectedKey="{wizardData>CustomerData2}" items="{path: '/VH_CustomerData2', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                             <core:Item key="{code}" text="{code} - {name}"/>
@@ -243,61 +297,70 @@
                         </IconTabBar>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
-                            <Button text="Step 6" type="Emphasized" press="onNextStep" />
+                            <Button text="Step 7" type="Emphasized" press="onNextStep" />
                         </HBox>
                     </WizardStep>
-
-                    <WizardStep id="step6" title="Company Details (FLCU00)" icon="sap-icon://factory" validated="true">
+ 
+                    <WizardStep id="step7" title="UKM000 SAP Credit Management" icon="sap-icon://collections-insight" validated="true">
                         <VBox>
-                            <Table items="{wizardData>/CompanyCodes}" noDataText="No Company Codes defined. Click '+' to add.">
+                            <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                                <core:Title text="Credit Profile"/>
+                                
+                                <Label text="Risk Class"/>
+                                <Select selectedKey="{wizardData>/RiskClass}" items="{path: '/VH_RiskClass', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                    <core:Item key="{code}" text="{code} - {name}"/>
+                                </Select>
+                                
+                                <Label text="Check Rule"/>
+                                <Select selectedKey="{wizardData>/CheckRule}" items="{path: '/VH_CheckRule', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                    <core:Item key="{code}" text="{code} - {name}"/>
+                                </Select>
+ 
+                                <Label text="Credit Group"/>
+                                <Select selectedKey="{wizardData>/CreditGroup}" items="{path: '/VH_CreditGroup', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                    <core:Item key="{code}" text="{code} - {name}"/>
+                                </Select>
+                            </form:SimpleForm>
+
+                            <Table items="{wizardData>/CreditSegments}" noDataText="No Credit Segment data. Click '+' to add." class="sapUiMediumMarginTop">
                                 <headerToolbar>
                                     <OverflowToolbar>
-                                        <Title text="Company Code Assignments"/>
+                                        <Title text="Credit Limit and Control"/>
                                         <ToolbarSpacer />
-                                        <Button icon="sap-icon://add" text="Add Company Code" press="onAddCompanyCode" type="Ghost" visible="{= !${wizardData>/isReadOnly} }"/>
+                                        <Button icon="sap-icon://add" text="Add Segment" press="onAddCreditSegment" type="Ghost" visible="{= !${wizardData>/isReadOnly} }"/>
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>
-                                    <Column><Text text="Company Code"/></Column>
-                                    <Column><Text text="Is BP"/></Column>
-                                    <Column><Text text="Is Customer"/></Column>
+                                    <Column><Text text="Credit Segment"/></Column>
+                                    <Column><Text text="Rules"/></Column>
+                                    <Column><Text text="Limit Defined"/></Column>
+                                    <Column><Text text="Limit"/></Column>
+                                    <Column><Text text="Currency"/></Column>
+                                    <Column><Text text="Valid To"/></Column>
                                     <Column hAlign="End" width="50px" visible="{= !${wizardData>/isReadOnly} }"></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Select selectedKey="{wizardData>CompanyCode}" items="{path: '/VH_CompanyCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <Select selectedKey="{wizardData>CreditSegment}" items="{path: '/VH_CreditSegment', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                                 <core:Item key="{code}" text="{code} - {name}"/>
                                             </Select>
-                                            <CheckBox selected="{wizardData>IsBP}" editable="{= !${wizardData>/isReadOnly} }"/>
-                                            <CheckBox selected="{wizardData>IsCustomer}" editable="{= !${wizardData>/isReadOnly} }"/>
-                                            <Button icon="sap-icon://delete" type="Reject" press="onRemoveCompanyCode" visible="{= !${wizardData>/isReadOnly} }"/>
+                                            <Select selectedKey="{wizardData>CreditLimitRules}" items="{path: '/VH_CreditLimitRule', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                                <core:Item key="{code}" text="{code} - {name}"/>
+                                            </Select>
+                                            <RadioButtonGroup columns="2" selectedIndex="{= ${wizardData>LimitDefined} ? 0 : 1 }" editable="{= !${wizardData>/isReadOnly} }" select="onLimitDefinedChange">
+                                                <RadioButton text="Defined" />
+                                                <RadioButton text="Not Defined" />
+                                            </RadioButtonGroup>
+                                            <Input value="{wizardData>CreditLimit}" type="Number" placeholder="100" editable="{= !${wizardData>/isReadOnly} &amp;&amp; ${wizardData>LimitDefined} }"/>
+                                            <Input value="{wizardData>LimitCurrency}" editable="false" width="70px"/>
+                                            <DatePicker value="{wizardData>ValidityDate}" valueFormat="yyyy-MM-dd" displayFormat="medium" editable="{= !${wizardData>/isReadOnly} }"/>
+                                            <Button icon="sap-icon://delete" type="Reject" press="onRemoveCreditSegment" visible="{= !${wizardData>/isReadOnly} }"/>
                                         </cells>
                                     </ColumnListItem>
                                 </items>
                             </Table>
                         </VBox>
-                        <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
-                            <Button text="Previous" type="Transparent" press="onPrevStep" />
-                            <Button text="Step 7" type="Emphasized" press="onNextStep" />
-                        </HBox>
-                    </WizardStep>
-
-                    <WizardStep id="step7" title="Account Mgt" icon="sap-icon://manager" validated="true">
-                        <IconTabBar items="{wizardData>/CompanyCodes}" expandable="false" applyContentPadding="false">
-                            <items>
-                                <IconTabFilter icon="sap-icon://factory" text="Company Code: {wizardData>CompanyCode}" design="Horizontal">
-                                    <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
-                                        <core:Title text="FI Reconciliation Account"/>
-                                        
-                                        <Label text="Reconciliation Account"/>
-                                        <Select selectedKey="{wizardData>ReconciliationAccount}" items="{path: '/VH_ReconciliationAccount', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
-                                            <core:Item key="{code}" text="{code} - {name}"/>
-                                        </Select>
-                                    </form:SimpleForm>
-                                </IconTabFilter>
-                            </items>
-                        </IconTabBar>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
                             <Button text="Review &amp; Submit" type="Accept" press="onOpenReview" />
@@ -328,8 +391,13 @@
                     <Label text="Title"/><Text text="{wizardData>/Title}"/>
                     <Label text="Name"/><Text text="{wizardData>/Name}"/>
                     <Label text="Search Terms"/><Text text="{wizardData>/SearchTerm1} / {wizardData>/SearchTerm2}"/>
+                    <core:Title text="Credit Profile"/>
+                    <Label text="Risk Class"/><Text text="{wizardData>/RiskClass}"/>
+                    <Label text="Check Rule"/><Text text="{wizardData>/CheckRule}"/>
+                    <Label text="Credit Group"/><Text text="{wizardData>/CreditGroup}"/>
                 </form:SimpleForm>
                 
+
                 <Title text="Sales Areas" level="H4" class="sapUiSmallMarginTop"/>
                 <Table items="{wizardData>/SalesAreas}">
                     <columns>
@@ -361,6 +429,26 @@
                             <cells>
                                 <Text text="{wizardData>CompanyCode}"/>
                                 <Text text="{wizardData>ReconciliationAccount}"/>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+
+                <Title text="Credit Segments" level="H4" class="sapUiSmallMarginTop"/>
+                <Table items="{wizardData>/CreditSegments}">
+                    <columns>
+                        <Column><Text text="Segment"/></Column>
+                        <Column><Text text="Limit"/></Column>
+                        <Column><Text text="Currency"/></Column>
+                        <Column><Text text="Valid To"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{wizardData>CreditSegment}"/>
+                                <Text text="{wizardData>CreditLimit}"/>
+                                <Text text="{wizardData>LimitCurrency}"/>
+                                <Text text="{wizardData>ValidityDate}"/>
                             </cells>
                         </ColumnListItem>
                     </items>
