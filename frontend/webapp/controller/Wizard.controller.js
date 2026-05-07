@@ -23,25 +23,32 @@ sap.ui.define([
                 otpVerified: false,
                 otpStatusText: "",
                 otpStatusState: "None",
-                
+
+                // Track skipped steps
+                skippedSteps: {
+                    step4: false,
+                    step5: false,
+                    step6: false,
+                    step7: false
+                },
+
                 // Fields
-                BPRole: "000000", 
+                BPRole: "000000",
                 BusinessPartnerCategory: "Organization",
                 BPType: "Customer",
                 Grouping: "ZP01",
                 Name: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
                 StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
                 TaxCategory: "", TaxNumber: "", TaxStatus: "",
-                
+
                 // Credit Management
                 RiskClass: "D",
                 CheckRule: "Z1",
                 CreditGroup: "10",
-                
+
                 SalesAreas: [],
                 CompanyCodes: [],
-                CreditSegments: [],
-                AssignedRoles: []
+                CreditSegments: []
             });
             this.getView().setModel(oViewModel, "wizardData");
 
@@ -67,7 +74,7 @@ sap.ui.define([
                 oModel.setProperty("/isReadOnly", false);
                 oModel.setProperty("/otpSent", false);
                 oModel.setProperty("/TemplateID", "");
-                
+
                 this._refreshValueHelps();
 
                 // Reset fields to default
@@ -100,13 +107,13 @@ sap.ui.define([
                 if (oData) {
                     var oCurrentData = oWizardModel.getData();
                     var oMergedData = Object.assign({}, oCurrentData, oData);
-                    
+
                     oWizardModel.setData(oMergedData);
-                    
+
                     // Set isReadOnly AFTER setData so it doesn't get overwritten
                     var bIsActive = oData.LifecycleStatus === 'active';
                     oWizardModel.setProperty("/isReadOnly", bIsActive);
-                    
+
                     oWizardModel.refresh(true);
                     that._filterByGrouping(oData.Grouping);
                 }
@@ -116,9 +123,9 @@ sap.ui.define([
             });
         },
 
-        _getDefaultData: function() {
+        _getDefaultData: function () {
             return {
-                BPRole: "000000", 
+                BPRole: "000000",
                 BusinessPartnerCategory: "Organization",
                 BPType: "Customer",
                 Grouping: "ZP01",
@@ -130,33 +137,30 @@ sap.ui.define([
                 SalesAreas: [this._getDefaultSalesAreaData()],
                 CompanyCodes: [this._getDefaultCompanyCodeData()],
                 CreditSegments: [this._getDefaultCreditSegmentData()],
-                AssignedRoles: [
-                    { Role: "000000", Description: "Business Partner (Gen.)", ValidFrom: new Date().toISOString().split('T')[0], ValidTo: "9999-12-31" },
-                    { Role: "UKM000", Description: "SAP Credit Management", ValidFrom: new Date().toISOString().split('T')[0], ValidTo: "9999-12-31" }
-                ]
+                skippedSteps: { step4: false, step5: false, step6: false, step7: false }
             };
         },
 
-        _getDefaultCreditSegmentData: function() {
+        _getDefaultCreditSegmentData: function () {
             return {
                 CreditSegment: "1000", CreditLimitRules: "B2B-NEW", LimitDefined: true, CreditLimit: 100, LimitCurrency: "UGX", ValidityDate: "9999-12-31"
             };
         },
 
-        _getDefaultSalesAreaData: function() {
+        _getDefaultSalesAreaData: function () {
             return {
                 SalesOrganization: "1000", DistributionChannel: "01", Division: "10",
                 CustomerGroup: "10", Currency: "UGX", ExchangeRateType: "S", CustomerPricingProcedure: "1", CustomerStatsGroup: "+", PaymentTerms: "Z001", Incoterms: "EXW", AccountAssignmentGroup: "01", TaxClassification: "1", OutputTaxCountry: "UG", OutputTaxCategory: "MWST", CustomerData2: "02"
             };
         },
 
-        _getDefaultCompanyCodeData: function() {
+        _getDefaultCompanyCodeData: function () {
             return {
                 CompanyCode: "1000", IsBP: true, IsCustomer: true, ReconciliationAccount: "321000"
             };
         },
 
-        onAddSalesArea: function() {
+        onAddSalesArea: function () {
             var oModel = this.getView().getModel("wizardData");
             var aSalesAreas = oModel.getProperty("/SalesAreas");
             aSalesAreas.push(this._getDefaultSalesAreaData());
@@ -164,7 +168,7 @@ sap.ui.define([
             oModel.refresh();
         },
 
-        onRemoveSalesArea: function(oEvent) {
+        onRemoveSalesArea: function (oEvent) {
             var oItem = oEvent.getSource().getParent();
             var oTable = oItem.getParent();
             var iIndex = oTable.indexOfItem(oItem);
@@ -175,7 +179,7 @@ sap.ui.define([
             oModel.refresh();
         },
 
-        onAddCompanyCode: function() {
+        onAddCompanyCode: function () {
             var oModel = this.getView().getModel("wizardData");
             var aCompanyCodes = oModel.getProperty("/CompanyCodes");
             aCompanyCodes.push(this._getDefaultCompanyCodeData());
@@ -183,7 +187,7 @@ sap.ui.define([
             oModel.refresh();
         },
 
-        onRemoveCompanyCode: function(oEvent) {
+        onRemoveCompanyCode: function (oEvent) {
             var oItem = oEvent.getSource().getParent();
             var oTable = oItem.getParent();
             var iIndex = oTable.indexOfItem(oItem);
@@ -194,26 +198,8 @@ sap.ui.define([
             oModel.refresh();
         },
 
-        onAddRole: function() {
-            var oModel = this.getView().getModel("wizardData");
-            var aRoles = oModel.getProperty("/AssignedRoles");
-            aRoles.push({ Role: "", Description: "", ValidFrom: new Date().toISOString().split('T')[0], ValidTo: "9999-12-31" });
-            oModel.setProperty("/AssignedRoles", aRoles);
-            oModel.refresh();
-        },
 
-        onRemoveRole: function(oEvent) {
-            var oItem = oEvent.getSource().getParent();
-            var oTable = oItem.getParent();
-            var iIndex = oTable.indexOfItem(oItem);
-            var oModel = this.getView().getModel("wizardData");
-            var aRoles = oModel.getProperty("/AssignedRoles");
-            aRoles.splice(iIndex, 1);
-            oModel.setProperty("/AssignedRoles", aRoles);
-            oModel.refresh();
-        },
-
-        onAddCreditSegment: function() {
+        onAddCreditSegment: function () {
             var oModel = this.getView().getModel("wizardData");
             var aSegments = oModel.getProperty("/CreditSegments");
             aSegments.push(this._getDefaultCreditSegmentData());
@@ -221,7 +207,7 @@ sap.ui.define([
             oModel.refresh();
         },
 
-        onRemoveCreditSegment: function(oEvent) {
+        onRemoveCreditSegment: function (oEvent) {
             var oItem = oEvent.getSource().getParent();
             var oTable = oItem.getParent();
             var iIndex = oTable.indexOfItem(oItem);
@@ -232,7 +218,7 @@ sap.ui.define([
             oModel.refresh();
         },
 
-        onLimitDefinedChange: function(oEvent) {
+        onLimitDefinedChange: function (oEvent) {
             var iIndex = oEvent.getParameter("selectedIndex");
             var oContext = oEvent.getSource().getBindingContext("wizardData");
             if (oContext) {
@@ -244,8 +230,80 @@ sap.ui.define([
             var oWizard = this.byId("bpWizard");
             var sCurrentStepId = oWizard.getCurrentStep();
             if (this._validateStep(sCurrentStepId)) {
+                // Un-skip the step when user explicitly clicks Next (data should be saved)
+                var oModel = this.getView().getModel("wizardData");
+                var sStepKey = this._getStepKey(sCurrentStepId);
+                if (sStepKey) {
+                    oModel.setProperty("/skippedSteps/" + sStepKey, false);
+                }
                 oWizard.nextStep();
                 this._updateProgress(oWizard.getProgress());
+            }
+        },
+
+        onSkipStep: function () {
+            var oWizard = this.byId("bpWizard");
+            var sCurrentStepId = oWizard.getCurrentStep();
+            var oModel = this.getView().getModel("wizardData");
+            var sStepKey = this._getStepKey(sCurrentStepId);
+
+            if (!sStepKey) return;
+
+            // Mark step as skipped
+            oModel.setProperty("/skippedSteps/" + sStepKey, true);
+
+            // Clear data for the skipped step
+            this._clearStepData(sStepKey);
+
+            // If this is the last step (step7), go directly to review
+            if (sStepKey === "step7") {
+                if (!this._oReviewDialog) this._oReviewDialog = this.byId("reviewDialog");
+                this._oReviewDialog.open();
+                return;
+            }
+
+            // Move to next step
+            oWizard.nextStep();
+            this._updateProgress(oWizard.getProgress());
+            MessageToast.show("Step skipped — data will not be saved for this step.");
+        },
+
+        _getStepKey: function (sStepId) {
+            if (sStepId.includes("step4")) return "step4";
+            if (sStepId.includes("step5")) return "step5";
+            if (sStepId.includes("step6")) return "step6";
+            if (sStepId.includes("step7")) return "step7";
+            return null;
+        },
+
+        _clearStepData: function (sStepKey) {
+            var oModel = this.getView().getModel("wizardData");
+
+            switch (sStepKey) {
+                case "step4": // Company Details
+                    oModel.setProperty("/CompanyCodes", []);
+                    break;
+                case "step5": // Sales Area
+                    oModel.setProperty("/SalesAreas", []);
+                    break;
+                case "step6": // Customer Info (sales area detail fields)
+                    // Clear the detail fields within each sales area
+                    var aSalesAreas = oModel.getProperty("/SalesAreas") || [];
+                    aSalesAreas.forEach(function (oSA) {
+                        oSA.CustomerGroup = "";
+                        oSA.AccountAssignmentGroup = "";
+                        oSA.TaxClassification = "";
+                        oSA.CustomerData2 = "";
+                    });
+                    oModel.setProperty("/SalesAreas", aSalesAreas);
+                    oModel.refresh();
+                    break;
+                case "step7": // SAP Credit Management
+                    oModel.setProperty("/RiskClass", "");
+                    oModel.setProperty("/CheckRule", "");
+                    oModel.setProperty("/CreditGroup", "");
+                    oModel.setProperty("/CreditSegments", []);
+                    break;
             }
         },
 
@@ -304,7 +362,7 @@ sap.ui.define([
             var oModel = this.getView().getModel("wizardData");
             var sGenPattern = (sGrouping === "ZP01") ? "01" : "40";
             var sReconPattern = (sGrouping === "ZP01") ? "321000" : "321001";
-            
+
             // Base filter: only active records
             var oActiveFilter = new Filter("isActive", FilterOperator.EQ, true);
 
@@ -317,7 +375,7 @@ sap.ui.define([
                 new Filter("code", FilterOperator.Contains, sReconPattern)
             ];
 
-            ["distChannelSelect", "accAssignmentSelect"].forEach(function(sId) {
+            ["distChannelSelect", "accAssignmentSelect"].forEach(function (sId) {
                 var oCtrl = this.byId(sId);
                 if (oCtrl && oCtrl.getBinding("items")) {
                     oCtrl.getBinding("items").filter(new Filter({
@@ -368,13 +426,13 @@ sap.ui.define([
             }
         },
 
-        _refreshValueHelps: function() {
+        _refreshValueHelps: function () {
             var aSelectIds = [
-                "groupingSelect", "categorySelect", "bpTypeSelect", "countrySelect", 
+                "groupingSelect", "categorySelect", "bpTypeSelect", "countrySelect",
                 "regionSelect", "taxCategorySelect", "companyCodeSelect"
             ];
-            
-            aSelectIds.forEach(function(sId) {
+
+            aSelectIds.forEach(function (sId) {
                 var oSelect = this.byId(sId);
                 if (oSelect) {
                     var oBinding = oSelect.getBinding("items");
@@ -463,20 +521,57 @@ sap.ui.define([
         },
 
         _preparePayload: function (oData) {
-            return {
+            var oSkipped = oData.skippedSteps || {};
+
+            var oPayload = {
                 BPRole: oData.BPRole,
                 BusinessPartnerCategory: oData.BusinessPartnerCategory,
                 BPType: oData.BPType,
                 Grouping: oData.Grouping,
                 Name: oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
                 StreetAddress: oData.StreetAddress, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
-                TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus,
-                RiskClass: oData.RiskClass, CheckRule: oData.CheckRule, CreditGroup: oData.CreditGroup,
-                SalesAreas: (oData.SalesAreas || []).map(function(s) { delete s.parent; return s; }),
-                CompanyCodes: (oData.CompanyCodes || []).map(function(c) { delete c.parent; return c; }),
-                CreditSegments: (oData.CreditSegments || []).map(function(s) { delete s.parent; return s; }),
-                AssignedRoles: (oData.AssignedRoles || []).map(function(r) { delete r.parent; return r; })
+                TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus
             };
+
+            // Step 4: Company Details — send empty if skipped
+            if (oSkipped.step4) {
+                oPayload.CompanyCodes = [];
+            } else {
+                oPayload.CompanyCodes = (oData.CompanyCodes || []).map(function (c) { delete c.parent; return c; });
+            }
+
+            // Step 5: Sales Area — send empty if skipped
+            if (oSkipped.step5) {
+                oPayload.SalesAreas = [];
+            } else {
+                oPayload.SalesAreas = (oData.SalesAreas || []).map(function (s) { delete s.parent; return s; });
+            }
+
+            // Step 6: Customer Info — if skipped, clear the detail fields within sales areas
+            if (oSkipped.step6 && !oSkipped.step5) {
+                oPayload.SalesAreas = oPayload.SalesAreas.map(function (s) {
+                    s.CustomerGroup = "";
+                    s.AccountAssignmentGroup = "";
+                    s.TaxClassification = "";
+                    s.CustomerData2 = "";
+                    return s;
+                });
+            }
+
+            // Step 7: Credit Management — send empty if skipped
+            if (oSkipped.step7) {
+                oPayload.RiskClass = "";
+                oPayload.CheckRule = "";
+                oPayload.CreditGroup = "";
+                oPayload.CreditSegments = [];
+            } else {
+                oPayload.RiskClass = oData.RiskClass;
+                oPayload.CheckRule = oData.CheckRule;
+                oPayload.CreditGroup = oData.CreditGroup;
+                oPayload.CreditSegments = (oData.CreditSegments || []).map(function (s) { delete s.parent; return s; });
+            }
+
+            return oPayload;
         },
 
         _submitData: function (oPayload, sMsg) {
@@ -491,22 +586,22 @@ sap.ui.define([
                 // Update existing record (PATCH)
                 var sPath = "/BusinessPartners(" + sTemplateID + ")";
                 var oContext = oModel.bindContext(sPath).getBoundContext();
-                
+
                 // Set properties individually to ensure PATCH is triggered correctly
-                Object.keys(oPayload).forEach(function(sKey) {
+                Object.keys(oPayload).forEach(function (sKey) {
                     oContext.setProperty(sKey, oPayload[sKey]);
                 });
 
                 // Wait for the model to submit the changes automatically (via $auto group)
                 // In V4, we can check for pending changes or just request side effects to be sure it's done.
-                oModel.submitBatch("$auto").then(function() {
+                oModel.submitBatch("$auto").then(function () {
                     that._oBusyDialog.close();
-                    MessageBox.success(sMsg, { 
-                        onClose: function () { 
-                            that.onNavBack(); 
-                        } 
+                    MessageBox.success(sMsg, {
+                        onClose: function () {
+                            that.onNavBack();
+                        }
                     });
-                }).catch(function(oErr) {
+                }).catch(function (oErr) {
                     that._oBusyDialog.close();
                     var sError = that._getErrorMessage(oErr);
                     MessageBox.error("Update failed: " + sError);
@@ -518,10 +613,10 @@ sap.ui.define([
                 oCtx.created().then(function () {
                     that._oBusyDialog.close();
                     var sBp = oCtx.getObject().BusinessPartnerNumber;
-                    MessageBox.success(sMsg + (sBp ? "\n\nBP: " + sBp : ""), { 
-                        onClose: function () { 
-                            that.onNavBack(); 
-                        } 
+                    MessageBox.success(sMsg + (sBp ? "\n\nBP: " + sBp : ""), {
+                        onClose: function () {
+                            that.onNavBack();
+                        }
                     });
                 }).catch(function (oErr) {
                     that._oBusyDialog.close();
@@ -531,9 +626,9 @@ sap.ui.define([
             }
         },
 
-        _getErrorMessage: function(oError) {
+        _getErrorMessage: function (oError) {
             if (!oError) return "Unknown error";
-            
+
             // OData V4 errors often have getMessage or are in a specific structure
             if (oError.getBoundContext && oError.getBoundContext()) {
                 var oMsgModel = this.getView().getModel("messages");
@@ -541,7 +636,7 @@ sap.ui.define([
             }
 
             if (oError.message) return oError.message;
-            
+
             // Try to parse from responseText if available
             try {
                 if (oError.responseText) {
@@ -550,13 +645,13 @@ sap.ui.define([
                         return oResponse.error.message;
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
 
             // Handle technical error objects
             if (typeof oError === "object") {
                 return JSON.stringify(oError);
             }
-            
+
             return oError.toString();
         },
 

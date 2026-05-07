@@ -6,7 +6,6 @@ service BusinessPartnerService {
     entity BPSalesAreas as projection on cust.BPSalesAreas;
     entity BPCompanyCodes as projection on cust.BPCompanyCodes;
     entity BPCreditSegments as projection on cust.BPCreditSegments;
-    entity BPAssignedRoles as projection on cust.BPAssignedRoles;
 
     entity VH_Grouping as projection on cust.VH_Grouping;
     entity VH_Country as projection on cust.VH_Country;
@@ -31,7 +30,6 @@ service BusinessPartnerService {
     entity VH_CreditGroup as projection on cust.VH_CreditGroup;
     entity VH_CreditSegment as projection on cust.VH_CreditSegment;
     entity VH_CreditLimitRule as projection on cust.VH_CreditLimitRule;
-    entity VH_BPRole as projection on cust.VH_BPRole;
 
     entity VH_Region as projection on cust.VH_Region;
     entity VH_Title as projection on cust.VH_Title;

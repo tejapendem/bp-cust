@@ -195,7 +195,10 @@
                         </VBox>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
-                            <Button text="Step 5" type="Emphasized" press="onNextStep" />
+                            <HBox>
+                                <Button text="Skip" icon="sap-icon://journey-depart" type="Ghost" press="onSkipStep" class="sapUiSmallMarginEnd" visible="{= !${wizardData>/isReadOnly} }" />
+                                <Button text="Step 5" type="Emphasized" press="onNextStep" />
+                            </HBox>
                         </HBox>
                     </WizardStep>
 
@@ -235,7 +238,10 @@
                         </VBox>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
-                            <Button text="Step 6" type="Emphasized" press="onNextStep" />
+                            <HBox>
+                                <Button text="Skip" icon="sap-icon://journey-depart" type="Ghost" press="onSkipStep" class="sapUiSmallMarginEnd" visible="{= !${wizardData>/isReadOnly} }" />
+                                <Button text="Step 6" type="Emphasized" press="onNextStep" />
+                            </HBox>
                         </HBox>
                     </WizardStep>
 
@@ -297,7 +303,10 @@
                         </IconTabBar>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
-                            <Button text="Step 7" type="Emphasized" press="onNextStep" />
+                            <HBox>
+                                <Button text="Skip" icon="sap-icon://journey-depart" type="Ghost" press="onSkipStep" class="sapUiSmallMarginEnd" visible="{= !${wizardData>/isReadOnly} }" />
+                                <Button text="Step 7" type="Emphasized" press="onNextStep" />
+                            </HBox>
                         </HBox>
                     </WizardStep>
  
@@ -363,7 +372,10 @@
                         </VBox>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
-                            <Button text="Review &amp; Submit" type="Accept" press="onOpenReview" />
+                            <HBox>
+                                <Button text="Skip" icon="sap-icon://journey-depart" type="Ghost" press="onSkipStep" class="sapUiSmallMarginEnd" visible="{= !${wizardData>/isReadOnly} }" />
+                                <Button text="Review &amp; Submit" type="Accept" press="onOpenReview" />
+                            </HBox>
                         </HBox>
                     </WizardStep>
 

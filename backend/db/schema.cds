@@ -40,7 +40,6 @@ entity BusinessPartners : cuid, managed {
     SalesAreas : Composition of many BPSalesAreas on SalesAreas.parent = $self;
     CompanyCodes : Composition of many BPCompanyCodes on CompanyCodes.parent = $self;
     CreditSegments : Composition of many BPCreditSegments on CreditSegments.parent = $self;
-    AssignedRoles : Composition of many BPAssignedRoles on AssignedRoles.parent = $self;
 
     LifecycleStatus : String(20) default 'active'; // 'active', 'draft'
 }
@@ -92,13 +91,6 @@ entity BPCreditSegments : cuid {
     ValidityDate : Date;
 }
 
-entity BPAssignedRoles : cuid {
-    parent : Association to BusinessPartners;
-    Role : String(10);
-    Description : String(50);
-    ValidFrom : Date;
-    ValidTo : Date;
-}
 
 // Value Helps
 entity VH_Grouping { key code: String(4); name: String(50); isActive: Boolean default true; }
@@ -124,7 +116,6 @@ entity VH_CheckRule { key code: String(20); name: String(100); isActive: Boolean
 entity VH_CreditGroup { key code: String(20); name: String(100); isActive: Boolean default true; }
 entity VH_CreditSegment { key code: String(10); name: String(100); isActive: Boolean default true; }
 entity VH_CreditLimitRule { key code: String(20); name: String(100); isActive: Boolean default true; }
-entity VH_BPRole { key code: String(10); name: String(100); isActive: Boolean default true; }
 
 entity VH_Region { 
     key code: String(3); 
