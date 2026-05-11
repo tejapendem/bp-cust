@@ -63,8 +63,9 @@
                         </HBox>
                     </WizardStep>
 
-                    <WizardStep id="step2" title="Address Details" icon="sap-icon://map-2" validated="true">
-                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
+                    <WizardStep id="step2" title="{= ${wizardData>/BusinessPartnerCategory} === 'Person' ? 'Address Details (Name)' : 'Address Details (Identity,Location Details,Communication)' }" icon="sap-icon://map-2" validated="true">
+                        <!-- Form for Organization -->
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }">
                             <core:Title text="Identity"/>
                             
                             <Label text="Title" required="true"/>
@@ -119,6 +120,28 @@
 
                             <Label text="Email" required="true"/>
                             <Input id="emailInput" value="{wizardData>/Email}" type="Email" placeholder="user@example.com" editable="{= !${wizardData>/isReadOnly} }"/>
+                        </form:SimpleForm>
+
+                        <!-- Form for Person -->
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }">
+                            <core:Title text="Name"/>
+                            
+                            <Label text="Title" required="true"/>
+                            <Select selectedKey="{wizardData>/Title}" items="{path: '/VH_Title', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+
+                            <Label text="Firstname" required="true"/>
+                            <Input value="{wizardData>/FirstName}" placeholder="First Name" editable="{= !${wizardData>/isReadOnly} }"/>
+
+                            <Label text="Lastname" required="true"/>
+                            <Input value="{wizardData>/LastName}" placeholder="Last Name" editable="{= !${wizardData>/isReadOnly} }"/>
+                            
+                            <Label text="Search terms 1/2"/>
+                            <HBox>
+                                <Input value="{wizardData>/SearchTerm1}" placeholder="Term 1" editable="{= !${wizardData>/isReadOnly} }"/>
+                                <Input value="{wizardData>/SearchTerm2}" placeholder="Term 2" class="sapUiSmallMarginBegin" editable="{= !${wizardData>/isReadOnly} }"/>
+                            </HBox>
                         </form:SimpleForm>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
@@ -401,7 +424,8 @@
                     
                     <core:Title text="Address"/>
                     <Label text="Title"/><Text text="{wizardData>/Title}"/>
-                    <Label text="Name"/><Text text="{wizardData>/Name}"/>
+                    <Label text="Name" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }"/><Text text="{wizardData>/Name}" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }"/>
+                    <Label text="Name" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }"/><Text text="{wizardData>/FirstName} {wizardData>/LastName}" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }"/>
                     <Label text="Search Terms"/><Text text="{wizardData>/SearchTerm1} / {wizardData>/SearchTerm2}"/>
                     <core:Title text="Credit Profile"/>
                     <Label text="Risk Class"/><Text text="{wizardData>/RiskClass}"/>

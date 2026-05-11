@@ -37,7 +37,7 @@ sap.ui.define([
                 BusinessPartnerCategory: "Organization",
                 BPType: "Customer",
                 Grouping: "ZP01",
-                Name: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
+                Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
                 StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
                 TaxCategory: "", TaxNumber: "", TaxStatus: "",
 
@@ -114,6 +114,13 @@ sap.ui.define([
                     var bIsActive = oData.LifecycleStatus === 'active';
                     oWizardModel.setProperty("/isReadOnly", bIsActive);
 
+                    // Set progress: 100% for active/completed records, step-by-step for drafts
+                    if (bIsActive) {
+                        that._updateProgress(7); // 100% for completed records
+                    } else {
+                        that._updateProgress(1); // Start from step 1 for drafts
+                    }
+
                     oWizardModel.refresh(true);
                     that._filterByGrouping(oData.Grouping);
                 }
@@ -129,7 +136,7 @@ sap.ui.define([
                 BusinessPartnerCategory: "Organization",
                 BPType: "Customer",
                 Grouping: "ZP01",
-                Name: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
+                Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
                 TaxCategory: "", TaxNumber: "", TaxStatus: "",
                 RiskClass: "D",
                 CheckRule: "Z1",
@@ -320,6 +327,16 @@ sap.ui.define([
 
         _updateProgress: function (iStep) {
             var oModel = this.getView().getModel("wizardData");
+
+            // For existing active records, always show 100%
+            if (oModel.getProperty("/isReadOnly")) {
+                oModel.setProperty("/progress", 100);
+                oModel.setProperty("/progressText", "100%");
+                oModel.setProperty("/progressColor", "Good");
+                return;
+            }
+
+            // For new records, calculate progress based on current step
             var iTotalSteps = 7;
             iStep = iStep || 1;
             var iPct = Math.round((iStep / iTotalSteps) * 100);
@@ -336,14 +353,19 @@ sap.ui.define([
             if (oModel.getProperty("/isReadOnly")) return true;
 
             if (sStepId.includes("step2")) {
-                if (!oData.Name) aMissing.push("Name");
-                if (!oData.Country) aMissing.push("Country");
-                if (!oData.Email) {
-                    aMissing.push("Email");
+                if (oData.BusinessPartnerCategory === "Person") {
+                    if (!oData.FirstName) aMissing.push("Firstname");
+                    if (!oData.LastName) aMissing.push("Lastname");
                 } else {
-                    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(oData.Email)) {
-                        aMissing.push("Email (Invalid format)");
+                    if (!oData.Name) aMissing.push("Name");
+                    if (!oData.Country) aMissing.push("Country");
+                    if (!oData.Email) {
+                        aMissing.push("Email");
+                    } else {
+                        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(oData.Email)) {
+                            aMissing.push("Email (Invalid format)");
+                        }
                     }
                 }
             } else if (sStepId.includes("step3")) {
@@ -528,7 +550,9 @@ sap.ui.define([
                 BusinessPartnerCategory: oData.BusinessPartnerCategory,
                 BPType: oData.BPType,
                 Grouping: oData.Grouping,
-                Name: oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
+                FirstName: oData.FirstName,
+                LastName: oData.LastName,
+                Name: oData.BusinessPartnerCategory === "Person" ? (oData.FirstName + " " + oData.LastName).trim() : oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
                 StreetAddress: oData.StreetAddress, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
                 TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus
             };
@@ -613,7 +637,7 @@ sap.ui.define([
                 oCtx.created().then(function () {
                     that._oBusyDialog.close();
                     var sBp = oCtx.getObject().BusinessPartnerNumber;
-                    MessageBox.success(sMsg + (sBp ? "\n\nBP: " + sBp : ""), {
+                    MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
                         onClose: function () {
                             that.onNavBack();
                         }

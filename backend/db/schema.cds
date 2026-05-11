@@ -13,6 +13,8 @@ entity BusinessPartners : cuid, managed {
     
     // Step 2: Address & Communication
     Name : String(100);
+    FirstName : String(50);
+    LastName : String(50);
     Title : String(20) default '0003'; // Default '0003' for Company
     SearchTerm1 : String(20);
     SearchTerm2 : String(20);
