@@ -17,85 +17,96 @@
         </f:title>
 
         <f:content>
-            <HBox height="100%" renderType="Bare">
-                <!-- Master: List of Pending BPs -->
-                <VBox width="350px" class="sapUiSmallMarginEnd shadowBox" backgroundDesign="Translucent">
-                    <List id="pendingList"
-                          mode="SingleSelectMaster"
-                          selectionChange=".onBPSelect"
-                          headerText="Pending Requests"
-                          items="{approvalList>/}">
-                        <StandardListItem
-                            title="{approvalList>bpName}"
-                            description="ID: {approvalList>bpNumber}"
-                            info="{approvalList>bpType}"
-                            infoState="Information"
-                            type="Active"/>
-                    </List>
-                </VBox>
+            <VBox height="100%">
+                <IconTabBar id="approvalTabBar" select=".onFilterSelect" class="sapUiNoContentPadding">
+                    <items>
+                        <IconTabFilter key="pending" text="Pending Requests" icon="sap-icon://pending" iconColor="Critical" />
+                        <IconTabFilter key="approved" text="Approved Requests" icon="sap-icon://sys-enter-2" iconColor="Positive" />
+                        <IconTabFilter key="rejected" text="Rejected Requests" icon="sap-icon://error" iconColor="Negative" />
+                    </items>
+                </IconTabBar>
 
-                <!-- Detail: Request Details -->
-                <VBox id="detailContainer" visible="false" class="destinationDetailContainer sapUiMediumMarginBegin" width="100%">
-                    <Panel headerText="Request Details" class="sapUiNoContentPadding">
-                        <Toolbar>
-                            <Title text="Request Details: {selectedBP>/Name}" />
-                            <ToolbarSpacer />
-                            <Button text="Approve" type="Accept" icon="sap-icon://accept" press=".onApprove"/>
-                            <Button text="Reject" type="Reject" icon="sap-icon://decline" press=".onReject"/>
-                        </Toolbar>
-                        <content>
-                            <VBox class="sapUiMediumMargin">
-                                <form:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="2">
-                                    <form:toolbar>
-                                        <Toolbar>
-                                            <Title text="General Information" />
-                                        </Toolbar>
-                                    </form:toolbar>
+                <HBox height="100%" renderType="Bare">
+                    <!-- Master: List of Workflows -->
+                    <VBox width="350px" class="sapUiSmallMarginEnd shadowBox" backgroundDesign="Translucent">
+                        <List id="pendingList"
+                              mode="SingleSelectMaster"
+                              selectionChange=".onBPSelect"
+                              items="{approvalList>/}">
+                            <StandardListItem
+                                title="{approvalList>bpName}"
+                                description="ID: {approvalList>bpNumber}"
+                                info="{approvalList>status}"
+                                infoState="{= ${approvalList>status} === 'approved' ? 'Success' : (${approvalList>status} === 'rejected' ? 'Error' : 'Warning') }"
+                                type="Active"/>
+                        </List>
+                    </VBox>
 
-                                    <Label text="BP Name" />
-                                    <Text text="{selectedBP>/Name}" />
+                    <!-- Detail -->
+                    <VBox id="detailContainer" visible="false" class="destinationDetailContainer sapUiMediumMarginBegin" width="100%">
+                        <Panel id="detailPanel" headerText="Request Details" class="sapUiNoContentPadding">
+                            <Toolbar>
+                                <Title text="Request Details: {selectedBP>/Name}" />
+                                <ToolbarSpacer />
+                                <Button text="Approve" type="Accept" icon="sap-icon://accept" press=".onApprove" visible="{= ${workflowData>/status} === 'pending' }"/>
+                                <Button text="Reject" type="Reject" icon="sap-icon://decline" press=".onReject" visible="{= ${workflowData>/status} === 'pending' }"/>
+                            </Toolbar>
+                            <content>
+                                <VBox class="sapUiMediumMargin">
+                                    <form:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="2">
+                                        <form:toolbar>
+                                            <Toolbar>
+                                                <Title text="General Information" />
+                                            </Toolbar>
+                                        </form:toolbar>
+                                        
+                                        <Label text="BP Name" />
+                                        <Text text="{selectedBP>/Name}" />
+                                        
+                                        <Label text="Reference Number" />
+                                        <Text text="{selectedBP>/BusinessPartnerNumber}" />
+                                        
+                                        <Label text="Category" />
+                                        <Text text="{selectedBP>/BusinessPartnerCategory}" />
+                                        
+                                        <Label text="Grouping" />
+                                        <Text text="{selectedBP>/Grouping}" />
 
-                                    <Label text="Reference Number" />
-                                    <Text text="{selectedBP>/BusinessPartnerNumber}" />
+                                        <core:Title text="Contact Details" />
+                                        <Label text="Email" />
+                                        <Text text="{selectedBP>/Email}" />
+                                        
+                                        <Label text="Phone" />
+                                        <Text text="{selectedBP>/MobileNumber}" />
+                                        
+                                        <Label text="Country" />
+                                        <Text text="{selectedBP>/Country}" />
+                                    </form:SimpleForm>
 
-                                    <Label text="Category" />
-                                    <Text text="{selectedBP>/BusinessPartnerCategory}" />
-
-                                    <Label text="Grouping" />
-                                    <Text text="{selectedBP>/Grouping}" />
-
-                                    <core:Title text="Contact Details" />
-                                    <Label text="Email" />
-                                    <Text text="{selectedBP>/Email}" />
-
-                                    <Label text="Phone" />
-                                    <Text text="{selectedBP>/MobileNumber}" />
-
-                                    <Label text="Country" />
-                                    <Text text="{selectedBP>/Country}" />
-                                </form:SimpleForm>
-
-                                <Table headerText="Workflow Progress" items="{path: 'progressData>/'}" class="sapUiMediumMarginTop">
-                                    <columns>
-                                        <Column><Text text="Step" /></Column>
-                                        <Column><Text text="Approver" /></Column>
-                                        <Column><Text text="Status" /></Column>
-                                    </columns>
-                                    <items>
-                                        <ColumnListItem>
-                                            <cells>
-                                                <Text text="{progressData>level}" />
-                                                <Text text="{progressData>approver}" />
-                                                <ObjectStatus text="{progressData>status}" state="{progressData>state}" inverted="true" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </VBox>
-                        </content>
-                    </Panel>
-                </VBox>
-            </HBox>
+                                    <Table id="workflowStepsTable" headerText="Workflow Progress" class="sapUiMediumMarginTop" items="{progressData>/}">
+                                        <columns>
+                                            <Column><Text text="Step" /></Column>
+                                            <Column><Text text="Approver" /></Column>
+                                            <Column><Text text="Status" /></Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem>
+                                                <cells>
+                                                    <Text text="{progressData>levelName}" />
+                                                    <Text text="{progressData>email}" />
+                                                    <ObjectStatus text="{progressData>status}" 
+                                                                  state="{= ${progressData>status} === 'Approved' ? 'Success' : (${progressData>status} === 'Awaiting' ? 'Warning' : (${progressData>status} === 'Rejected' ? 'Error' : 'None')) }" 
+                                                                  inverted="true" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </VBox>
+                            </content>
+                        </Panel>
+                    </VBox>
+                </HBox>
+            </VBox>
         </f:content>
     </f:DynamicPage>
 </mvc:View>

@@ -52,7 +52,7 @@ sap.ui.define([
                 Grouping: "ZP01",
                 Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
                 StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
-                TaxCategory: "", TaxNumber: "", TaxStatus: "",
+                TaxCategory: "UG01", TaxNumber: "", TaxStatus: "",
 
                 // Credit Management
                 RiskClass: "D",
@@ -91,7 +91,12 @@ sap.ui.define([
                 this._refreshValueHelps();
 
                 // Reset fields to default
-                oModel.setData(Object.assign(oModel.getData(), this._getDefaultData()));
+                var oDefaults = this._getDefaultData();
+                oModel.setData(Object.assign(oModel.getData(), oDefaults));
+                
+                // Explicitly set TaxCategory again to be sure
+                oModel.setProperty("/TaxCategory", "UG01");
+                
                 oModel.refresh();
 
                 setTimeout(function () {
@@ -150,7 +155,7 @@ sap.ui.define([
                 BPType: "Customer",
                 Grouping: "ZP01",
                 Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
-                TaxCategory: "", TaxNumber: "", TaxStatus: "",
+                TaxCategory: "UG01", TaxNumber: "", TaxStatus: "",
                 RiskClass: "D",
                 CheckRule: "Z1",
                 CreditGroup: "10",

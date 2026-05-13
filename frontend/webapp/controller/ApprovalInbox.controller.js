@@ -63,14 +63,15 @@ sap.ui.define([
         _loadApprovalItems: function (sUserEmail, sRole) {
             var that = this;
             var oModel = this.getOwnerComponent().getModel();
+            var sStatus = this.getView().byId("approvalTabBar").getSelectedKey() || "pending";
 
-            console.log("Loading items for:", sUserEmail, "role:", sRole);
+            console.log("Loading items for:", sUserEmail, "role:", sRole, "status:", sStatus);
 
-            // Use OData V4 bindList with $expand for better performance and compatibility
+            // Fetch ApprovalWorkflows with businessPartner and logs expanded
             var oListBinding = oModel.bindList("/ApprovalWorkflows", null, null, [
-                new Filter("status", "EQ", "pending")
+                new Filter("status", "EQ", sStatus)
             ], {
-                $expand: "businessPartner"
+                $expand: "businessPartner,logs"
             });
 
             oListBinding.requestContexts().then(function (aContexts) {
@@ -83,6 +84,14 @@ sap.ui.define([
                 console.error("Error loading workflows:", oError);
                 MessageBox.error("Failed to load approval items");
             });
+        },
+
+        onFilterSelect: function () {
+            var oUserInfo = this.getView().getModel("userInfo").getData();
+            if (oUserInfo && oUserInfo.email) {
+                this._loadApprovalItems(oUserInfo.email, oUserInfo.role);
+            }
+            this.getView().byId("detailContainer").setVisible(false);
         },
 
         _loadBPDetails: function (aWorkflows) {
@@ -105,13 +114,15 @@ sap.ui.define([
                         bpCategory: oBP.BusinessPartnerCategory,
                         bpGrouping: oBP.Grouping,
                         bpMobile: oBP.MobileNumber,
-                        bpCountry: oBP.Country
+                        bpCountry: oBP.Country,
+                        logs: oWorkflow.logs || []
                     });
                 }
             });
 
-            // Filter by approver if not admin
-            if (oUserInfo.role !== 'admin') {
+            // Filter by approver if not admin and status is pending
+            var sStatus = this.getView().byId("approvalTabBar").getSelectedKey() || "pending";
+            if (oUserInfo.role !== 'admin' && sStatus === 'pending') {
                 aResults = aResults.filter(function (item) {
                     return item.approverEmail === oUserInfo.email;
                 });
@@ -149,24 +160,46 @@ sap.ui.define([
         },
 
         _updateWorkflowProgress: function (oWorkflowData) {
-            var aProgress = [];
-
-            aProgress.push({
-                level: "Level 1",
-                approver: "Level 1 Approver",
-                status: oWorkflowData.currentLevel >= 1 ? (oWorkflowData.status === 'approved' && oWorkflowData.currentLevel > 1 ? "Approved" : "Awaiting") : "Pending",
-                state: oWorkflowData.currentLevel >= 1 ? (oWorkflowData.status === 'approved' ? "Success" : "Warning") : "Information"
+            var oModel = this.getOwnerComponent().getModel();
+            var that = this;
+            
+            // 1. Get all Approval Levels
+            var oLevelsBinding = oModel.bindList("/ApprovalLevels", null, null, null, { $orderby: "level" });
+            oLevelsBinding.requestContexts().then(function (aLevelContexts) {
+                var aLevels = aLevelContexts.map(c => c.getObject());
+                
+                // 2. Get Logs from the workflow data
+                var aLogs = oWorkflowData.logs || [];
+                
+                // 3. Map status for each level
+                var aSteps = aLevels.map(function (oLevel) {
+                    var oLog = aLogs.find(l => l.level === oLevel.level);
+                    var sStatus = "Pending";
+                    
+                    if (oWorkflowData.status === 'approved') {
+                        sStatus = "Approved";
+                    } else if (oWorkflowData.status === 'rejected' && oLog && (oLog.action === 'reject' || oLog.action === 'rejected')) {
+                        sStatus = "Rejected";
+                    } else if (oLog && (oLog.action === 'approve' || oLog.action === 'approved')) {
+                        sStatus = "Approved";
+                    } else if (oWorkflowData.status === 'pending' && oWorkflowData.currentLevel === oLevel.level) {
+                        sStatus = "Awaiting";
+                    } else if (oWorkflowData.status === 'pending' && oLevel.level < oWorkflowData.currentLevel) {
+                        sStatus = "Approved";
+                    }
+                    
+                    return {
+                        level: oLevel.level,
+                        levelName: oLevel.levelName,
+                        email: oLevel.email,
+                        status: sStatus
+                    };
+                });
+                
+                that.getView().setModel(new JSONModel(aSteps), "progressData");
             });
-
-            aProgress.push({
-                level: "Level 2",
-                approver: "Level 2 Approver",
-                status: oWorkflowData.currentLevel >= 2 ? (oWorkflowData.status === 'approved' ? "Approved" : "Awaiting") : "Pending",
-                state: oWorkflowData.currentLevel >= 2 ? (oWorkflowData.status === 'approved' ? "Success" : "Warning") : "Information"
-            });
-
-            this.getView().setModel(new JSONModel(aProgress), "progressData");
         },
+
 
         onRefresh: function () {
             var oUserInfo = this.getView().getModel("userInfo").getData();

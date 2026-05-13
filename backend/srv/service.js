@@ -174,50 +174,15 @@ module.exports = cds.service.impl(async function () {
         // 4. Update BP status to 'pending_approval'
         await UPDATE(BusinessPartners).set({ LifecycleStatus: 'pending_approval' }).where({ ID: bpID });
 
-        // 5. Send Email using Gmail SMTP
-        try {
-            // Create nodemailer transporter using Gmail SMTP
-            // Configure with your Gmail credentials
-            // For Gmail with 2FA, use App Password instead of regular password
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true, // true for 465, false for other ports
-                auth: {
-                    user: process.env.GMAIL_USER || 'saiteja14419@gmail.com',
-                    pass: process.env.GMAIL_APP_PASSWORD || 'uvhl chqx pjtj qpxi'
-                }
-            });
-
-            const fromEmail = process.env.GMAIL_USER || 'saiteja14419@gmail.com';
-
-            // Send mail
-            await transporter.sendMail({
-                from: `"Business Partner System" <${fromEmail}>`,
-                to: workflowEntry.approverEmail,
-                subject: `Approval Required: New Business Partner ${bp.Name}`,
-                text: `A new Business Partner creation request for ${bp.Name} requires your Level 1 approval.`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px;">
-                        <h2 style="color: #0070f3;">Approval Required</h2>
-                        <p>A new Business Partner creation request for <strong>${bp.Name}</strong> requires your Level 1 approval.</p>
-                        <hr style="border: 0; border-top: 1px solid #eee;" />
-                        <p><strong>BP Details:</strong></p>
-                        <table style="width: 100%;">
-                            <tr><td style="font-weight: bold; width: 120px;">Name:</td><td>${bp.Name}</td></tr>
-                            <tr><td style="font-weight: bold;">ID:</td><td>${bp.BusinessPartnerNumber}</td></tr>
-                            <tr><td style="font-weight: bold;">Role:</td><td>${bp.BPRole}</td></tr>
-                            <tr><td style="font-weight: bold;">Type:</td><td>${bp.BPType}</td></tr>
-                        </table>
-                        <p style="margin-top: 20px;">Please log in to the <strong>Business Partner Directory</strong> to review and approve the request.</p>
-                    </div>
-                `
-            });
-            console.log(`[MAIL SUCCESS] Email sent to ${workflowEntry.approverEmail} via Gmail SMTP`);
-        } catch (mailErr) {
-            console.error(`[MAIL ERROR] Failed to send email: ${mailErr.message}`);
-            console.error(`[MAIL ERROR] Stack: ${mailErr.stack}`);
-        }
+        // 5. Send Email using helper
+        const subject = `Approval Required: New Business Partner ${bp.Name}`;
+        const html = _getWorkflowEmailTemplate(
+            "Approval Required",
+            `A new Business Partner creation request for <strong>${bp.Name}</strong> requires your Level 1 approval.`,
+            bp,
+            true
+        );
+        await _sendEmail(workflowEntry.approverEmail, subject, null, html);
 
         return `Submitted for Level 1 approval to ${level1.email}`;
     });
@@ -248,8 +213,7 @@ module.exports = cds.service.impl(async function () {
         // Notify Admin (Rajesh Pendem) about the new access request
         const adminEmail = 'rajesh.pendem@canopusgbs.com';
         const subject = `New Access Request: ${data.userName}`;
-        const text = `A new access request has been submitted by ${data.userName} (${data.userEmail}).\n\nReason: ${data.reason}\nRequested Role: ${data.requestedRole}\n\nPlease log in to the system to approve or reject this request.`;
-
+        const text = `User ${data.userName} (${data.userEmail}) has requested ${data.requestedRole} access.`;
         await _sendEmail(adminEmail, subject, text);
     });
 
@@ -278,6 +242,8 @@ module.exports = cds.service.impl(async function () {
         const { workflowID, action, approverEmail } = req.data;
         const { ApprovalWorkflows, ApprovalLogs, ApprovalLevels, BusinessPartners } = this.entities;
 
+        console.log(`[APPROVAL] Processing workflow ${workflowID} by ${approverEmail} (Action: ${action})`);
+
         // 1. Get the workflow entry
         const workflow = await SELECT.one.from(ApprovalWorkflows).where({ ID: workflowID });
         if (!workflow) return req.error(404, "Workflow not found");
@@ -304,8 +270,14 @@ module.exports = cds.service.impl(async function () {
             // Send rejection email to requester
             const bp = await SELECT.one.from(BusinessPartners).where({ ID: workflow.businessPartner_ID });
             if (bp) {
-                await _sendEmail(bp.Email, "Your Business Partner request has been rejected",
-                    `Your request for ${bp.Name} has been rejected by Level ${workflow.currentLevel} approver.`);
+                const subject = "Your Business Partner request has been rejected";
+                const html = _getWorkflowEmailTemplate(
+                    "Request Rejected",
+                    `Your request for <strong>${bp.Name}</strong> has been rejected by the Level ${workflow.currentLevel} approver.`,
+                    bp,
+                    false
+                );
+                await _sendEmail(bp.Email, subject, null, html);
             }
 
             return "Request rejected";
@@ -324,8 +296,14 @@ module.exports = cds.service.impl(async function () {
 
             // Send email to next level approver
             const bp = await SELECT.one.from(BusinessPartners).where({ ID: workflow.businessPartner_ID });
-            await _sendEmail(nextApprover.email, `Approval Required: Level ${nextLevel} - ${bp.Name}`,
-                `A Business Partner request for ${bp.Name} requires your Level ${nextLevel} approval.`);
+            const subject = `Approval Required: Level ${nextLevel} - ${bp.Name}`;
+            const html = _getWorkflowEmailTemplate(
+                "Approval Required",
+                `A Business Partner request for <strong>${bp.Name}</strong> requires your Level ${nextLevel} approval.`,
+                bp,
+                true
+            );
+            await _sendEmail(nextApprover.email, subject, null, html);
         } else {
             // No more levels - finalize the approval
             await UPDATE(ApprovalWorkflows).set({ status: 'approved' }).where({ ID: workflowID });
@@ -334,8 +312,14 @@ module.exports = cds.service.impl(async function () {
             // Send approval email to requester
             const bp = await SELECT.one.from(BusinessPartners).where({ ID: workflow.businessPartner_ID });
             if (bp) {
-                await _sendEmail(bp.Email, "Business Partner Approved!",
-                    `Your Business Partner request for ${bp.Name} has been fully approved and is now active.`);
+                const subject = "Business Partner Approved!";
+                const html = _getWorkflowEmailTemplate(
+                    "Business Partner Approved",
+                    `Your Business Partner request for <strong>${bp.Name}</strong> has been fully approved and is now active.`,
+                    bp,
+                    false
+                );
+                await _sendEmail(bp.Email, subject, null, html);
             }
         }
 
@@ -343,7 +327,7 @@ module.exports = cds.service.impl(async function () {
     });
 
     // Helper function to send emails
-    async function _sendEmail(to, subject, text) {
+    async function _sendEmail(to, subject, text, html) {
         try {
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
@@ -355,15 +339,39 @@ module.exports = cds.service.impl(async function () {
                 }
             });
 
+            const fromEmail = process.env.GMAIL_USER || 'saiteja14419@gmail.com';
+
             await transporter.sendMail({
-                from: process.env.GMAIL_USER || 'saiteja14419@gmail.com',
+                from: `"Business Partner System" <${fromEmail}>`,
                 to: to,
                 subject: subject,
-                text: text
+                text: text || "Please log in to the system to view this message.",
+                html: html
             });
             console.log(`[MAIL] Email sent to ${to}`);
         } catch (err) {
             console.error(`[MAIL ERROR] Failed to send email: ${err.message}`);
         }
+    }
+
+    // Professional HTML Email Template Generator
+    function _getWorkflowEmailTemplate(title, message, bp, isApprover) {
+        return `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px;">
+                <h2 style="color: #0070f3;">${title}</h2>
+                <p>${message}</p>
+                <hr style="border: 0; border-top: 1px solid #eee;" />
+                <p><strong>BP Details:</strong></p>
+                <table style="width: 100%;">
+                    <tr><td style="font-weight: bold; width: 120px;">Name:</td><td>${bp.Name}</td></tr>
+                    <tr><td style="font-weight: bold;">ID:</td><td>${bp.BusinessPartnerNumber}</td></tr>
+                    <tr><td style="font-weight: bold;">Role:</td><td>${bp.BPRole}</td></tr>
+                    <tr><td style="font-weight: bold;">Type:</td><td>${bp.BPType}</td></tr>
+                </table>
+                <p style="margin-top: 20px;">
+                    ${isApprover ? 'Please log in to the <strong>Business Partner Directory</strong> to review and approve the request.' : 'You can now view this Business Partner in the directory.'}
+                </p>
+            </div>
+        `;
     }
 });

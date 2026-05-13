@@ -154,7 +154,7 @@
                             <core:Title text="3. Tax Information"/>
                             
                             <Label text="Tax Category" required="true"/>
-                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory', parameters: {$filter: 'isActive eq true'}}" forceSelection="true" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
