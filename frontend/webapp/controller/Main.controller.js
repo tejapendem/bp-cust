@@ -55,6 +55,19 @@ sap.ui.define([
 
     return Controller.extend("bp.cust.ui.controller.Main", {
         onInit: function () {
+            // Access control - only registered users can access this page
+            var oUserModel = this.getOwnerComponent().getModel("userModel");
+            if (oUserModel) {
+                var bIsRegistered = oUserModel.getProperty("/isRegistered");
+                if (!bIsRegistered) {
+                    sap.m.MessageBox.warning("You need to request access to use this page.", {
+                        onClose: function () {
+                            this.getOwnerComponent().getRouter().navTo("Main");
+                        }.bind(this)
+                    });
+                }
+            }
+
             this.getOwnerComponent().getRouter().getRoute("Main").attachPatternMatched(this._onMainMatched, this);
         },
 

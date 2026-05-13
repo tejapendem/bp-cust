@@ -130,6 +130,20 @@
           "target": [
             "TargetDashboard"
           ]
+        },
+        {
+          "name": "ApprovalLevels",
+          "pattern": "admin/approval-levels",
+          "target": [
+            "TargetApprovalLevels"
+          ]
+        },
+        {
+          "name": "ApprovalInbox",
+          "pattern": "admin/approval-inbox",
+          "target": [
+            "TargetApprovalInbox"
+          ]
         }
       ],
       "targets": {
@@ -152,6 +166,14 @@
         "TargetDashboard": {
           "viewType": "XML",
           "viewName": "Dashboard"
+        },
+        "TargetApprovalLevels": {
+          "viewType": "XML",
+          "viewName": "ApprovalLevels"
+        },
+        "TargetApprovalInbox": {
+          "viewType": "XML",
+          "viewName": "ApprovalInbox"
         }
       }
     }

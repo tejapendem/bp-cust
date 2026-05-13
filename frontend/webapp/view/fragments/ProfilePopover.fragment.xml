@@ -34,7 +34,7 @@
         <footer>
             <Toolbar>
                 <ToolbarSpacer />
-                <Button text="Logout" type="Transparent" press=".onLogoutPress" color="Critical" />
+                <Button text="Logout" type="Transparent" press=".onLogoutPress" />
             </Toolbar>
         </footer>
     </ResponsivePopover>

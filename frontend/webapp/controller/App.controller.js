@@ -4,165 +4,218 @@ sap.ui.define(
         "sap/ui/model/json/JSONModel",
         "sap/ui/core/Fragment"
     ],
-    function(BaseController, JSONModel, Fragment) {
-      "use strict";
-  
-      return BaseController.extend("bp.cust.ui.controller.App", {
-        onInit: function() {
-            var sHostname = window.location.hostname;
-            var bIsLocal = sHostname === "localhost" || sHostname === "127.0.0.1" || sHostname.includes("applicationstudio.cloud.sap");
-            
-            // Initial default state
-            var oUserData = {
-                name: bIsLocal ? "Rajesh Pendem (Local)" : "Guest User",
-                email: bIsLocal ? "rajesh.pendem@canopusgbs.com" : "",
-                role: bIsLocal ? "admin" : "guest",
-                isAdmin: bIsLocal,
-                initials: bIsLocal ? "RP" : "GU",
-                assignedRoles: bIsLocal ? "admin" : ""
-            };
+    function (BaseController, JSONModel, Fragment) {
+        "use strict";
 
-            var oUserModel = new JSONModel(oUserData);
-            this.getView().setModel(oUserModel, "userModel");
+        return BaseController.extend("bp.cust.ui.controller.App", {
+            onInit: function () {
+                var sHostname = window.location.hostname;
+                var bIsLocal = sHostname === "localhost" || sHostname === "127.0.0.1" || sHostname.includes("applicationstudio.cloud.sap");
 
-            // Always try to fetch the actual user info from the database
-            this._checkUserInfo();
+                // Initial default state
+                var oUserData = {
+                    name: bIsLocal ? "Rajesh Pendem (Local)" : "Guest User",
+                    email: bIsLocal ? "rajesh.pendem@canopusgbs.com" : "",
+                    role: bIsLocal ? "admin" : "guest",
+                    isAdmin: bIsLocal,
+                    initials: bIsLocal ? "RP" : "GU",
+                    assignedRoles: bIsLocal ? "admin" : "",
+                    isRegistered: bIsLocal
+                };
 
-            // Apply density class
-            this.getView().addStyleClass("sapUiSizeCompact");
-        },
+                var oUserModel = new JSONModel(oUserData);
+                this.getOwnerComponent().setModel(oUserModel, "userModel");
 
-        _checkUserInfo: function() {
-            var oUserModel = this.getView().getModel("userModel");
-            var oODataModel = this.getOwnerComponent().getModel();
-            var that = this;
+                // Always try to fetch the actual user info from the database
+                this._checkUserInfo();
 
-            // Call the backend function to get the logged-in user details
-            var oCtx = oODataModel.bindContext("/getUserInfo(...)");
-            oCtx.execute().then(function() {
-                var oData = oCtx.getBoundContext().getObject();
-                if (oData && oData.email) {
-                    oUserModel.setProperty("/email", oData.email);
-                    oUserModel.setProperty("/name", oData.name);
-                    oUserModel.setProperty("/role", oData.role);
-                    oUserModel.setProperty("/isAdmin", oData.isAdmin);
-                    oUserModel.setProperty("/initials", (oData.name || "GU").substring(0, 2).toUpperCase());
-                    oUserModel.setProperty("/assignedRoles", oData.role);
+                // Apply density class
+                this.getView().addStyleClass("sapUiSizeCompact");
+            },
+
+            _checkUserInfo: function () {
+                var oUserModel = this.getView().getModel("userModel");
+                var oODataModel = this.getOwnerComponent().getModel();
+                var that = this;
+
+                // Call the backend function to get the logged-in user details
+                var oCtx = oODataModel.bindContext("/getUserInfo(...)");
+                oCtx.execute().then(function () {
+                    var oData = oCtx.getBoundContext().getObject();
+                    console.log("[Frontend] getUserInfo response:", JSON.stringify(oData));
+                    if (oData && oData.email) {
+                        oUserModel.setProperty("/email", oData.email);
+                        oUserModel.setProperty("/name", oData.name);
+                        oUserModel.setProperty("/role", oData.role);
+                        oUserModel.setProperty("/isAdmin", oData.isAdmin);
+                        oUserModel.setProperty("/initials", (oData.name || "GU").substring(0, 2).toUpperCase());
+                        oUserModel.setProperty("/assignedRoles", oData.role);
+                        oUserModel.setProperty("/isRegistered", oData.isRegistered);
+
+                        console.log("[Frontend] User updated - role:", oData.role, "isAdmin:", oData.isAdmin, "isRegistered:", oData.isRegistered);
+
+                        // If user is not registered (new user), show request access dialog
+                        if (oData.isRegistered === false) {
+                            that._showRequestAccessDialog();
+                        }
+                    } else {
+                        // Guest user - show request access dialog automatically
+                        that._showRequestAccessDialog();
+                    }
+                }).catch(function (oErr) {
+                    // If it fails, we keep the default local/guest state
+                    console.log("UserInfo fetch skipped or failed: using defaults.");
+                    // Show request access for guest
+                    that._showRequestAccessDialog();
+                });
+            },
+
+            _showRequestAccessDialog: function () {
+                var oView = this.getView();
+                if (!this._pRequestDialog) {
+                    this._pRequestDialog = Fragment.load({
+                        id: oView.getId(),
+                        name: "bp.cust.ui.view.fragments.RequestAccess",
+                        controller: this
+                    }).then(function (oDialog) {
+                        oView.addDependent(oDialog);
+                        return oDialog;
+                    });
                 }
-            }).catch(function(oErr) {
-                // If it fails, we keep the default local/guest state
-                console.log("UserInfo fetch skipped or failed: using defaults.");
-            });
-        },
-
-        onSideNavButtonPress: function() {
-            var oToolPage = this.byId("toolPage");
-            var bSideExpanded = oToolPage.getSideExpanded();
-            oToolPage.setSideExpanded(!bSideExpanded);
-        },
-
-        onItemSelect: function(oEvent) {
-            var sKey = oEvent.getParameter("item").getKey();
-            if (sKey === "admin") {
-                this.getOwnerComponent().getRouter().navTo("Admin");
-            } else if (sKey === "home") {
-                this.getOwnerComponent().getRouter().navTo("Main");
-            } else if (sKey === "createBP") {
-                this.getOwnerComponent().getRouter().navTo("Wizard");
-            } else if (sKey === "queue") {
-                this.getOwnerComponent().getRouter().navTo("ActivationQueue");
-            } else if (sKey === "dashboard") {
-                this.getOwnerComponent().getRouter().navTo("Dashboard");
-            }
-        },
-
-        onProfilePress: function(oEvent) {
-            var oButton = oEvent.getSource();
-            var oView = this.getView();
-
-            if (!this._pProfilePopover) {
-                this._pProfilePopover = Fragment.load({
-                    id: oView.getId(),
-                    name: "bp.cust.ui.view.fragments.ProfilePopover",
-                    controller: this
-                }).then(function(oPopover) {
-                    oView.addDependent(oPopover);
-                    return oPopover;
+                this._pRequestDialog.then(function (oDialog) {
+                    oDialog.open();
                 });
-            }
-            this._pProfilePopover.then(function(oPopover) {
-                oPopover.openBy(oButton);
-            });
-        },
+            },
 
-        onRoleToggle: function(oEvent) {
-            var bState = oEvent.getParameter("state");
-            var oUserModel = this.getView().getModel("userModel");
-            var sNewRole = bState ? "admin" : "viewer";
-            oUserModel.setProperty("/role", sNewRole);
-            oUserModel.setProperty("/isAdmin", sNewRole === "admin");
-            oUserModel.setProperty("/assignedRoles", sNewRole);
-            
-            if (sNewRole === "viewer") {
-                this.getOwnerComponent().getRouter().navTo("Main");
-            }
-            sap.m.MessageToast.show("Role switched to " + sNewRole);
-        },
+            onSideNavButtonPress: function () {
+                var oToolPage = this.byId("toolPage");
+                var bSideExpanded = oToolPage.getSideExpanded();
+                oToolPage.setSideExpanded(!bSideExpanded);
+            },
 
-        onManageAccessPress: function() {
-            var oView = this.getView();
-            if (!this._pRequestDialog) {
-                this._pRequestDialog = Fragment.load({
-                    id: oView.getId(),
-                    name: "bp.cust.ui.view.fragments.RequestAccess",
-                    controller: this
-                }).then(function(oDialog) {
-                    oView.addDependent(oDialog);
-                    return oDialog;
+            onItemSelect: function (oEvent) {
+                var oUserModel = this.getView().getModel("userModel");
+                var bIsRegistered = oUserModel.getProperty("/isRegistered");
+                var bIsAdmin = oUserModel.getProperty("/isAdmin");
+                var sRole = oUserModel.getProperty("/role");
+
+                // Block navigation for non-registered users
+                if (!bIsRegistered) {
+                    sap.m.MessageBox.warning("You need to request access to use this application.");
+                    return;
+                }
+
+                var sKey = oEvent.getParameter("item").getKey();
+
+                // Admin-only pages - ensure route names match manifest.json exactly
+                if (sKey === "dashboard") {
+                    if (!bIsAdmin) { sap.m.MessageBox.warning("Access Denied"); return; }
+                    this.getOwnerComponent().getRouter().navTo("Dashboard");
+                } else if (sKey === "queue") {
+                    if (!bIsAdmin) { sap.m.MessageBox.warning("Access Denied"); return; }
+                    this.getOwnerComponent().getRouter().navTo("ActivationQueue");
+                } else if (sKey === "admin") {
+                    if (!bIsAdmin) { sap.m.MessageBox.warning("Access Denied"); return; }
+                    this.getOwnerComponent().getRouter().navTo("Admin");
+                } else if (sKey === "approvalLevels") {
+                    if (!bIsAdmin) { sap.m.MessageBox.warning("Access Denied"); return; }
+                    this.getOwnerComponent().getRouter().navTo("ApprovalLevels");
+                } else if (sKey === "approvalInbox") {
+                    if (!bIsAdmin) { sap.m.MessageBox.warning("Access Denied"); return; }
+                    this.getOwnerComponent().getRouter().navTo("ApprovalInbox");
+                } else if (sKey === "home") {
+                    this.getOwnerComponent().getRouter().navTo("Main");
+                } else if (sKey === "createBP") {
+                    this.getOwnerComponent().getRouter().navTo("Wizard");
+                }
+            },
+
+            onProfilePress: function (oEvent) {
+                var oButton = oEvent.getSource();
+                var oView = this.getView();
+
+                if (!this._pProfilePopover) {
+                    this._pProfilePopover = Fragment.load({
+                        id: oView.getId(),
+                        name: "bp.cust.ui.view.fragments.ProfilePopover",
+                        controller: this
+                    }).then(function (oPopover) {
+                        oView.addDependent(oPopover);
+                        return oPopover;
+                    });
+                }
+                this._pProfilePopover.then(function (oPopover) {
+                    oPopover.openBy(oButton);
                 });
+            },
+
+            onRoleToggle: function (oEvent) {
+                var bState = oEvent.getParameter("state");
+                var oUserModel = this.getView().getModel("userModel");
+                var sNewRole = bState ? "admin" : "viewer";
+                oUserModel.setProperty("/role", sNewRole);
+                oUserModel.setProperty("/isAdmin", sNewRole === "admin");
+                oUserModel.setProperty("/assignedRoles", sNewRole);
+
+                if (sNewRole === "viewer") {
+                    this.getOwnerComponent().getRouter().navTo("Main");
+                }
+                sap.m.MessageToast.show("Role switched to " + sNewRole);
+            },
+
+            onManageAccessPress: function () {
+                var oView = this.getView();
+                if (!this._pRequestDialog) {
+                    this._pRequestDialog = Fragment.load({
+                        id: oView.getId(),
+                        name: "bp.cust.ui.view.fragments.RequestAccess",
+                        controller: this
+                    }).then(function (oDialog) {
+                        oView.addDependent(oDialog);
+                        return oDialog;
+                    });
+                }
+                this._pRequestDialog.then(function (oDialog) {
+                    oDialog.open();
+                });
+            },
+
+            onCancelRequest: function () {
+                this.byId("requestAccessDialog").close();
+            },
+
+            onSubmitRequest: function () {
+                var oView = this.getView();
+                var oModel = oView.getModel();
+
+                var sName = this.byId("requestName").getValue();
+                var sEmail = this.byId("requestEmail").getValue();
+                var sRequestedRole = this.byId("requestedRole").getSelectedKey();
+                var sReason = this.byId("requestReason").getValue();
+
+                if (!sName || !sEmail || !sReason) {
+                    sap.m.MessageBox.error("Please fill in all mandatory fields.");
+                    return;
+                }
+
+                var oPayload = {
+                    userEmail: sEmail,
+                    userName: sName,
+                    requestedRole: sRequestedRole,
+                    reason: sReason,
+                    status: "pending"
+                };
+
+                var oListBinding = oModel.bindList("/AccessRequests", null, null, null, { $$updateGroupId: "$auto" });
+                oListBinding.create(oPayload);
+
+                sap.m.MessageToast.show("Access request submitted successfully.");
+                this.byId("requestAccessDialog").close();
+            },
+
+            onLogoutPress: function () {
+                sap.m.MessageToast.show("Logging out...");
             }
-            this._pRequestDialog.then(function(oDialog) {
-                oDialog.open();
-            });
-        },
-
-        onCancelRequest: function() {
-            this.byId("requestAccessDialog").close();
-        },
-
-        onSubmitRequest: function() {
-            var oView = this.getView();
-            var oModel = oView.getModel();
-            
-            var sName = this.byId("requestName").getValue();
-            var sEmail = this.byId("requestEmail").getValue();
-            var sRequestedRole = this.byId("requestedRole").getSelectedKey();
-            var sReason = this.byId("requestReason").getValue();
-
-            if (!sName || !sEmail || !sReason) {
-                sap.m.MessageBox.error("Please fill in all mandatory fields.");
-                return;
-            }
-
-            var oPayload = {
-                userEmail: sEmail,
-                userName: sName,
-                requestedRole: sRequestedRole,
-                reason: sReason,
-                status: "pending"
-            };
-
-            var oListBinding = oModel.bindList("/AccessRequests", null, null, null, { $$updateGroupId: "$auto" });
-            oListBinding.create(oPayload);
-
-            sap.m.MessageToast.show("Access request submitted successfully.");
-            this.byId("requestAccessDialog").close();
-        },
-
-        onLogoutPress: function() {
-            sap.m.MessageToast.show("Logging out...");
-        }
-      });
+        });
     }
-  );
-  
+);

@@ -493,7 +493,7 @@
         </content>
         <buttons>
             <Button text="Cancel" press="onCloseReview" type="Transparent"/>
-            <Button text="Submit for Creation" press="onWizardCompleted" type="Emphasized" icon="sap-icon://paper-plane" visible="{= !${wizardData>/isReadOnly} }"/>
+            <Button text="Submit for Approval" press="onWizardCompleted" type="Emphasized" icon="sap-icon://paper-plane" visible="{= !${wizardData>/isReadOnly} }"/>
         </buttons>
     </Dialog>
 </mvc:View>

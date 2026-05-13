@@ -38,10 +38,16 @@ service BusinessPartnerService {
     entity Users as projection on cust.Users;
     
     entity AccessRequests as projection on cust.AccessRequests;
+    entity ApprovalLevels as projection on cust.ApprovalLevels;
+    entity ApprovalWorkflows as projection on cust.ApprovalWorkflows;
+    entity ApprovalLogs as projection on cust.ApprovalLogs;
 
     action sendOTP(mobileNumber: String) returns String;
     action verifyOTP(mobileNumber: String, otp: String) returns Boolean;
+    action submitForApproval(bpID: UUID) returns String;
+    action processApproval(workflowID: UUID, action: String, approverEmail: String) returns String;
 
+    @(requires: 'authenticated-user')
     function getUserInfo() returns {
         email: String;
         name: String;
@@ -49,6 +55,7 @@ service BusinessPartnerService {
         isAdmin: Boolean;
     };
 
+    @(requires: 'authenticated-user')
     function getAdminStats() returns {
         activeBPs: Integer;
         draftBPs: Integer;
@@ -58,8 +65,48 @@ service BusinessPartnerService {
     };
 }
 
-// Explicitly allow CREATE for all authenticated users, and READ for admins
+// Secure the main entities
+annotate BusinessPartnerService.BusinessPartners with @(restrict: [
+    { grant: '*', to: ['admin', 'Admin'] },
+    { grant: 'READ', to: ['viewer'] }
+]);
+
+annotate BusinessPartnerService.BPSalesAreas with @(restrict: [
+    { grant: '*', to: ['admin', 'Admin'] },
+    { grant: 'READ', to: ['viewer'] }
+]);
+
+annotate BusinessPartnerService.BPCompanyCodes with @(restrict: [
+    { grant: '*', to: ['admin', 'Admin'] },
+    { grant: 'READ', to: ['viewer'] }
+]);
+
+annotate BusinessPartnerService.BPCreditSegments with @(restrict: [
+    { grant: '*', to: ['admin', 'Admin'] },
+    { grant: 'READ', to: ['viewer'] }
+]);
+
+// Secure the User Management and configuration entities
+annotate BusinessPartnerService.Users with @(restrict: [
+    { grant: '*', to: ['admin', 'Admin'] }
+]);
+
+annotate BusinessPartnerService.ApprovalLevels with @(restrict: [
+    { grant: '*', to: ['admin', 'Admin'] }
+]);
+
+// Explicitly allow CREATE for all authenticated users, and READ for admins/owners
 annotate BusinessPartnerService.AccessRequests with @(restrict: [
     { grant: 'CREATE', to: 'authenticated-user' },
-    { grant: '*', to: ['admin', 'Admin', 'authenticated-user'] }
+    { grant: '*', to: ['admin', 'Admin'] }
+]);
+
+// Allow approvers to read items assigned to them
+annotate BusinessPartnerService.ApprovalWorkflows with @(restrict: [
+    { grant: 'READ', to: ['admin', 'Admin'] },
+    { grant: 'READ', where: 'approverEmail = $user' }
+]);
+
+annotate BusinessPartnerService.ApprovalLogs with @(restrict: [
+    { grant: '*', to: ['admin', 'Admin'] }
 ]);

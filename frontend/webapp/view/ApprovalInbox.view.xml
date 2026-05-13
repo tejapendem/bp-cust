@@ -1,0 +1,101 @@
+<mvc:View controllerName="bp.cust.ui.controller.ApprovalInbox"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core">
+    <f:DynamicPage id="approvalInboxPage" headerExpanded="true" showFooter="true">
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <Title text="Approval Inbox"/>
+                </f:heading>
+                <f:actions>
+                    <Button text="Refresh" type="Transparent" icon="sap-icon://refresh" press=".onRefresh"/>
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <f:content>
+            <HBox height="100%" renderType="Bare">
+                <!-- Master: List of Pending BPs -->
+                <VBox width="350px" class="sapUiSmallMarginEnd shadowBox" backgroundDesign="Translucent">
+                    <List id="pendingList"
+                          mode="SingleSelectMaster"
+                          selectionChange=".onBPSelect"
+                          headerText="Pending Requests"
+                          items="{approvalList>/}">
+                        <StandardListItem
+                            title="{approvalList>bpName}"
+                            description="ID: {approvalList>bpNumber}"
+                            info="{approvalList>bpType}"
+                            infoState="Information"
+                            type="Active"/>
+                    </List>
+                </VBox>
+
+                <!-- Detail: Request Details -->
+                <VBox id="detailContainer" visible="false" class="destinationDetailContainer sapUiMediumMarginBegin" width="100%">
+                    <Panel headerText="Request Details" class="sapUiNoContentPadding">
+                        <Toolbar>
+                            <Title text="Request Details: {selectedBP>/Name}" />
+                            <ToolbarSpacer />
+                            <Button text="Approve" type="Accept" icon="sap-icon://accept" press=".onApprove"/>
+                            <Button text="Reject" type="Reject" icon="sap-icon://decline" press=".onReject"/>
+                        </Toolbar>
+                        <content>
+                            <VBox class="sapUiMediumMargin">
+                                <form:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="2">
+                                    <form:toolbar>
+                                        <Toolbar>
+                                            <Title text="General Information" />
+                                        </Toolbar>
+                                    </form:toolbar>
+
+                                    <Label text="BP Name" />
+                                    <Text text="{selectedBP>/Name}" />
+
+                                    <Label text="Reference Number" />
+                                    <Text text="{selectedBP>/BusinessPartnerNumber}" />
+
+                                    <Label text="Category" />
+                                    <Text text="{selectedBP>/BusinessPartnerCategory}" />
+
+                                    <Label text="Grouping" />
+                                    <Text text="{selectedBP>/Grouping}" />
+
+                                    <core:Title text="Contact Details" />
+                                    <Label text="Email" />
+                                    <Text text="{selectedBP>/Email}" />
+
+                                    <Label text="Phone" />
+                                    <Text text="{selectedBP>/MobileNumber}" />
+
+                                    <Label text="Country" />
+                                    <Text text="{selectedBP>/Country}" />
+                                </form:SimpleForm>
+
+                                <Table headerText="Workflow Progress" items="{path: 'progressData>/'}" class="sapUiMediumMarginTop">
+                                    <columns>
+                                        <Column><Text text="Step" /></Column>
+                                        <Column><Text text="Approver" /></Column>
+                                        <Column><Text text="Status" /></Column>
+                                    </columns>
+                                    <items>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text text="{progressData>level}" />
+                                                <Text text="{progressData>approver}" />
+                                                <ObjectStatus text="{progressData>status}" state="{progressData>state}" inverted="true" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                            </VBox>
+                        </content>
+                    </Panel>
+                </VBox>
+            </HBox>
+        </f:content>
+    </f:DynamicPage>
+</mvc:View>

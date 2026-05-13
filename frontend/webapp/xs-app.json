@@ -8,6 +8,7 @@
       "authenticationType": "xsuaa",
       "csrfProtection": true
     },
+
     {
       "source": "^(.*)$",
       "service": "html5-apps-repo-rt",

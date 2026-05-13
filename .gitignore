@@ -6,6 +6,8 @@ yarn-error.log*
 
 # CAP / SQLite
 *.sqlite
+*.sqlite-shm
+*.sqlite-wal
 *.db
 *.db-journal
 
@@ -31,6 +33,9 @@ out/
 .ui5/
 resources/
 
+# App (deployed/build folder)
+app/
+
 # IDE
 .vscode/
 .idea/
@@ -38,6 +43,8 @@ resources/
 # MTA
 .mta/
 mtar/
+mta_archives/
+.mtar   
 
 # Temporary files
 tmp/

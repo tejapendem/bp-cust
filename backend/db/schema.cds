@@ -144,3 +144,26 @@ entity AccessRequests : cuid, managed {
     status        : String(20) default 'pending'; // 'pending', 'approved', 'rejected'
 }
 
+entity ApprovalLevels : cuid, managed {
+    level     : Integer;
+    levelName : String(50);
+    username  : String(100);
+    email     : String(100);
+}
+
+entity ApprovalWorkflows : cuid, managed {
+    businessPartner : Association to BusinessPartners;
+    currentLevel    : Integer;
+    status          : String(20); // 'pending', 'approved', 'rejected'
+    approverEmail   : String(100);
+    logs            : Composition of many ApprovalLogs on logs.parent = $self;
+}
+
+entity ApprovalLogs : cuid, managed {
+    parent    : Association to ApprovalWorkflows;
+    level     : Integer;
+    approver  : String(100);
+    action    : String(20); // 'approved', 'rejected', 'commented'
+    comment   : String(500);
+    timestamp : DateTime;
+}

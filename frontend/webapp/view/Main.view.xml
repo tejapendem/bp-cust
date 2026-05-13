@@ -148,7 +148,7 @@
                                 
                                 <Text text="{Grouping}" />
                                 
-                                <ObjectStatus text="{LifecycleStatus}" state="{= ${LifecycleStatus} === 'draft' ? 'Warning' : 'Success' }" inverted="true" />
+                                <ObjectStatus text="{LifecycleStatus}" state="{= ${LifecycleStatus} === 'draft' ? 'Warning' : (${LifecycleStatus} === 'pending_approval' ? 'Information' : 'Success') }" inverted="true" />
 
                                 <HBox alignItems="Center">
                                     <core:Icon src="sap-icon://calendar" class="sapUiTinyMarginEnd" color="#1873B6" />

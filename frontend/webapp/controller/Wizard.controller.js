@@ -12,6 +12,19 @@ sap.ui.define([
     return Controller.extend("bp.cust.ui.controller.Wizard", {
 
         onInit: function () {
+            // Access control - only registered users can access this page
+            var oUserModel = this.getOwnerComponent().getModel("userModel");
+            if (oUserModel) {
+                var bIsRegistered = oUserModel.getProperty("/isRegistered");
+                if (!bIsRegistered) {
+                    sap.m.MessageBox.warning("You need to request access to use this page.", {
+                        onClose: function () {
+                            this.getOwnerComponent().getRouter().navTo("Main");
+                        }.bind(this)
+                    });
+                }
+            }
+
             var oViewModel = new JSONModel({
                 progress: 14,
                 progressText: "14%",
@@ -529,9 +542,9 @@ sap.ui.define([
 
         onWizardCompleted: function () {
             var oPayload = this._preparePayload(this.getView().getModel("wizardData").getData());
-            oPayload.LifecycleStatus = 'active';
+            oPayload.LifecycleStatus = 'pending_approval'; // Changed from 'active'
             this.onCloseReview();
-            this._submitData(oPayload, "Business Partner created!");
+            this._submitData(oPayload, "Business Partner submitted for approval!");
         },
 
         onSaveDraft: function () {
@@ -617,14 +630,30 @@ sap.ui.define([
                 });
 
                 // Wait for the model to submit the changes automatically (via $auto group)
-                // In V4, we can check for pending changes or just request side effects to be sure it's done.
                 oModel.submitBatch("$auto").then(function () {
-                    that._oBusyDialog.close();
-                    MessageBox.success(sMsg, {
-                        onClose: function () {
-                            that.onNavBack();
-                        }
-                    });
+                    if (oPayload.LifecycleStatus === 'pending_approval') {
+                        // Call the submitForApproval action for existing record too
+                        var oActionCtx = oModel.bindContext("/submitForApproval(...)");
+                        oActionCtx.setParameter("bpID", sTemplateID);
+                        oActionCtx.execute().then(function () {
+                            that._oBusyDialog.close();
+                            MessageBox.success(sMsg, {
+                                onClose: function () {
+                                    that.onNavBack();
+                                }
+                            });
+                        }).catch(function (oActionErr) {
+                            that._oBusyDialog.close();
+                            MessageBox.error("Data updated, but failed to trigger approval workflow: " + that._getErrorMessage(oActionErr));
+                        });
+                    } else {
+                        that._oBusyDialog.close();
+                        MessageBox.success(sMsg, {
+                            onClose: function () {
+                                that.onNavBack();
+                            }
+                        });
+                    }
                 }).catch(function (oErr) {
                     that._oBusyDialog.close();
                     var sError = that._getErrorMessage(oErr);
@@ -635,13 +664,33 @@ sap.ui.define([
                 var oList = oModel.bindList("/BusinessPartners");
                 var oCtx = oList.create(oPayload);
                 oCtx.created().then(function () {
-                    that._oBusyDialog.close();
-                    var sBp = oCtx.getObject().BusinessPartnerNumber;
-                    MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
-                        onClose: function () {
-                            that.onNavBack();
-                        }
-                    });
+                    var oCreatedData = oCtx.getObject();
+                    var sBp = oCreatedData.BusinessPartnerNumber;
+                    var sID = oCreatedData.ID;
+
+                    if (oPayload.LifecycleStatus === 'pending_approval') {
+                        // Call the submitForApproval action
+                        var oActionCtx = oModel.bindContext("/submitForApproval(...)");
+                        oActionCtx.setParameter("bpID", sID);
+                        oActionCtx.execute().then(function () {
+                            that._oBusyDialog.close();
+                            MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
+                                onClose: function () {
+                                    that.onNavBack();
+                                }
+                            });
+                        }).catch(function (oActionErr) {
+                            that._oBusyDialog.close();
+                            MessageBox.error("Data saved, but failed to trigger approval workflow: " + that._getErrorMessage(oActionErr));
+                        });
+                    } else {
+                        that._oBusyDialog.close();
+                        MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
+                            onClose: function () {
+                                that.onNavBack();
+                            }
+                        });
+                    }
                 }).catch(function (oErr) {
                     that._oBusyDialog.close();
                     var sError = that._getErrorMessage(oErr);

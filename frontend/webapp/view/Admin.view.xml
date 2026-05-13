@@ -6,6 +6,8 @@
     xmlns:layout="sap.ui.layout">
     <Page title="Administration" showHeader="true">
         <headerContent>
+             <Button icon="sap-icon://workflow-begin" text="Configure Approval Levels" type="Emphasized" press=".onConfigureApprovalLevels" class="sapUiSmallMarginEnd" />
+             <Button icon="sap-icon://pending" text="Approval Inbox" type="Emphasized" press=".onApprovalInbox" class="sapUiSmallMarginEnd" />
              <core:Icon src="sap-icon://settings" size="1.5rem" color="#666" />
         </headerContent>
         <content>

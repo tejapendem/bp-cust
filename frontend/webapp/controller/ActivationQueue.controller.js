@@ -9,6 +9,18 @@ sap.ui.define([
     return Controller.extend("bp.cust.ui.controller.ActivationQueue", {
 
         onInit: function () {
+            // Access control - only admins can access this page
+            var oUserModel = this.getOwnerComponent().getModel("userModel");
+            if (oUserModel) {
+                var bIsAdmin = oUserModel.getProperty("/isAdmin");
+                if (!bIsAdmin) {
+                    sap.m.MessageBox.warning("You don't have permission to access this page.", {
+                        onClose: function () {
+                            this.getOwnerComponent().getRouter().navTo("Main");
+                        }.bind(this)
+                    });
+                }
+            }
             this._currentVHEntity = "";
         },
 

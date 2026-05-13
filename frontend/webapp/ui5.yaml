@@ -17,6 +17,8 @@ server:
         backend:
           - path: /service/bpcust
             destination: srv-api
+          - path: /mail
+            destination: sap_process_automation_mail
 builder:
   resources:
     excludes:
