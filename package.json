@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Business Partner Creation Wizard",
   "dependencies": {
-    "@cap-js/sqlite": "^1.11.1",
+    "@cap-js/postgres": "^1",
     "@sap-cloud-sdk/connectivity": "^4.6.0",
     "@sap-cloud-sdk/mail-client": "^3.24.0",
     "@sap/cds": "^8",
@@ -13,11 +13,17 @@
     "puppeteer": "^22.6.0"
   },
   "devDependencies": {
-    "@sap/cds-dk": "^9"
+    "@sap/cds-dk": "^8"
   },
   "cds": {
-    "auto-deploy": true,
+    "auto-deploy": false,
     "requires": {
+      "db": {
+        "kind": "postgres",
+        "pool": {
+          "acquireTimeoutMillis": 60000
+        }
+      },
       "auth": {
         "[development]": {
           "kind": "mocked",
@@ -42,20 +48,10 @@
           }
         }
       },
-      "db": {
-        "kind": "sqlite",
-        "credentials": {
-          "url": "bp-cust.sqlite"
-        }
-      },
       "[production]": {
         "auth": "xsuaa",
         "db": {
-          "kind": "sqlite",
-          "credentials": {
-            "url": "bp-cust.sqlite"
-          },
-          "deploy-on-start": true
+          "kind": "postgres"
         }
       },
       "html5-repo": true,
@@ -71,11 +67,36 @@
       "db": "backend/db",
       "srv": "backend/srv",
       "app": "frontend"
+    },
+    "build": {
+      "target": "gen",
+      "tasks": [
+        {
+          "for": "nodejs",
+          "src": "backend/srv",
+          "options": {
+            "model": [
+              "backend/db",
+              "backend/srv"
+            ]
+          }
+        },
+        {
+          "for": "postgres",
+          "src": "backend/db",
+          "options": {
+            "model": [
+              "backend/db",
+              "backend/srv"
+            ]
+          }
+        }
+      ]
     }
   },
   "scripts": {
     "start": "cds-serve",
-    "deploy": "cds deploy --to sqlite:bp-cust.sqlite",
+    "deploy": "cds deploy",
     "postinstall": "npx puppeteer browsers install chrome"
   }
 }

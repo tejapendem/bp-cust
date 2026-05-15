@@ -57,3 +57,6 @@ coverage/
 
 # Lock files (optional - keep if needed)
 # package-lock.json.cache/
+
+# added by cds
+.cdsrc-private.json

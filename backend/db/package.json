@@ -1,0 +1,10 @@
+{
+    "name": "bp-cust-postgres-deployer",
+    "dependencies": {
+        "@sap/cds": "^8",
+        "@cap-js/postgres": "^1"
+    },
+    "scripts": {
+        "start": "npx cds-deploy && tail -f /dev/null"
+    }
+}
