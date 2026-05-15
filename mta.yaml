@@ -12,9 +12,11 @@ modules:
     path: .
     parameters:
       instances: 1
-      buildpack: nodejs_buildpack
-      memory: 1G
-      disk-quota: 1G
+      buildpacks:
+        - https://github.com/cloudfoundry/apt-buildpack#v0.2.14
+        - nodejs_buildpack
+      memory: 2G
+      disk-quota: 2G
     build-parameters:
       builder: custom
       commands:
@@ -25,6 +27,7 @@ modules:
         - "gen/"
         - ".git/"
         - ".vscode/"
+        - ".cache/"
     provides:
       - name: srv-api
         properties:

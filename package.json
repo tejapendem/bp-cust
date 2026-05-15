@@ -8,9 +8,9 @@
     "@sap-cloud-sdk/mail-client": "^3.24.0",
     "@sap/cds": "^8",
     "@sap/xssec": "^4",
-    "better-sqlite3": "^12.9.0",
     "express": "^4",
-    "nodemailer": "^6.10.1"
+    "nodemailer": "^6.10.1",
+    "puppeteer": "^22.6.0"
   },
   "devDependencies": {
     "@sap/cds-dk": "^9"
@@ -75,6 +75,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "deploy": "cds deploy --to sqlite:bp-cust.sqlite"
+    "deploy": "cds deploy --to sqlite:bp-cust.sqlite",
+    "postinstall": "npx puppeteer browsers install chrome"
   }
 }

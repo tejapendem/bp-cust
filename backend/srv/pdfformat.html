@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Business Partner Summary</title>
+    <style>
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #2d3748;
+            background: #f7fafc;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff !important;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #005bea, #00c6fb) !important;
+            color: white !important;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            background: #edf2f7 !important;
+            padding: 10px 15px;
+            border-left: 5px solid #005bea !important;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2b6cb0 !important;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: top;
+        }
+
+        .label {
+            font-weight: bold;
+            width: 30%;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .value {
+            width: 70%;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .grid-item {
+            width: 50%;
+            box-sizing: border-box;
+        }
+
+        .sub-table {
+            margin-top: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .sub-table th {
+            background: #f8fafc !important;
+            text-align: left;
+            padding: 10px;
+            font-size: 13px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .sub-table td {
+            padding: 10px;
+            font-size: 13px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #a0aec0;
+            font-size: 12px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header" style="display: flex; align-items: center; gap: 30px;">
+            <img src="${logoBase64}" alt="Logo" style="width: 120px; height: auto; max-height: 100px; object-fit: contain;" />
+            <div>
+                <h1 style="margin: 0; font-size: 22px;">Business Partner Registration Summary</h1>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">System Reference: ${bp.BusinessPartnerNumber || 'N/A'}</p>
+            </div>
+        </div>
+
+        <!-- 1. Basic Info -->
+        <div class="section">
+            <div class="section-title">1. Basic Information</div>
+            <table>
+                <tr>
+                    <td class="label">BP Role</td>
+                    <td class="value">${bp.BPRole}</td>
+                    <td class="label">Category</td>
+                    <td class="value">${bp.BusinessPartnerCategory}</td>
+                </tr>
+                <tr>
+                    <td class="label">BP Type</td>
+                    <td class="value">${bp.BPType}</td>
+                    <td class="label">Grouping</td>
+                    <td class="value">${bp.Grouping}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- 2. Address Details -->
+        <div class="section">
+            <div class="section-title">2. Address & Communication</div>
+            <table>
+                <tr>
+                    <td class="label">Title</td>
+                    <td class="value">${bp.Title}</td>
+                    <td class="label">Full Name</td>
+                    <td class="value">${bp.Name}</td>
+                </tr>
+                <tr>
+                    <td class="label">Search Terms</td>
+                    <td class="value">${bp.SearchTerm1} / ${bp.SearchTerm2}</td>
+                    <td class="label">Language</td>
+                    <td class="value">${bp.Language}</td>
+                </tr>
+                <tr>
+                    <td class="label">Street Address</td>
+                    <td class="value">${bp.StreetAddress}</td>
+                    <td class="label">Postal Code</td>
+                    <td class="value">${bp.PostalCode}</td>
+                </tr>
+                <tr>
+                    <td class="label">Country / Region</td>
+                    <td class="value">${bp.Country} / ${bp.Region}</td>
+                    <td class="label">Email</td>
+                    <td class="value">${bp.Email}</td>
+                </tr>
+                <tr>
+                    <td class="label">Mobile</td>
+                    <td class="value">${bp.MobileCountryCode} ${bp.MobileNumber}</td>
+                    <td class="label">Telephone</td>
+                    <td class="value">${bp.Telephone}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- 3. Tax Information -->
+        <div class="section">
+            <div class="section-title">3. Tax Information</div>
+            <table>
+                <tr>
+                    <td class="label">Tax Category</td>
+                    <td class="value">${bp.TaxCategory}</td>
+                    <td class="label">Tax Number</td>
+                    <td class="value">${bp.TaxNumber}</td>
+                </tr>
+                <tr>
+                    <td class="label">Tax Status</td>
+                    <td colspan="3" class="value">${bp.TaxStatus}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- 4. Company Details -->
+        <div class="section">
+            <div class="section-title">4. Company Details (FLCU00)</div>
+            <table class="sub-table">
+                <thead>
+                    <tr>
+                        <th>Company Code</th>
+                        <th>Is BP</th>
+                        <th>Is Customer</th>
+                        <th>Recon Account</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${companyCodesHtml}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 5 & 6. Sales Area & Customer Info -->
+        <div class="section">
+            <div class="section-title">5 & 6. Sales Area & Customer Data (FLCU01)</div>
+            ${salesAreasHtml}
+        </div>
+
+        <!-- 7. Credit Management -->
+        <div class="section">
+            <div class="section-title">7. Credit Management</div>
+            <table>
+                <tr>
+                    <td class="label">Risk Class</td>
+                    <td class="value">${bp.RiskClass}</td>
+                    <td class="label">Check Rule</td>
+                    <td class="value">${bp.CheckRule}</td>
+                </tr>
+                <tr>
+                    <td class="label">Credit Group</td>
+                    <td colspan="3" class="value">${bp.CreditGroup}</td>
+                </tr>
+            </table>
+
+            <p style="font-weight: bold; font-size: 14px; margin-top: 15px;">Credit Limit and Control</p>
+            <table class="sub-table">
+                <thead>
+                    <tr>
+                        <th>Segment</th>
+                        <th>Rules</th>
+                        <th>Limit Defined</th>
+                        <th>Limit</th>
+                        <th>Valid To</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${creditSegmentsHtml}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>Generated by Business Partner Approval System on ${new Date().toLocaleDateString()}</p>
+            <p>This is a system-generated document for approval purposes.</p>
+        </div>
+    </div>
+</body>
+
+</html>

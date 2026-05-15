@@ -40,9 +40,6 @@
                         <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
                             <core:Title text="1. Basic Info"/>
                             
-                            <Label text="BP Role"/>
-                            <Input value="{wizardData>/BPRole}" editable="false"/>
-                            
                             <Label text="Business Partner" required="true"/>
                             <Select id="categorySelect" selectedKey="{wizardData>/BusinessPartnerCategory}" items="{path: '/VH_BusinessPartnerCategory', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                 <core:Item key="{code}" text="{name}"/>
@@ -219,7 +216,6 @@
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
                             <HBox>
-                                <Button text="Skip" icon="sap-icon://journey-depart" type="Ghost" press="onSkipStep" class="sapUiSmallMarginEnd" visible="{= !${wizardData>/isReadOnly} }" />
                                 <Button text="Step 5" type="Emphasized" press="onNextStep" />
                             </HBox>
                         </HBox>
@@ -417,7 +413,6 @@
                 <MessageStrip text="Review all data before submitting." type="Warning" showIcon="true" class="sapUiSmallMarginBottom"/>
                 <form:SimpleForm layout="ColumnLayout" columnsL="2" columnsM="2" editable="false">
                     <core:Title text="General Data"/>
-                    <Label text="BP Role"/><Text text="{wizardData>/BPRole}"/>
                     <Label text="Category"/><Text text="{wizardData>/BusinessPartnerCategory}"/>
                     <Label text="Type"/><Text text="{wizardData>/BPType}"/>
                     <Label text="Grouping"/><Text text="{wizardData>/Grouping}"/>

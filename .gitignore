@@ -18,6 +18,8 @@ logs/
 # Environment files
 .env
 .env.*
+.cache/
+.claude/
 
 # OS files
 .DS_Store
@@ -54,4 +56,4 @@ temp/
 coverage/
 
 # Lock files (optional - keep if needed)
-# package-lock.json
+# package-lock.json.cache/

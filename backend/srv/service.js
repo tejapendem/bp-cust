@@ -1,5 +1,8 @@
 const cds = require('@sap/cds');
 const nodemailer = require('nodemailer');
+const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = cds.service.impl(async function () {
     this.before('*', async (req) => {
@@ -154,8 +157,15 @@ module.exports = cds.service.impl(async function () {
         const { bpID } = req.data;
         const { BusinessPartners, ApprovalLevels, ApprovalWorkflows } = this.entities;
 
-        // 1. Get the Business Partner
-        const bp = await SELECT.one.from(BusinessPartners).where({ ID: bpID });
+        // 1. Get the Business Partner with all compositions expanded
+        const bp = await SELECT.one.from(BusinessPartners)
+            .where({ ID: bpID })
+            .columns(b => {
+                b('*'),
+                b.CompanyCodes('*'),
+                b.SalesAreas('*'),
+                b.CreditSegments('*')
+            });
         if (!bp) return req.error(404, `Business Partner with ID ${bpID} not found`);
 
         // 2. Get the Level 1 Approver
@@ -174,7 +184,7 @@ module.exports = cds.service.impl(async function () {
         // 4. Update BP status to 'pending_approval'
         await UPDATE(BusinessPartners).set({ LifecycleStatus: 'pending_approval' }).where({ ID: bpID });
 
-        // 5. Send Email using helper
+        // 5. Generate PDF and Send Email using helper
         const subject = `Approval Required: New Business Partner ${bp.Name}`;
         const html = _getWorkflowEmailTemplate(
             "Approval Required",
@@ -182,7 +192,8 @@ module.exports = cds.service.impl(async function () {
             bp,
             true
         );
-        await _sendEmail(workflowEntry.approverEmail, subject, null, html);
+        const pdfBuffer = await _generateBPPdf(bp);
+        await _sendEmail(workflowEntry.approverEmail, subject, null, html, pdfBuffer);
 
         return `Submitted for Level 1 approval to ${level1.email}`;
     });
@@ -267,8 +278,15 @@ module.exports = cds.service.impl(async function () {
             await UPDATE(ApprovalWorkflows).set({ status: 'rejected' }).where({ ID: workflowID });
             await UPDATE(BusinessPartners).set({ LifecycleStatus: 'draft' }).where({ ID: workflow.businessPartner_ID });
 
-            // Send rejection email to requester
-            const bp = await SELECT.one.from(BusinessPartners).where({ ID: workflow.businessPartner_ID });
+            // Send rejection email to requester with full details
+            const bp = await SELECT.one.from(BusinessPartners)
+                .where({ ID: workflow.businessPartner_ID })
+                .columns(b => {
+                    b('*'),
+                    b.CompanyCodes('*'),
+                    b.SalesAreas('*'),
+                    b.CreditSegments('*')
+                });
             if (bp) {
                 const subject = "Your Business Partner request has been rejected";
                 const html = _getWorkflowEmailTemplate(
@@ -277,7 +295,8 @@ module.exports = cds.service.impl(async function () {
                     bp,
                     false
                 );
-                await _sendEmail(bp.Email, subject, null, html);
+                const pdfBuffer = await _generateBPPdf(bp);
+                await _sendEmail(bp.Email, subject, null, html, pdfBuffer);
             }
 
             return "Request rejected";
@@ -295,7 +314,15 @@ module.exports = cds.service.impl(async function () {
             }).where({ ID: workflowID });
 
             // Send email to next level approver
-            const bp = await SELECT.one.from(BusinessPartners).where({ ID: workflow.businessPartner_ID });
+            // Send email to next level approver with full details
+            const bp = await SELECT.one.from(BusinessPartners)
+                .where({ ID: workflow.businessPartner_ID })
+                .columns(b => {
+                    b('*'),
+                    b.CompanyCodes('*'),
+                    b.SalesAreas('*'),
+                    b.CreditSegments('*')
+                });
             const subject = `Approval Required: Level ${nextLevel} - ${bp.Name}`;
             const html = _getWorkflowEmailTemplate(
                 "Approval Required",
@@ -303,14 +330,23 @@ module.exports = cds.service.impl(async function () {
                 bp,
                 true
             );
-            await _sendEmail(nextApprover.email, subject, null, html);
+            const pdfBuffer = await _generateBPPdf(bp);
+            await _sendEmail(nextApprover.email, subject, null, html, pdfBuffer);
         } else {
             // No more levels - finalize the approval
             await UPDATE(ApprovalWorkflows).set({ status: 'approved' }).where({ ID: workflowID });
             await UPDATE(BusinessPartners).set({ LifecycleStatus: 'active' }).where({ ID: workflow.businessPartner_ID });
 
             // Send approval email to requester
-            const bp = await SELECT.one.from(BusinessPartners).where({ ID: workflow.businessPartner_ID });
+            // Send approval email to requester with full details
+            const bp = await SELECT.one.from(BusinessPartners)
+                .where({ ID: workflow.businessPartner_ID })
+                .columns(b => {
+                    b('*'),
+                    b.CompanyCodes('*'),
+                    b.SalesAreas('*'),
+                    b.CreditSegments('*')
+                });
             if (bp) {
                 const subject = "Business Partner Approved!";
                 const html = _getWorkflowEmailTemplate(
@@ -319,15 +355,150 @@ module.exports = cds.service.impl(async function () {
                     bp,
                     false
                 );
-                await _sendEmail(bp.Email, subject, null, html);
+                const pdfBuffer = await _generateBPPdf(bp);
+                await _sendEmail(bp.Email, subject, null, html, pdfBuffer);
             }
         }
 
         return `Level ${workflow.currentLevel} approval completed${nextApprover ? ', moved to Level ' + nextLevel : ', fully approved'}`;
     });
 
+    // Helper function to generate BP PDF from the HTML template
+    async function _generateBPPdf(bp) {
+        let browser;
+        try {
+            console.log('[PDF] Starting PDF generation...');
+            const templatePath = path.join(__dirname, 'pdfformat.html');
+            let templateHtml = fs.readFileSync(templatePath, 'utf8');
+
+            // Read logo image and convert to base64 data URI
+            const logoPath = path.join(__dirname, 'images/roofing.png');
+            let logoBase64 = '';
+            try {
+                const logoData = fs.readFileSync(logoPath);
+                logoBase64 = `data:image/png;base64,${logoData.toString('base64')}`;
+            } catch (logoErr) {
+                console.warn('[PDF] Logo image not found at:', logoPath, logoErr.message);
+            }
+
+            // Build company codes HTML
+            let companyCodesHtml = '';
+            if (bp.CompanyCodes && bp.CompanyCodes.length > 0) {
+                companyCodesHtml = bp.CompanyCodes.map(cc => `
+                    <tr>
+                        <td>${cc.CompanyCode || '-'}</td>
+                        <td>${cc.IsBP ? 'Yes' : 'No'}</td>
+                        <td>${cc.IsCustomer ? 'Yes' : 'No'}</td>
+                        <td>${cc.ReconciliationAccount || '-'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                companyCodesHtml = '<tr><td colspan="4" style="text-align:center;">No company codes assigned</td></tr>';
+            }
+
+            // Build sales areas HTML
+            let salesAreasHtml = '';
+            if (bp.SalesAreas && bp.SalesAreas.length > 0) {
+                salesAreasHtml = bp.SalesAreas.map(sa => `
+                    <div style="margin-bottom: 20px;">
+                        <table class="sub-table">
+                            <thead>
+                                <tr>
+                                    <th>Sales Org</th>
+                                    <th>Dist. Channel</th>
+                                    <th>Division</th>
+                                    <th>Currency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${sa.SalesOrganization || '-'}</td>
+                                    <td>${sa.DistributionChannel || '-'}</td>
+                                    <td>${sa.Division || '-'}</td>
+                                    <td>${sa.Currency || '-'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table style="font-size: 12px; margin-top: 5px;">
+                            <tr>
+                                <td style="font-weight:bold; width:20%;">Payment Terms:</td><td style="width:30%;">${sa.PaymentTerms || '-'}</td>
+                                <td style="font-weight:bold; width:20%;">Incoterms:</td><td style="width:30%;">${sa.Incoterms || '-'}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Tax Category:</td><td>${sa.OutputTaxCategory || '-'}</td>
+                                <td style="font-weight:bold;">Tax Class:</td><td>${sa.TaxClassification || '-'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                `).join('');
+            } else {
+                salesAreasHtml = '<p style="text-align:center; font-size:13px; color:#666;">No sales areas assigned</p>';
+            }
+
+            // Build credit segments HTML
+            let creditSegmentsHtml = '';
+            if (bp.CreditSegments && bp.CreditSegments.length > 0) {
+                creditSegmentsHtml = bp.CreditSegments.map(cs => `
+                    <tr>
+                        <td>${cs.CreditSegment || '-'}</td>
+                        <td>${cs.CreditLimitRules || '-'}</td>
+                        <td>${cs.LimitDefined ? 'Yes' : 'No'}</td>
+                        <td>${cs.CreditLimit || '-'}</td>
+                        <td>${cs.ValidityDate || '-'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                creditSegmentsHtml = '<tr><td colspan="5" style="text-align:center;">No credit segments defined</td></tr>';
+            }
+
+            // Replace template placeholders
+            templateHtml = templateHtml
+                .replace(/\$\{logoBase64\}/g, logoBase64)
+                .replace(/\$\{companyCodesHtml\}/g, companyCodesHtml)
+                .replace(/\$\{salesAreasHtml\}/g, salesAreasHtml)
+                .replace(/\$\{creditSegmentsHtml\}/g, creditSegmentsHtml)
+                .replace(/\$\{new Date\(\)\.toLocaleDateString\(\)\}/g, new Date().toLocaleDateString())
+                .replace(/\$\{bp\.([^}]+)\}/g, (match, key) => {
+                    const val = bp[key];
+                    return (val !== undefined && val !== null) ? val : '-';
+                });
+
+            // Launch Puppeteer with cloud-friendly flags
+            browser = await puppeteer.launch({
+                headless: 'new',
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--disable-gpu'
+                ]
+            });
+
+            const page = await browser.newPage();
+            await page.setContent(templateHtml, { waitUntil: 'networkidle0' });
+            
+            const pdfBuffer = await page.pdf({
+                format: 'A4',
+                printBackground: true,
+                margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' }
+            });
+
+            await browser.close();
+            console.log('[PDF] PDF generated successfully');
+            return pdfBuffer;
+        } catch (err) {
+            console.error(`[PDF ERROR] CRITICAL failure: ${err.message}`);
+            if (err.stack) console.error(err.stack);
+            if (browser) await browser.close();
+            return null;
+        }
+    }
+
     // Helper function to send emails
-    async function _sendEmail(to, subject, text, html) {
+    async function _sendEmail(to, subject, text, html, pdfBuffer) {
         try {
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
@@ -341,14 +512,25 @@ module.exports = cds.service.impl(async function () {
 
             const fromEmail = process.env.GMAIL_USER || 'saiteja14419@gmail.com';
 
-            await transporter.sendMail({
+            const mailOptions = {
                 from: `"Business Partner System" <${fromEmail}>`,
                 to: to,
                 subject: subject,
                 text: text || "Please log in to the system to view this message.",
                 html: html
-            });
-            console.log(`[MAIL] Email sent to ${to}`);
+            };
+
+            // Attach the PDF if it was generated successfully
+            if (pdfBuffer) {
+                mailOptions.attachments = [{
+                    filename: 'BusinessPartner_Summary.pdf',
+                    content: pdfBuffer,
+                    contentType: 'application/pdf'
+                }];
+            }
+
+            await transporter.sendMail(mailOptions);
+            console.log(`[MAIL] Email sent to ${to}${pdfBuffer ? ' with PDF attachment' : ''}`);
         } catch (err) {
             console.error(`[MAIL ERROR] Failed to send email: ${err.message}`);
         }

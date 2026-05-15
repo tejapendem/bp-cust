@@ -39,7 +39,6 @@ sap.ui.define([
 
                 // Track skipped steps
                 skippedSteps: {
-                    step4: false,
                     step5: false,
                     step6: false,
                     step7: false
@@ -162,7 +161,7 @@ sap.ui.define([
                 SalesAreas: [this._getDefaultSalesAreaData()],
                 CompanyCodes: [this._getDefaultCompanyCodeData()],
                 CreditSegments: [this._getDefaultCreditSegmentData()],
-                skippedSteps: { step4: false, step5: false, step6: false, step7: false }
+                skippedSteps: { step5: false, step6: false, step7: false }
             };
         },
 
@@ -294,7 +293,6 @@ sap.ui.define([
         },
 
         _getStepKey: function (sStepId) {
-            if (sStepId.includes("step4")) return "step4";
             if (sStepId.includes("step5")) return "step5";
             if (sStepId.includes("step6")) return "step6";
             if (sStepId.includes("step7")) return "step7";
@@ -305,9 +303,6 @@ sap.ui.define([
             var oModel = this.getView().getModel("wizardData");
 
             switch (sStepKey) {
-                case "step4": // Company Details
-                    oModel.setProperty("/CompanyCodes", []);
-                    break;
                 case "step5": // Sales Area
                     oModel.setProperty("/SalesAreas", []);
                     break;
@@ -575,12 +570,8 @@ sap.ui.define([
                 TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus
             };
 
-            // Step 4: Company Details — send empty if skipped
-            if (oSkipped.step4) {
-                oPayload.CompanyCodes = [];
-            } else {
-                oPayload.CompanyCodes = (oData.CompanyCodes || []).map(function (c) { delete c.parent; return c; });
-            }
+            // Step 4: Company Details
+            oPayload.CompanyCodes = (oData.CompanyCodes || []).map(function (c) { delete c.parent; return c; });
 
             // Step 5: Sales Area — send empty if skipped
             if (oSkipped.step5) {
