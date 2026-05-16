@@ -11,7 +11,7 @@
           title="{= ${wizardData>/isReadOnly} ? 'Business Partner Details' : 'Create Business Partner' }"
           showNavButton="true"
           navButtonPress="onNavBack"
-          backgroundDesign="Solid">
+          backgroundDesign="Transparent">
         <headerContent>
             <Button text="Save as Draft" type="Ghost" icon="sap-icon://save" press="onSaveDraft" visible="{= !${wizardData>/isReadOnly} }" />
         </headerContent>

@@ -16,12 +16,13 @@ modules:
         - https://github.com/cloudfoundry/apt-buildpack#v0.2.14
         - nodejs_buildpack
       memory: 2G
-      disk-quota: 2G
+      disk-quota: 4G
     build-parameters:
       builder: custom
       commands:
         - cp ../../../apt.yml .
-        - npm install --omit=dev --legacy-peer-deps
+        - cp ../../../.puppeteerrc.cjs .
+        - env PUPPETEER_SKIP_DOWNLOAD=true npm install --omit=dev --legacy-peer-deps
     provides:
       - name: srv-api
         properties:
@@ -135,5 +136,5 @@ build-parameters:
   before-all:
     - builder: custom
       commands:
-        - npm install --legacy-peer-deps
+        - env PUPPETEER_SKIP_DOWNLOAD=true npm install --legacy-peer-deps
         - npx cds build --production

@@ -93,6 +93,12 @@ sap.ui.define(
                 oToolPage.setSideExpanded(!bSideExpanded);
             },
 
+            onThemeSwitch: function (oEvent) {
+                var bState = oEvent.getParameter("state"); // true for Dark, false for Light
+                var sTheme = bState ? "sap_horizon_dark" : "sap_horizon";
+                sap.ui.getCore().applyTheme(sTheme);
+            },
+
             onItemSelect: function (oEvent) {
                 var oUserModel = this.getView().getModel("userModel");
                 var bIsRegistered = oUserModel.getProperty("/isRegistered");

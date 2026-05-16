@@ -62,6 +62,10 @@ service BusinessPartnerService {
         totalAdmins: Integer;
         totalViewers: Integer;
         pendingRequests: Integer;
+        approvalLevelsCount: Integer;
+        pendingWorkflows: Integer;
+        approvedWorkflows: Integer;
+        rejectedWorkflows: Integer;
     };
 }
 

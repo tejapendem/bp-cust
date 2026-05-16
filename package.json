@@ -96,7 +96,6 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "deploy": "cds deploy",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "deploy": "cds deploy"
   }
 }

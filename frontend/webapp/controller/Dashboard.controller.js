@@ -26,7 +26,11 @@ sap.ui.define([
                 draftBPs: 0,
                 totalAdmins: 0,
                 totalViewers: 0,
-                pendingRequests: 0
+                pendingRequests: 0,
+                approvalLevelsCount: 0,
+                pendingWorkflows: 0,
+                approvedWorkflows: 0,
+                rejectedWorkflows: 0
             });
             this.getView().setModel(oStatsModel, "stats");
 
@@ -67,6 +71,14 @@ sap.ui.define([
 
         onNavToQueue: function () {
             this.getOwnerComponent().getRouter().navTo("ActivationQueue");
+        },
+
+        onNavToApprovalLevels: function () {
+            this.getOwnerComponent().getRouter().navTo("ApprovalLevels");
+        },
+
+        onNavToApprovalInbox: function () {
+            this.getOwnerComponent().getRouter().navTo("ApprovalInbox");
         }
 
     });

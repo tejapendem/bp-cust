@@ -43,6 +43,36 @@
                     </GenericTile>
                 </f:GridContainer>
 
+                <Title text="Approval Workflow Overview" level="H2" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                <f:GridContainer class="sapUiSmallMarginBottom">
+                    <f:layout>
+                        <f:GridContainerSettings rowSize="80px" columnSize="80px" gap="1rem" />
+                    </f:layout>
+
+                    <GenericTile header="Workflow Levels" subheader="Active Config" frameType="OneByOne" press="onNavToApprovalLevels">
+                        <TileContent>
+                            <NumericContent value="{stats>/approvalLevelsCount}" icon="sap-icon://action-settings" valueColor="Neutral" />
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile header="Pending Approval" subheader="Action Required" frameType="OneByOne" press="onNavToApprovalInbox">
+                        <TileContent>
+                            <NumericContent value="{stats>/pendingWorkflows}" icon="sap-icon://pending" valueColor="Critical" />
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile header="Approved / Rejected" subheader="Workflow History" frameType="TwoByOne">
+                        <TileContent>
+                            <mc:ComparisonMicroChart size="M">
+                                <mc:data>
+                                    <mc:ComparisonMicroChartData title="Approved" value="{stats>/approvedWorkflows}" color="Good" />
+                                    <mc:ComparisonMicroChartData title="Rejected" value="{stats>/rejectedWorkflows}" color="Error" />
+                                </mc:data>
+                            </mc:ComparisonMicroChart>
+                        </TileContent>
+                    </GenericTile>
+                </f:GridContainer>
+
                 <Title text="User &amp; Access Management" level="H2" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
                 <f:GridContainer>
                     <f:layout>
@@ -82,9 +112,10 @@
                 <VBox class="sapUiMediumMarginTop dashboardWelcomeBox">
                     <Title text="Quick Actions" level="H3" class="sapUiSmallMarginBottom" />
                     <HBox wrap="Wrap">
-                        <Button text="Configure Master Data" icon="sap-icon://list" press="onNavToQueue" type="Emphasized" class="sapUiSmallMarginEnd" />
-                        <Button text="Manage User Roles" icon="sap-icon://admin" press="onNavToUsers" type="Default" class="sapUiSmallMarginEnd" />
-                        <Button text="View All Partners" icon="sap-icon://customer" press="onNavToPartners" type="Default" />
+                        <Button text="Configure Workflow" icon="sap-icon://action-settings" press="onNavToApprovalLevels" type="Emphasized" class="sapUiSmallMarginEnd sapUiSmallMarginBottom" />
+                        <Button text="Approval Inbox" icon="sap-icon://pending" press="onNavToApprovalInbox" type="Emphasized" class="sapUiSmallMarginEnd sapUiSmallMarginBottom" />
+                        <Button text="Manage User Roles" icon="sap-icon://manager" press="onNavToUsers" type="Default" class="sapUiSmallMarginEnd sapUiSmallMarginBottom" />
+                        <Button text="View All Partners" icon="sap-icon://customer" press="onNavToPartners" type="Default" class="sapUiSmallMarginBottom" />
                     </HBox>
                 </VBox>
 

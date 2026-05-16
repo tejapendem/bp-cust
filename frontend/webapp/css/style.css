@@ -4,16 +4,16 @@
 
 /* === Page Background === */
 .pageGrayBackground {
-    background-color: #f5f6f8;
+    background-color: var(--sapBackgroundColor, #f5f6f8);
 }
 
 /* === Wizard Container === */
 .wizardRedBoxFrame {
-    background-color: #ffffff;
+    background-color: var(--sapGroup_ContentBackground, #ffffff);
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     /* Soft drop shadow */
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e0e0e0);
 }
 
 /* === Wizard itself: ensure full height renders === */
@@ -22,8 +22,8 @@
 }
 
 .sapMWizardProgressNavigator {
-    background: #fff !important;
-    border-bottom: 1px solid #e8e8e8;
+    background: var(--sapGroup_ContentBackground, #fff) !important;
+    border-bottom: 1px solid var(--sapGroup_TitleBorderColor, #e8e8e8);
     padding: 0 16px;
 }
 
@@ -93,7 +93,7 @@
 
 /* === 1. Page Background (Grey outer area) === */
 .sapMPageBgSolid {
-    background-color: #f4f5f6 !important;
+    background-color: var(--sapBackgroundColor, #f4f5f6) !important;
 }
 
 
@@ -118,41 +118,42 @@
 .sapMWizardStep {
     padding: 0 32px 32px 32px !important;
 }
+
 /* Dashboard Styles */
 .dashboardWelcomeBox {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--sapTile_Background, rgba(255, 255, 255, 0.7));
     backdrop-filter: blur(10px);
     border-radius: 12px;
     padding: 2rem;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--sapTile_BorderColor, rgba(0, 0, 0, 0.05));
 }
 
 .sapMGT {
     border-radius: 12px !important;
     overflow: hidden !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
 }
 
 .sapMGT:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Premium Approval Workflow Styles */
 .destinationDetailContainer {
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
     border-radius: 8px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    background-color: var(--sapGroup_ContentBackground, #ffffff);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .shadowBox {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .destinationDetailContainer .sapMPanelHdr {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e5e5e5;
+    background-color: var(--sapGroup_TitleBackground, #f8f9fa);
+    border-bottom: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
     padding: 1rem !important;
 }

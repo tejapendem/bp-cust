@@ -199,7 +199,7 @@ module.exports = cds.service.impl(async function () {
     });
 
     this.on('getAdminStats', async (req) => {
-        const { BusinessPartners, Users, AccessRequests } = this.entities;
+        const { BusinessPartners, Users, AccessRequests, ApprovalLevels, ApprovalWorkflows } = this.entities;
 
         const activeBPs = await SELECT.from(BusinessPartners).where({ LifecycleStatus: 'active' });
         const draftBPs = await SELECT.from(BusinessPartners).where({ LifecycleStatus: 'draft' });
@@ -209,12 +209,22 @@ module.exports = cds.service.impl(async function () {
 
         const pendingRequests = await SELECT.from(AccessRequests).where({ status: 'pending' });
 
+        // New Approval Stats
+        const approvalLevels = await SELECT.from(ApprovalLevels);
+        const pendingWorkflows = await SELECT.from(ApprovalWorkflows).where({ status: 'pending' });
+        const approvedWorkflows = await SELECT.from(ApprovalWorkflows).where({ status: 'approved' });
+        const rejectedWorkflows = await SELECT.from(ApprovalWorkflows).where({ status: 'rejected' });
+
         return {
             activeBPs: activeBPs.length,
             draftBPs: draftBPs.length,
             totalAdmins: totalAdmins.length,
             totalViewers: totalViewers.length,
-            pendingRequests: pendingRequests.length
+            pendingRequests: pendingRequests.length,
+            approvalLevelsCount: approvalLevels.length,
+            pendingWorkflows: pendingWorkflows.length,
+            approvedWorkflows: approvedWorkflows.length,
+            rejectedWorkflows: rejectedWorkflows.length
         };
     });
 

@@ -12,6 +12,7 @@
                 <Image src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" height="1.5rem" />
                 <Title text="Business Partner" level="H1" />
                 <ToolbarSpacer />
+                <Switch state="false" customTextOn="Dark" customTextOff="Light" change=".onThemeSwitch" class="sapUiSmallMarginEnd" tooltip="Toggle Dark Mode" />
                 <Button icon="sap-icon://bell" type="Transparent" />
                 <Avatar id="profileAvatar" displaySize="XS" initials="{userModel>/initials}" press=".onProfilePress" class="sapUiSmallMarginEnd" />
             </tnt:ToolHeader>
@@ -24,8 +25,8 @@
                     <tnt:NavigationListItem text="Admin Dashboard" icon="sap-icon://manager-insight" key="dashboard" visible="{userModel>/isAdmin}" />
                     <tnt:NavigationListItem text="Activation Queue" icon="sap-icon://activate" key="queue" visible="{userModel>/isAdmin}" />
                     <tnt:NavigationListItem text="User Management" icon="sap-icon://group" key="admin" visible="{userModel>/isAdmin}" />
-                    <tnt:NavigationListItem text="Approval Workflow" icon="sap-icon://workflow-begin" key="approvalLevels" visible="{userModel>/isAdmin}" />
-                    <tnt:NavigationListItem text="Approval Inbox" icon="sap-icon://InBox" key="approvalInbox" visible="{userModel>/isAdmin}" />
+                    <tnt:NavigationListItem text="Approval Workflow" icon="sap-icon://action-settings" key="approvalLevels" visible="{userModel>/isAdmin}" />
+                    <tnt:NavigationListItem text="Approval Inbox" icon="sap-icon://inbox" key="approvalInbox" visible="{userModel>/isAdmin}" />
                 </tnt:NavigationList>
             </tnt:SideNavigation>
         </tnt:sideContent>
