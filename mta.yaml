@@ -30,6 +30,7 @@ modules:
     requires:
       - name: bp-cust-auth
       - name: bp-cust-db
+      - name: bp-cust-destination
 
   - name: bp-cust-db-deployer
     type: nodejs
@@ -131,6 +132,11 @@ resources:
     type: org.cloudfoundry.existing-service
     parameters:
       service-name: POC_PostgreSQL
+
+  - name: bp-cust-destination
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: project1-destination-service
 
 build-parameters:
   before-all:

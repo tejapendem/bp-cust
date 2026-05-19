@@ -3,6 +3,7 @@
     xmlns="sap.m"
     xmlns:f="sap.f"
     xmlns:form="sap.ui.layout.form"
+    xmlns:layout="sap.ui.layout"
     xmlns:core="sap.ui.core"
     xmlns:mc="sap.suite.ui.microchart"
     height="100%">
@@ -60,64 +61,154 @@
                         </HBox>
                     </WizardStep>
 
-                    <WizardStep id="step2" title="{= ${wizardData>/BusinessPartnerCategory} === 'Person' ? 'Address Details (Name)' : 'Address Details (Identity,Location Details,Communication)' }" icon="sap-icon://map-2" validated="true">
+                    <WizardStep id="step2" title="{= ${wizardData>/BusinessPartnerCategory} === 'Person' ? 'Address Details (Name)' : 'Address Details (Identity,Standard Address,Communication)' }" icon="sap-icon://map-2" validated="true">
                         <!-- Form for Organization -->
-                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }">
-                            <core:Title text="Identity"/>
+                        <HBox width="100%" wrap="Wrap" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }">
                             
-                            <Label text="Title" required="true"/>
-                            <Select selectedKey="{wizardData>/Title}" items="{path: '/VH_Title', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
-                                <core:Item key="{code}" text="{code} - {name}"/>
-                            </Select>
+                            <!-- Left Column: Identity & Communication -->
+                            <VBox width="48%" class="sapUiSmallMarginEnd">
+                                <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12">
+                                    <core:Title text="Identity"/>
+                                    
+                                    <Label text="Title" required="true"/>
+                                    <Select selectedKey="{wizardData>/Title}" items="{path: '/VH_Title', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                        <core:Item key="{code}" text="{code} - {name}"/>
+                                    </Select>
 
-                            <Label text="Name" required="true"/>
-                            <Input id="nameInput" value="{wizardData>/Name}" placeholder="Full / Company Name" editable="{= !${wizardData>/isReadOnly} }"/>
-                            
-                            <Label text="Search terms 1/2"/>
-                            <HBox>
-                                <Input value="{wizardData>/SearchTerm1}" placeholder="Term 1" editable="{= !${wizardData>/isReadOnly} }"/>
-                                <Input value="{wizardData>/SearchTerm2}" placeholder="Term 2" class="sapUiSmallMarginBegin" editable="{= !${wizardData>/isReadOnly} }"/>
-                            </HBox>
-                            
-                            <core:Title text="Location Details"/>
+                                    <Label text="Name" required="true"/>
+                                    <Input id="nameInput" value="{wizardData>/Name}" placeholder="Full / Company Name" editable="{= !${wizardData>/isReadOnly} }"/>
+                                    
+                                    <Label text="Search terms 1/2"/>
+                                    <Input value="{wizardData>/SearchTerm1}" placeholder="Term 1" editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL4 L4 M4 S6" /></layoutData>
+                                    </Input>
+                                    <Input value="{wizardData>/SearchTerm2}" placeholder="Term 2" editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL4 L4 M4 S6" /></layoutData>
+                                    </Input>
+                                    
+                                    <core:Title text="Communication"/>
 
-                            <Label text="Street Address"/>
-                            <Input value="{wizardData>/StreetAddress}" placeholder="Street, Building, Floor" editable="{= !${wizardData>/isReadOnly} }"/>
-                            
-                            <Label text="Postal Code"/>
-                            <Input value="{wizardData>/PostalCode}" placeholder="ZIP / Postal Code" editable="{= !${wizardData>/isReadOnly} }"/>
+                                    <Label text="Language"/>
+                                    <Select selectedKey="{wizardData>/Language}" items="{path: '/VH_Language', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                        <core:Item key="{code}" text="{code} - {name}"/>
+                                    </Select>
 
-                            <Label text="Country" required="true"/>
-                            <Select id="countrySelect" selectedKey="{wizardData>/Country}" items="{path: '/VH_Country', parameters: {$filter: 'isActive eq true'}}" change="onCountryChange" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
-                                <core:Item key="{code}" text="{code} - {name}"/>
-                            </Select>
+                                    <Label text="Mobile Number"/>
+                                    <Select id="mobileCodeSelect" selectedKey="{wizardData>/MobileCountryCode}" items="{path: '/VH_MobileCountryCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL3 L3 M3 S4" /></layoutData>
+                                        <core:Item key="{code}" text="{code}"/>
+                                    </Select>
+                                    <Input id="mobileInput" value="{wizardData>/MobileNumber}" placeholder="Digits only" editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL5 L5 M5 S8" /></layoutData>
+                                    </Input>
+                                    
+                                    <Label text="Telephone"/>
+                                    <Input value="{wizardData>/Telephone}" placeholder="Landline, Office, etc." editable="{= !${wizardData>/isReadOnly} }"/>
 
-                            <Label text="Region"/>
-                            <Select id="regionSelect" selectedKey="{wizardData>/Region}" items="{path: '/VH_Region', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
-                                <core:Item key="{code}" text="{name}"/>
-                            </Select>
+                                    <Label text="Email" required="true"/>
+                                    <Input id="emailInput" value="{wizardData>/Email}" type="Email" placeholder="user@example.com" editable="{= !${wizardData>/isReadOnly} }"/>
+                                </form:SimpleForm>
+                            </VBox>
 
-                            <core:Title text="Communication"/>
+                            <!-- Right Column: Location Details -->
+                            <VBox width="48%">
+                                <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12">
+                                    <Toolbar>
+                                        <Title text="Standard Address" level="H5"/>
+                                        <ToolbarSpacer/>
+                                        <Button icon="{= ${wizardData>/showExtendedAddress} ? 'sap-icon://less' : 'sap-icon://add' }" type="Transparent" press="onToggleExtendedAddress" tooltip="Show/Hide extended address fields" />
+                                    </Toolbar>
 
-                            <Label text="Language"/>
-                            <Select selectedKey="{wizardData>/Language}" items="{path: '/VH_Language', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
-                                <core:Item key="{code}" text="{code} - {name}"/>
-                            </Select>
+                                    <Label text="Street/House Number"/>
+                                    <Input value="{wizardData>/StreetAddress}" placeholder="Street" editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL6 L6 M6 S8" /></layoutData>
+                                    </Input>
+                                    <Input value="{wizardData>/HouseNumber}" placeholder="House No." editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL2 L2 M2 S4" /></layoutData>
+                                    </Input>
 
-                            <Label text="Mobile Number"/>
-                            <HBox alignItems="Center" wrap="Wrap">
-                                <Select id="mobileCodeSelect" selectedKey="{wizardData>/MobileCountryCode}" width="110px" items="{path: '/VH_MobileCountryCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
-                                    <core:Item key="{code}" text="{code}"/>
-                                </Select>
-                                <Input id="mobileInput" value="{wizardData>/MobileNumber}" placeholder="Digits only" width="170px" class="sapUiSmallMarginBegin" editable="{= !${wizardData>/isReadOnly} }"/>
-                            </HBox>
-                            
-                            <Label text="Telephone"/>
-                            <Input value="{wizardData>/Telephone}" placeholder="Landline, Office, etc." editable="{= !${wizardData>/isReadOnly} }"/>
+                                    <Label text="Postal Code/City"/>
+                                    <Input value="{wizardData>/PostalCode}" placeholder="Postal Code" editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL3 L3 M3 S4" /></layoutData>
+                                    </Input>
+                                    <Input value="{wizardData>/City}" placeholder="City" editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL5 L5 M5 S8" /></layoutData>
+                                    </Input>
 
-                            <Label text="Email" required="true"/>
-                            <Input id="emailInput" value="{wizardData>/Email}" type="Email" placeholder="user@example.com" editable="{= !${wizardData>/isReadOnly} }"/>
-                        </form:SimpleForm>
+                                    <Label text="Country/Reg."/>
+                                    <Select id="countrySelect" selectedKey="{wizardData>/Country}" items="{path: '/VH_Country', parameters: {$filter: 'isActive eq true'}}" change="onCountryChange" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                        <layoutData><layout:GridData span="XL3 L3 M3 S4" /></layoutData>
+                                        <core:Item key="{code}" text="{code} - {name}"/>
+                                    </Select>
+                                    <Label text="Region" visible="{= !!${wizardData>/Country} }">
+                                        <layoutData><layout:GridData span="XL2 L2 M2 S3" /></layoutData>
+                                    </Label>
+                                    <Select id="regionSelect" selectedKey="{wizardData>/Region}" items="{path: '/VH_Region', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }" visible="{= !!${wizardData>/Country} }">
+                                        <layoutData><layout:GridData span="XL3 L3 M3 S5" /></layoutData>
+                                        <core:Item key="{code}" text="{name}"/>
+                                    </Select>
+
+                                    <!-- Extended Address Fields -->
+                                    <Label text="Building Code" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/BuildingCode}" placeholder="Building Code" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}">
+                                        <layoutData><layout:GridData span="XL3 L3 M3 S4" /></layoutData>
+                                    </Input>
+                                    <Label text="Room" visible="{wizardData>/showExtendedAddress}">
+                                        <layoutData><layout:GridData span="XL1 L1 M1 S2" /></layoutData>
+                                    </Label>
+                                    <Input value="{wizardData>/Room}" placeholder="Room" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}">
+                                        <layoutData><layout:GridData span="XL1 L1 M1 S2" /></layoutData>
+                                    </Input>
+                                    <Label text="Floor" visible="{wizardData>/showExtendedAddress}">
+                                        <layoutData><layout:GridData span="XL1 L1 M1 S2" /></layoutData>
+                                    </Label>
+                                    <Input value="{wizardData>/Floor}" placeholder="Floor" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}">
+                                        <layoutData><layout:GridData span="XL2 L2 M2 S2" /></layoutData>
+                                    </Input>
+
+                                    <Label text="c/o" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/CareOf}" placeholder="c/o" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="Street 2" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/Street2}" placeholder="Street 2" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="Street 3" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/Street3}" placeholder="Street 3" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="Suppl." visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/StreetSupplement}" placeholder="Street Supplement" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="Street 4" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/Street4}" placeholder="Street 4" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="Street 5" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/Street5}" placeholder="Street 5" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="District" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/District}" placeholder="District" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="Different City" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/DifferentCity}" placeholder="Different City" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="Time Zone" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/TimeZone}" placeholder="Time Zone" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}">
+                                        <layoutData><layout:GridData span="XL3 L3 M3 S4" /></layoutData>
+                                    </Input>
+                                    <Label text="Tax Juris." visible="{wizardData>/showExtendedAddress}">
+                                        <layoutData><layout:GridData span="XL2 L2 M2 S3" /></layoutData>
+                                    </Label>
+                                    <Input value="{wizardData>/TaxJurisdiction}" placeholder="Tax Jurisdiction" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}">
+                                        <layoutData><layout:GridData span="XL3 L3 M3 S5" /></layoutData>
+                                    </Input>
+
+                                    <Label text="Transportation Zone" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/TransportationZone}" placeholder="Transportation Zone" width="40%" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+
+                                    <Label text="Structure Group" visible="{wizardData>/showExtendedAddress}"/>
+                                    <Input value="{wizardData>/StructureGroup}" placeholder="Structure Group" width="40%" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
+                                </form:SimpleForm>
+                            </VBox>
+                        </HBox>
 
                         <!-- Form for Person -->
                         <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }">
@@ -151,12 +242,18 @@
                             <core:Title text="3. Tax Information"/>
                             
                             <Label text="Tax Category" required="true"/>
-                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory', parameters: {$filter: 'isActive eq true'}}" forceSelection="true" editable="{= !${wizardData>/isReadOnly} }">
+                            <Select id="taxCategorySelect" selectedKey="{wizardData>/TaxCategory}" items="{path: '/VH_TaxCategory', parameters: {$filter: 'isActive eq true'}}" forceSelection="true" editable="{= !${wizardData>/isReadOnly} }" change="onTaxCategoryChange">
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
-                            <Label text="Tax Number"/>
-                            <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number" editable="{= !${wizardData>/isReadOnly} }"/>
+                            <Label text="Tax Number" required="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 }"/>
+                            <HBox alignItems="Center">
+                                <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number" editable="{= !${wizardData>/isReadOnly} }" width="250px" liveChange="onTaxNumberLiveChange"/>
+                                <Button id="validateVatBtn" text="Validate" icon="sap-icon://accept" type="Ghost" press="onValidateTaxNumber" class="sapUiSmallMarginBegin" visible="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 &amp;&amp; !${wizardData>/isReadOnly} }" enabled="{= !!${wizardData>/TaxNumber} }"/>
+                                <core:Icon src="sap-icon://message-success" color="#2b7c2b" class="sapUiSmallMarginBegin" visible="{wizardData>/vatValidationSuccess}" />
+                                <core:Icon src="sap-icon://message-error" color="#bb0000" class="sapUiSmallMarginBegin" visible="{wizardData>/vatValidationFailed}" />
+                                <Text text="{wizardData>/vatValidationMessage}" class="sapUiSmallMarginBegin" />
+                            </HBox>
 
                             <Label text="Tax Status"/>
                             <Select selectedKey="{wizardData>/TaxStatus}" items="{path: '/VH_TaxStatus', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">

@@ -7,6 +7,7 @@
             "target": "$1",
             "service": "sap-approuter-userapi"
         },
+
         {
             "source": "^/.*service/bpcust/(.*)$",
             "target": "service/bpcust/$1",

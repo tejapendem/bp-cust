@@ -52,6 +52,10 @@ sap.ui.define([
                 Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
                 StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
                 TaxCategory: "UG01", TaxNumber: "", TaxStatus: "",
+                vatValidationSuccess: false,
+                vatValidationFailed: false,
+                vatValidationMessage: "",
+                vatValidated: false,
 
                 // Credit Management
                 RiskClass: "D",
@@ -155,6 +159,8 @@ sap.ui.define([
                 Grouping: "ZP01",
                 Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
                 TaxCategory: "UG01", TaxNumber: "", TaxStatus: "",
+                vatValidationSuccess: false, vatValidationFailed: false, vatValidationMessage: "", vatValidated: false,
+                showExtendedAddress: false,
                 RiskClass: "D",
                 CheckRule: "Z1",
                 CreditGroup: "10",
@@ -163,6 +169,12 @@ sap.ui.define([
                 CreditSegments: [this._getDefaultCreditSegmentData()],
                 skippedSteps: { step5: false, step6: false, step7: false }
             };
+        },
+
+        onToggleExtendedAddress: function () {
+            var oModel = this.getView().getModel("wizardData");
+            var bCurrent = oModel.getProperty("/showExtendedAddress");
+            oModel.setProperty("/showExtendedAddress", !bCurrent);
         },
 
         _getDefaultCreditSegmentData: function () {
@@ -384,6 +396,12 @@ sap.ui.define([
             } else if (sStepId.includes("step3")) {
                 if (!oData.TaxCategory) aMissing.push("Tax Category");
                 if (!oData.TaxNumber) aMissing.push("Tax Number");
+                // For UG categories (UG01-UG06), require tax number validation before proceeding
+                var bIsUgCategory = oData.TaxCategory && oData.TaxCategory.indexOf("UG") === 0;
+                if (bIsUgCategory && oData.TaxNumber && !oData.vatValidated) {
+                    MessageBox.warning("Please validate the Tax Number before proceeding.");
+                    return false;
+                }
             }
 
             if (aMissing.length > 0) {
@@ -449,6 +467,86 @@ sap.ui.define([
                     and: true
                 }));
             }
+        },
+
+        /**
+         * Validates the entered Tax Number against the SAP Customer API
+         * via the backend CDS action validateVATNumber.
+         */
+        onValidateTaxNumber: function () {
+            var oModel = this.getView().getModel("wizardData");
+            var sTaxNumber = (oModel.getProperty("/TaxNumber") || "").trim();
+
+            if (!sTaxNumber) {
+                MessageBox.warning("Please enter a Tax Number to validate.");
+                return;
+            }
+
+            // Reset validation state
+            oModel.setProperty("/vatValidationSuccess", false);
+            oModel.setProperty("/vatValidationFailed", false);
+            oModel.setProperty("/vatValidationMessage", "Validating...");
+            oModel.setProperty("/vatValidated", false);
+
+            var that = this;
+            this._oBusyDialog.open();
+
+            // Call the backend CDS action via OData V4
+            var oODataModel = this.getOwnerComponent().getModel();
+            var sTaxCategory = oModel.getProperty("/TaxCategory");
+            var oActionCtx = oODataModel.bindContext("/validateVATNumber(...)");
+            oActionCtx.setParameter("taxNumber", sTaxNumber);
+            oActionCtx.setParameter("taxCategory", sTaxCategory);
+
+            oActionCtx.execute().then(function () {
+                that._oBusyDialog.close();
+                var oResult = oActionCtx.getBoundContext().getObject();
+
+                if (oResult && oResult.isValid) {
+                    // Tax number found in the system
+                    oModel.setProperty("/vatValidationSuccess", true);
+                    oModel.setProperty("/vatValidationFailed", false);
+                    oModel.setProperty("/vatValidationMessage", "✓ " + oResult.message);
+                    oModel.setProperty("/vatValidated", true);
+                    MessageToast.show("Tax Number validated successfully.");
+                } else {
+                    // VAT number NOT found
+                    oModel.setProperty("/vatValidationSuccess", false);
+                    oModel.setProperty("/vatValidationFailed", true);
+                    oModel.setProperty("/vatValidationMessage", "✗ " + (oResult ? oResult.message : "VAT Number not found"));
+                    oModel.setProperty("/vatValidated", false);
+                    MessageBox.error(oResult ? oResult.message : "The VAT Registration Number was not found in the system.");
+                }
+            }).catch(function (oError) {
+                that._oBusyDialog.close();
+                oModel.setProperty("/vatValidationSuccess", false);
+                oModel.setProperty("/vatValidationFailed", true);
+                oModel.setProperty("/vatValidationMessage", "✗ Validation service unavailable");
+                oModel.setProperty("/vatValidated", false);
+                MessageBox.error("Failed to validate VAT number: " + that._getErrorMessage(oError));
+            });
+        },
+
+        /**
+         * Resets VAT validation status when the user changes the Tax Number.
+         */
+        onTaxNumberLiveChange: function () {
+            var oModel = this.getView().getModel("wizardData");
+            oModel.setProperty("/vatValidationSuccess", false);
+            oModel.setProperty("/vatValidationFailed", false);
+            oModel.setProperty("/vatValidationMessage", "");
+            oModel.setProperty("/vatValidated", false);
+        },
+
+        /**
+         * Resets validation status when the user changes the Tax Category.
+         */
+        onTaxCategoryChange: function () {
+            var oModel = this.getView().getModel("wizardData");
+            oModel.setProperty("/vatValidationSuccess", false);
+            oModel.setProperty("/vatValidationFailed", false);
+            oModel.setProperty("/vatValidationMessage", "");
+            oModel.setProperty("/vatValidated", false);
         },
 
         onSalesOrgChange: function (oEvent) {

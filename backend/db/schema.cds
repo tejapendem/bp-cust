@@ -19,6 +19,25 @@ entity BusinessPartners : cuid, managed {
     SearchTerm1 : String(20);
     SearchTerm2 : String(20);
     StreetAddress : String(200);
+    HouseNumber : String(10);
+    City : String(40);
+    
+    // Extended Address Fields
+    BuildingCode : String(20);
+    Room : String(10);
+    Floor : String(10);
+    CareOf : String(40);
+    Street2 : String(60);
+    Street3 : String(60);
+    StreetSupplement : String(40);
+    Street4 : String(60);
+    Street5 : String(60);
+    District : String(40);
+    DifferentCity : String(40);
+    TimeZone : String(10);
+    TaxJurisdiction : String(20);
+    TransportationZone : String(10);
+    StructureGroup : String(10);
     PostalCode : String(20);
     Country : String(2);
     Region : String(3);

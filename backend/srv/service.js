@@ -92,6 +92,74 @@ module.exports = cds.service.impl(async function () {
         return false;
     });
 
+    // Tax Category → SAP API field mapping
+    // Each tax category validates against a different field in the Customer entity
+    const TAX_CATEGORY_FIELD_MAP = {
+        'UG01': 'VATRegistrationNumber',
+        'UG02': 'IncomeTaxRegNo',
+        'UG03': 'NationalID',
+        'UG04': 'PassportNumber'
+    };
+
+    // Tax Number Validation against external SAP API
+    this.on('validateVATNumber', async (req) => {
+        const { taxNumber, taxCategory } = req.data;
+        if (!taxNumber || !taxNumber.trim()) {
+            return { isValid: false, recordCount: 0, message: 'Tax number is required' };
+        }
+        if (!taxCategory) {
+            return { isValid: false, recordCount: 0, message: 'Tax category is required' };
+        }
+
+        // Look up the API field for this tax category
+        const sApiField = TAX_CATEGORY_FIELD_MAP[taxCategory];
+        if (!sApiField) {
+            // No validation configured for this tax category — treat as valid
+            console.log(`[TAX VALIDATION] No API field mapping for category: ${taxCategory}, skipping validation`);
+            return { isValid: true, recordCount: 0, message: 'No validation required for this tax category' };
+        }
+
+        const sTaxNum = taxNumber.trim();
+        const sBaseUrl = 'https://devlb.roofingsgroup.com/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001';
+        const sUrl = `${sBaseUrl}/Customer?sap-client=400&$filter=${sApiField} eq '${sTaxNum}'`;
+
+        console.log(`[TAX VALIDATION] Category: ${taxCategory}, Field: ${sApiField}, Value: ${sTaxNum}`);
+        console.log(`[TAX VALIDATION] URL: ${sUrl}`);
+
+        try {
+            let response;
+            try {
+                // Use CDS destination service (for BTP deployed)
+                const destService = await cds.connect.to('devlb');
+                const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=${sApiField} eq '${sTaxNum}'`;
+                response = await destService.get(sApiPath);
+            } catch (destErr) {
+                console.error(`[TAX VALIDATION] Destination error: ${destErr.message}`);
+                return { isValid: false, recordCount: 0, message: `System error: SAP destination 'devlb' unavailable.` };
+            }
+
+            const aResults = (response && response.value) || [];
+            console.log(`[TAX VALIDATION] Found ${aResults.length} record(s) for ${sApiField}: ${sTaxNum}`);
+
+            if (aResults.length > 0) {
+                return {
+                    isValid: true,
+                    recordCount: aResults.length,
+                    message: `Tax Number verified (${aResults.length} record(s) found)`
+                };
+            } else {
+                return {
+                    isValid: false,
+                    recordCount: 0,
+                    message: `Tax Number '${sTaxNum}' not found for category ${taxCategory}`
+                };
+            }
+        } catch (err) {
+            console.error(`[TAX VALIDATION] Error: ${err.message}`);
+            return { isValid: false, recordCount: 0, message: `Validation service error: ${err.message}` };
+        }
+    });
+
     this.on('getUserInfo', async (req) => {
         const userEmail = req.user?.id;
         console.log("[AUTH DEBUG] Starting getUserInfo for:", userEmail);

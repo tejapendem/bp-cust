@@ -46,6 +46,11 @@ service BusinessPartnerService {
     action verifyOTP(mobileNumber: String, otp: String) returns Boolean;
     action submitForApproval(bpID: UUID) returns String;
     action processApproval(workflowID: UUID, action: String, approverEmail: String) returns String;
+    action validateVATNumber(taxNumber: String, taxCategory: String) returns {
+        isValid: Boolean;
+        recordCount: Integer;
+        message: String;
+    };
 
     @(requires: 'authenticated-user')
     function getUserInfo() returns {
@@ -72,22 +77,22 @@ service BusinessPartnerService {
 // Secure the main entities
 annotate BusinessPartnerService.BusinessPartners with @(restrict: [
     { grant: '*', to: ['admin', 'Admin'] },
-    { grant: 'READ', to: ['viewer'] }
+    { grant: ['READ', 'CREATE', 'UPDATE'], to: ['viewer', 'Viewer', 'authenticated-user'] }
 ]);
 
 annotate BusinessPartnerService.BPSalesAreas with @(restrict: [
     { grant: '*', to: ['admin', 'Admin'] },
-    { grant: 'READ', to: ['viewer'] }
+    { grant: ['READ', 'CREATE', 'UPDATE'], to: ['viewer', 'Viewer', 'authenticated-user'] }
 ]);
 
 annotate BusinessPartnerService.BPCompanyCodes with @(restrict: [
     { grant: '*', to: ['admin', 'Admin'] },
-    { grant: 'READ', to: ['viewer'] }
+    { grant: ['READ', 'CREATE', 'UPDATE'], to: ['viewer', 'Viewer', 'authenticated-user'] }
 ]);
 
 annotate BusinessPartnerService.BPCreditSegments with @(restrict: [
     { grant: '*', to: ['admin', 'Admin'] },
-    { grant: 'READ', to: ['viewer'] }
+    { grant: ['READ', 'CREATE', 'UPDATE'], to: ['viewer', 'Viewer', 'authenticated-user'] }
 ]);
 
 // Secure the User Management and configuration entities

@@ -5,6 +5,7 @@
   "dependencies": {
     "@cap-js/postgres": "^1",
     "@sap-cloud-sdk/connectivity": "^4.6.0",
+    "@sap-cloud-sdk/http-client": "^4.6.0",
     "@sap-cloud-sdk/mail-client": "^3.24.0",
     "@sap/cds": "^8",
     "@sap/xssec": "^4",
@@ -57,6 +58,17 @@
       "html5-repo": true,
       "sap_process_automation_mail": {
         "kind": "mail"
+      },
+      "devlb": {
+        "kind": "rest",
+        "credentials": {
+          "requestTimeout": 30000
+        },
+        "[production]": {
+          "credentials": {
+            "destination": "devlb"
+          }
+        }
       },
       "model": [
         "backend/db",

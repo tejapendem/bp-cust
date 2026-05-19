@@ -102,10 +102,10 @@
     padding: 24px 32px 16px 32px;
 }
 
-/* Match the exact bold text styling from Image 2 */
+/* Match the exact bold text styling from Image 2 while supporting Dark/Light themes */
 .completionText {
     font-weight: bold !important;
-    color: #1d2d3e;
+    color: var(--sapTitleColor, #1d2d3e) !important;
 }
 
 /* === 4. Wizard Adjustments === */
