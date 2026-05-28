@@ -262,6 +262,28 @@ sap.ui.define([
             }
         },
 
+        onCompanyCodeChange: function (oEvent) {
+            var sCompanyCode = oEvent.getParameter("selectedItem") ? oEvent.getParameter("selectedItem").getKey() : "";
+            var oModel = this.getView().getModel("wizardData");
+            if (sCompanyCode === "1000" || sCompanyCode === "2000") {
+                var aSegments = oModel.getProperty("/CreditSegments") || [];
+                if (aSegments.length > 0) {
+                    aSegments[0].CreditSegment = "1000";
+                } else {
+                    aSegments.push({
+                        CreditSegment: "1000",
+                        CreditLimitRules: "B2B-NEW",
+                        LimitDefined: true,
+                        CreditLimit: 100,
+                        LimitCurrency: "UGX",
+                        ValidityDate: "9999-12-31"
+                    });
+                }
+                oModel.setProperty("/CreditSegments", aSegments);
+                oModel.refresh();
+            }
+        },
+
         onNextStep: function () {
             var oWizard = this.byId("bpWizard");
             var sCurrentStepId = oWizard.getCurrentStep();
@@ -272,6 +294,31 @@ sap.ui.define([
                 if (sStepKey) {
                     oModel.setProperty("/skippedSteps/" + sStepKey, false);
                 }
+
+                // Default credit segment to 1000 for 1000/2000 company codes when moving from step4
+                if (sStepKey === "step4") {
+                    var aCompanyCodes = oModel.getProperty("/CompanyCodes") || [];
+                    var bHas1000or2000 = aCompanyCodes.some(function (cc) {
+                        return cc.CompanyCode === "1000" || cc.CompanyCode === "2000";
+                    });
+                    if (bHas1000or2000) {
+                        var aSegments = oModel.getProperty("/CreditSegments") || [];
+                        if (aSegments.length > 0) {
+                            aSegments[0].CreditSegment = "1000";
+                        } else {
+                            aSegments.push({
+                                CreditSegment: "1000",
+                                CreditLimitRules: "B2B-NEW",
+                                LimitDefined: true,
+                                CreditLimit: 100,
+                                LimitCurrency: "UGX",
+                                ValidityDate: "9999-12-31"
+                            });
+                        }
+                        oModel.setProperty("/CreditSegments", aSegments);
+                    }
+                }
+
                 oWizard.nextStep();
                 this._updateProgress(oWizard.getProgress());
             }
@@ -393,6 +440,16 @@ sap.ui.define([
                         }
                     }
                 }
+
+                // Mobile number validation
+                if (!oData.MobileNumber) {
+                    aMissing.push("Mobile Number");
+                } else {
+                    var phoneRegex = /^\d+$/;
+                    if (!phoneRegex.test(oData.MobileNumber)) {
+                        aMissing.push("Mobile Number (Digits only, no spaces, no signs like + or -)");
+                    }
+                }
             } else if (sStepId.includes("step3")) {
                 if (!oData.TaxCategory) aMissing.push("Tax Category");
                 if (!oData.TaxNumber) aMissing.push("Tax Number");
@@ -467,6 +524,52 @@ sap.ui.define([
                     and: true
                 }));
             }
+        },
+
+        /**
+         * Dynamic suggestions for Name field using SAP Customer API
+         */
+        onNameSuggest: function (oEvent) {
+            var sValue = oEvent.getParameter("suggestValue");
+            if (!sValue || sValue.trim().length < 2) {
+                return;
+            }
+
+            var oModel = this.getView().getModel();
+            var that = this;
+
+            var oActionCtx = oModel.bindContext("/searchCustomersByName(...)");
+            oActionCtx.setParameter("name", sValue);
+
+            oActionCtx.execute().then(function () {
+                var oResult = oActionCtx.getBoundContext().getObject();
+                var aResults = [];
+                if (oResult && oResult.value) {
+                    try {
+                        aResults = JSON.parse(oResult.value);
+                    } catch (e) {
+                        console.error("Failed to parse suggestions JSON:", e);
+                    }
+                }
+
+                // Get or create suggestions model
+                var oSuggestionsModel = that.getView().getModel("suggestions");
+                if (!oSuggestionsModel) {
+                    oSuggestionsModel = new JSONModel();
+                    that.getView().setModel(oSuggestionsModel, "suggestions");
+                }
+                oSuggestionsModel.setData(aResults);
+                oSuggestionsModel.refresh(true);
+            }).catch(function (oError) {
+                console.error("Suggestions fetch failed:", oError);
+            });
+        },
+
+        /**
+         * Handle selection of a suggested Customer
+         */
+        onNameSuggestionItemSelected: function (oEvent) {
+            // No-op: suggestions are shown but no autofill is performed
         },
 
         /**
@@ -668,14 +771,18 @@ sap.ui.define([
                 TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus
             };
 
-            // Step 4: Company Details
-            oPayload.CompanyCodes = (oData.CompanyCodes || []).map(function (c) { delete c.parent; return c; });
+            // Step 4: Company Details — spread to avoid mutating model managed objects
+            oPayload.CompanyCodes = (oData.CompanyCodes || []).map(function (c) {
+                return Object.assign({}, c);
+            });
 
             // Step 5: Sales Area — send empty if skipped
             if (oSkipped.step5) {
                 oPayload.SalesAreas = [];
             } else {
-                oPayload.SalesAreas = (oData.SalesAreas || []).map(function (s) { delete s.parent; return s; });
+                oPayload.SalesAreas = (oData.SalesAreas || []).map(function (s) {
+                    return Object.assign({}, s);
+                });
             }
 
             // Step 6: Customer Info — if skipped, clear the detail fields within sales areas
@@ -699,7 +806,9 @@ sap.ui.define([
                 oPayload.RiskClass = oData.RiskClass;
                 oPayload.CheckRule = oData.CheckRule;
                 oPayload.CreditGroup = oData.CreditGroup;
-                oPayload.CreditSegments = (oData.CreditSegments || []).map(function (s) { delete s.parent; return s; });
+                oPayload.CreditSegments = (oData.CreditSegments || []).map(function (s) {
+                    return Object.assign({}, s);
+                });
             }
 
             return oPayload;
@@ -716,11 +825,11 @@ sap.ui.define([
             if (sTemplateID) {
                 // Update existing record (PATCH)
                 var sPath = "/BusinessPartners(" + sTemplateID + ")";
-                var oContext = oModel.bindContext(sPath).getBoundContext();
 
-                // Set properties individually to ensure PATCH is triggered correctly
+                // Use model-level setProperty to avoid OData V4 context resolution issues
+                // that can cause 'Cannot read properties of undefined (reading '@$ui5._')'
                 Object.keys(oPayload).forEach(function (sKey) {
-                    oContext.setProperty(sKey, oPayload[sKey]);
+                    oModel.setProperty(sPath + "/" + sKey, oPayload[sKey]);
                 });
 
                 // Wait for the model to submit the changes automatically (via $auto group)
@@ -754,57 +863,100 @@ sap.ui.define([
                     MessageBox.error("Update failed: " + sError);
                 });
             } else {
-                // Create new record (POST)
-                var oList = oModel.bindList("/BusinessPartners");
-                var oCtx = oList.create(oPayload);
-                oCtx.created().then(function () {
-                    var oCreatedData = oCtx.getObject();
-                    var sBp = oCreatedData.BusinessPartnerNumber;
-                    var sID = oCreatedData.ID;
+                // Create new record via direct REST call to bypass OData V4 managed context
+                // bugs that cause 'Cannot read properties of undefined (reading '@$ui5._')'
+                var that = this;
+                var sSrvUrl = oModel.getServiceUrl().replace(/\/+$/, "");
+                if (sSrvUrl.indexOf("/") !== 0 && sSrvUrl.indexOf("://") < 0) {
+                    sSrvUrl = "/" + sSrvUrl;
+                }
 
-                    if (oPayload.LifecycleStatus === 'pending_approval') {
-                        // Call the submitForApproval action
-                        var oActionCtx = oModel.bindContext("/submitForApproval(...)");
-                        oActionCtx.setParameter("bpID", sID);
-                        oActionCtx.execute().then(function () {
-                            that._oBusyDialog.close();
-                            MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
-                                onClose: function () {
-                                    that.onNavBack();
-                                }
-                            });
-                        }).catch(function (oActionErr) {
-                            that._oBusyDialog.close();
-                            MessageBox.error("Data saved, but failed to trigger approval workflow: " + that._getErrorMessage(oActionErr));
-                        });
-                    } else {
-                        that._oBusyDialog.close();
-                        MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
-                            onClose: function () {
-                                that.onNavBack();
+                var doSubmit = function (sCsrfToken) {
+                    var oHeaders = { "Accept": "application/json" };
+                    if (sCsrfToken) oHeaders["X-CSRF-Token"] = sCsrfToken;
+
+                    jQuery.ajax({
+                        url: sSrvUrl + "/BusinessPartners",
+                        type: "POST",
+                        contentType: "application/json",
+                        headers: oHeaders,
+                        data: JSON.stringify(oPayload),
+                        success: function (oCreatedData) {
+                            var sBp = oCreatedData.BusinessPartnerNumber || "";
+                            var sID = oCreatedData.ID;
+
+                            if (!sID) {
+                                that._oBusyDialog.close();
+                                MessageBox.success(sMsg, {
+                                    onClose: function () { that.onNavBack(); }
+                                });
+                                return;
                             }
-                        });
-                    }
-                }).catch(function (oErr) {
-                    that._oBusyDialog.close();
-                    var sError = that._getErrorMessage(oErr);
-                    MessageBox.error("Submission failed: " + sError);
-                });
+
+                            // Refresh model cache
+                            try {
+                                oModel.refresh();
+                            } catch (e) { /* ignore */ }
+
+                            if (oPayload.LifecycleStatus === 'pending_approval') {
+                                var oActionCtx = oModel.bindContext("/submitForApproval(...)");
+                                oActionCtx.setParameter("bpID", sID);
+                                oActionCtx.execute().then(function () {
+                                    that._oBusyDialog.close();
+                                    MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
+                                        onClose: function () { that.onNavBack(); }
+                                    });
+                                }).catch(function () {
+                                    that._oBusyDialog.close();
+                                    MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""));
+                                    that.onNavBack();
+                                });
+                            } else {
+                                that._oBusyDialog.close();
+                                MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
+                                    onClose: function () { that.onNavBack(); }
+                                });
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            that._oBusyDialog.close();
+                            // If CSRF required, retry with token
+                            if (xhr.status === 403 && !sCsrfToken) {
+                                that._fetchCsrfToken(sSrvUrl, function (sToken) {
+                                    doSubmit(sToken);
+                                }, function () {
+                                    MessageBox.error("Submission failed: CSRF token could not be obtained.");
+                                });
+                                return;
+                            }
+                            var sErrorMsg = that._getErrorMessage({
+                                responseText: xhr.responseText,
+                                message: error
+                            });
+                            MessageBox.error("Submission failed: " + sErrorMsg);
+                        }
+                    });
+                };
+
+                // Try POST directly — CSRF token fetch will happen on 403 if needed
+                doSubmit(null);
             }
         },
 
         _getErrorMessage: function (oError) {
             if (!oError) return "Unknown error";
 
-            // OData V4 errors often have getMessage or are in a specific structure
-            if (oError.getBoundContext && oError.getBoundContext()) {
-                var oMsgModel = this.getView().getModel("messages");
-                // Usually V4 errors are also in the MessageManager
+            // Catch known OData V4 internal TypeError and provide user-friendly message
+            if (oError instanceof TypeError && oError.message && oError.message.indexOf("@$ui5") >= 0) {
+                return "The application state could not be resolved. Please try again or refresh the page.";
             }
 
-            if (oError.message) return oError.message;
+            // 1. Check if the error object has a direct message or responseText message
+            if (oError.error && oError.error.message) {
+                return oError.error.message;
+            }
 
-            // Try to parse from responseText if available
+            // Try to parse from responseText or response body if available
             try {
                 if (oError.responseText) {
                     var oResponse = JSON.parse(oError.responseText);
@@ -814,12 +966,57 @@ sap.ui.define([
                 }
             } catch (e) { }
 
+            // 2. OData V4 registers OData errors in the central MessageManager.
+            // Let's check for messages in MessageManager as a robust fallback.
+            try {
+                var oMessageManager = sap.ui.getCore().getMessageManager();
+                var aMessages = oMessageManager.getMessageModel().getData();
+                if (aMessages && aMessages.length > 0) {
+                    var aErrors = aMessages.filter(function (msg) {
+                        return msg.type === "Error" || msg.severity === "error";
+                    }).map(function (msg) {
+                        return msg.message;
+                    });
+                    if (aErrors.length > 0) {
+                        // Exclude generic "HTTP request failed" if we have more specific validation messages
+                        var aSpecificErrors = aErrors.filter(function (msg) {
+                            return msg !== "HTTP request failed";
+                        });
+                        if (aSpecificErrors.length > 0) {
+                            return aSpecificErrors.join("\n");
+                        }
+                        return aErrors.join("\n");
+                    }
+                }
+            } catch (e) { }
+
+            if (oError.message) return oError.message;
+
             // Handle technical error objects
             if (typeof oError === "object") {
                 return JSON.stringify(oError);
             }
 
             return oError.toString();
+        },
+
+        _fetchCsrfToken: function (sSrvUrl, fnSuccess, fnError) {
+            jQuery.ajax({
+                url: sSrvUrl + "/$metadata",
+                type: "GET",
+                headers: { "X-CSRF-Token": "Fetch" },
+                success: function (data, status, xhr) {
+                    var sToken = xhr.getResponseHeader("X-CSRF-Token");
+                    if (sToken) {
+                        fnSuccess(sToken);
+                    } else if (fnError) {
+                        fnError("No CSRF token returned");
+                    }
+                },
+                error: function () {
+                    if (fnError) fnError("CSRF fetch failed");
+                }
+            });
         },
 
         onNavBack: function () {

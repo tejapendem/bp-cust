@@ -148,6 +148,15 @@ entity VH_Region {
 entity VH_Title { key code: String(20); name: String(50); isActive: Boolean default true; }
 entity VH_TaxStatus { key code: String(20); name: String(50); isActive: Boolean default true; }
 
+// Customer Info Value Help Tables
+entity VH_Currency { key code: String(3); name: String(100); isActive: Boolean default true; }
+entity VH_ExchangeRateType { key code: String(4); name: String(100); isActive: Boolean default true; }
+entity VH_PricingProcedure { key code: String(2); name: String(100); isActive: Boolean default true; }
+entity VH_StatisticsGroup { key code: String(2); name: String(100); isActive: Boolean default true; }
+entity VH_PaymentTerms { key code: String(4); name: String(100); isActive: Boolean default true; }
+entity VH_Incoterms { key code: String(4); name: String(100); isActive: Boolean default true; }
+entity VH_OutputTaxCategory { key code: String(10); name: String(100); isActive: Boolean default true; }
+
 entity Users : managed {
     key email : String(100);
     name      : String(100);

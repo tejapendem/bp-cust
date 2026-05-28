@@ -3,6 +3,7 @@
     xmlns="sap.m"
     xmlns:form="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
+    xmlns:data="sap.ui.core"
     height="100%">
 
     <Page id="activationPage" title="Activation Queue - Config for Customer" showNavButton="true" navButtonPress="onNavBack">
@@ -170,6 +171,63 @@
                                     <OverflowToolbar>
                                         <ToolbarSpacer/>
                                         <Button icon="sap-icon://add" text="Add Language" press="onAddVH('VH_Language')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                            <Title text="Manage Mobile Country Codes" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_MobileCountryCode'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Code" press="onAddVH('VH_MobileCountryCode')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Regions" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_Region'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Region" press="onAddVH('VH_Region')" />
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>
@@ -504,6 +562,208 @@
                                     <OverflowToolbar>
                                         <ToolbarSpacer/>
                                         <Button icon="sap-icon://add" text="Add Data" press="onAddVH('VH_CustomerData2')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                            <Title text="Manage Currencies" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_Currency'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Currency" press="onAddVH('VH_Currency')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Exchange Rate Types" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_ExchangeRateType'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Rate Type" press="onAddVH('VH_ExchangeRateType')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Pricing Procedures" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_PricingProcedure'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Procedure" press="onAddVH('VH_PricingProcedure')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Statistics Groups" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_StatisticsGroup'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Group" press="onAddVH('VH_StatisticsGroup')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Payment Terms" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_PaymentTerms'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Terms" press="onAddVH('VH_PaymentTerms')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Incoterms" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_Incoterms'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Incoterm" press="onAddVH('VH_Incoterms')" />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column><Text text="Code"/></Column>
+                                    <Column><Text text="Name"/></Column>
+                                    <Column hAlign="Center" width="80px"><Text text="Active"/></Column>
+                                    <Column hAlign="End" width="100px"><Text text="Actions"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{code}"/>
+                                            <Text text="{name}"/>
+                                            <Switch state="{isActive}" change="onToggleActive" />
+                                            <HBox>
+                                                <Button icon="sap-icon://edit" type="Transparent" press="onEditVH" />
+                                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteVH" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <Title text="Manage Output Tax Categories" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                            <Table items="{path: '/VH_OutputTaxCategory'}">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ToolbarSpacer/>
+                                        <Button icon="sap-icon://add" text="Add Tax Category" press="onAddVH('VH_OutputTaxCategory')" />
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>

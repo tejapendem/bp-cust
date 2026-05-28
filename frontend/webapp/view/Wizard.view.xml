@@ -76,7 +76,17 @@
                                     </Select>
 
                                     <Label text="Name" required="true"/>
-                                    <Input id="nameInput" value="{wizardData>/Name}" placeholder="Full / Company Name" editable="{= !${wizardData>/isReadOnly} }"/>
+                                    <Input id="nameInput" 
+                                           value="{wizardData>/Name}" 
+                                           placeholder="Full / Company Name" 
+                                           editable="{= !${wizardData>/isReadOnly} }"
+                                           showSuggestion="true"
+                                           suggest="onNameSuggest"
+                                           suggestionItems="{suggestions>/}">
+                                        <suggestionItems>
+                                            <core:Item key="{suggestions>CustomerID}" text="{= ${suggestions>City} ? ${suggestions>Name} + ' (' + ${suggestions>City} + ')' : ${suggestions>Name} }"/>
+                                        </suggestionItems>
+                                    </Input>
                                     
                                     <Label text="Search terms 1/2"/>
                                     <Input value="{wizardData>/SearchTerm1}" placeholder="Term 1" editable="{= !${wizardData>/isReadOnly} }">
@@ -93,7 +103,7 @@
                                         <core:Item key="{code}" text="{code} - {name}"/>
                                     </Select>
 
-                                    <Label text="Mobile Number"/>
+                                    <Label text="Mobile Number" required="true"/>
                                     <Select id="mobileCodeSelect" selectedKey="{wizardData>/MobileCountryCode}" items="{path: '/VH_MobileCountryCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
                                         <layoutData><layout:GridData span="XL3 L3 M3 S4" /></layoutData>
                                         <core:Item key="{code}" text="{code}"/>
@@ -285,7 +295,7 @@
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Select selectedKey="{wizardData>CompanyCode}" items="{path: '/VH_CompanyCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <Select selectedKey="{wizardData>CompanyCode}" items="{path: '/VH_CompanyCode', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }" change="onCompanyCodeChange">
                                                 <core:Item key="{code}" text="{code} - {name}"/>
                                             </Select>
                                             <CheckBox selected="{wizardData>IsBP}" editable="{= !${wizardData>/isReadOnly} }"/>
@@ -373,25 +383,37 @@
                                             <core:Item key="{code}" text="{code} - {name}"/>
                                         </Select>
                                         
-                                        <Label text="Currency (Auto)"/>
-                                        <Input value="{wizardData>Currency}" editable="false"/>
+                                        <Label text="Currency"/>
+                                        <Select selectedKey="{wizardData>Currency}" items="{path: '/VH_Currency', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <core:Item key="{code}" text="{name}"/>
+                                        </Select>
                                         
-                                        <Label text="Exchange Rate Type (Auto)"/>
-                                        <Input value="{wizardData>ExchangeRateType}" editable="false"/>
- 
-                                        <Label text="Pricing Procedure (Auto)"/>
-                                        <Input value="{wizardData>CustomerPricingProcedure}" editable="false"/>
- 
-                                        <Label text="Statistics Group (Auto)"/>
-                                        <Input value="{wizardData>CustomerStatsGroup}" editable="false"/>
+                                        <Label text="Exchange Rate Type"/>
+                                        <Select selectedKey="{wizardData>ExchangeRateType}" items="{path: '/VH_ExchangeRateType', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <core:Item key="{code}" text="{name}"/>
+                                        </Select>
+                                        
+                                        <Label text="Pricing Procedure"/>
+                                        <Select selectedKey="{wizardData>CustomerPricingProcedure}" items="{path: '/VH_PricingProcedure', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <core:Item key="{code}" text="{name}"/>
+                                        </Select>
+                                        
+                                        <Label text="Statistics Group"/>
+                                        <Select selectedKey="{wizardData>CustomerStatsGroup}" items="{path: '/VH_StatisticsGroup', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <core:Item key="{code}" text="{name}"/>
+                                        </Select>
  
                                         <core:Title text="Billing &amp; Tax"/>
  
-                                        <Label text="Payment Terms (Auto)"/>
-                                        <Input value="{wizardData>PaymentTerms}" editable="false"/>
+                                        <Label text="Payment Terms"/>
+                                        <Select selectedKey="{wizardData>PaymentTerms}" items="{path: '/VH_PaymentTerms', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <core:Item key="{code}" text="{name}"/>
+                                        </Select>
  
-                                        <Label text="Incoterms (Auto)"/>
-                                        <Input value="{wizardData>Incoterms}" editable="false"/>
+                                        <Label text="Incoterms"/>
+                                        <Select selectedKey="{wizardData>Incoterms}" items="{path: '/VH_Incoterms', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <core:Item key="{code}" text="{name}"/>
+                                        </Select>
  
                                         <Label text="Account Assignment Group"/>
                                         <Select selectedKey="{wizardData>AccountAssignmentGroup}" items="{path: '/VH_AccountAssignmentGroup', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
@@ -403,11 +425,15 @@
                                             <core:Item key="{code}" text="{code} - {name}"/>
                                         </Select>
  
-                                        <Label text="Output Tax Country (Auto)"/>
-                                        <Input value="{wizardData>OutputTaxCountry}" editable="false"/>
+                                        <Label text="Output Tax Country"/>
+                                        <Select selectedKey="{wizardData>OutputTaxCountry}" items="{path: '/VH_Country', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <core:Item key="{code}" text="{code} - {name}"/>
+                                        </Select>
  
-                                        <Label text="Output Tax Category (Auto)"/>
-                                        <Input value="{wizardData>OutputTaxCategory}" editable="false"/>
+                                        <Label text="Output Tax Category"/>
+                                        <Select selectedKey="{wizardData>OutputTaxCategory}" items="{path: '/VH_OutputTaxCategory', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <core:Item key="{code}" text="{name}"/>
+                                        </Select>
  
                                         <Label text="Customer Data 2"/>
                                         <Select selectedKey="{wizardData>CustomerData2}" items="{path: '/VH_CustomerData2', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
@@ -432,17 +458,17 @@
                                 <core:Title text="Credit Profile"/>
                                 
                                 <Label text="Risk Class"/>
-                                <Select selectedKey="{wizardData>/RiskClass}" items="{path: '/VH_RiskClass', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <Select selectedKey="{wizardData>/RiskClass}" items="{path: '/VH_RiskClass', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" enabled="false">
                                     <core:Item key="{code}" text="{code} - {name}"/>
                                 </Select>
                                 
                                 <Label text="Check Rule"/>
-                                <Select selectedKey="{wizardData>/CheckRule}" items="{path: '/VH_CheckRule', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <Select selectedKey="{wizardData>/CheckRule}" items="{path: '/VH_CheckRule', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" enabled="false">
                                     <core:Item key="{code}" text="{code} - {name}"/>
                                 </Select>
  
                                 <Label text="Credit Group"/>
-                                <Select selectedKey="{wizardData>/CreditGroup}" items="{path: '/VH_CreditGroup', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <Select selectedKey="{wizardData>/CreditGroup}" items="{path: '/VH_CreditGroup', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" enabled="false">
                                     <core:Item key="{code}" text="{code} - {name}"/>
                                 </Select>
                             </form:SimpleForm>
@@ -467,17 +493,17 @@
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Select selectedKey="{wizardData>CreditSegment}" items="{path: '/VH_CreditSegment', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <Select selectedKey="{wizardData>CreditSegment}" items="{path: '/VH_CreditSegment', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" enabled="false">
                                                 <core:Item key="{code}" text="{code} - {name}"/>
                                             </Select>
-                                            <Select selectedKey="{wizardData>CreditLimitRules}" items="{path: '/VH_CreditLimitRule', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                            <Select selectedKey="{wizardData>CreditLimitRules}" items="{path: '/VH_CreditLimitRule', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" enabled="false">
                                                 <core:Item key="{code}" text="{code} - {name}"/>
                                             </Select>
                                             <RadioButtonGroup columns="2" selectedIndex="{= ${wizardData>LimitDefined} ? 0 : 1 }" editable="{= !${wizardData>/isReadOnly} }" select="onLimitDefinedChange">
                                                 <RadioButton text="Defined" />
                                                 <RadioButton text="Not Defined" />
                                             </RadioButtonGroup>
-                                            <Input value="{wizardData>CreditLimit}" type="Number" placeholder="100" editable="{= !${wizardData>/isReadOnly} &amp;&amp; ${wizardData>LimitDefined} }"/>
+                                            <Input value="{wizardData>CreditLimit}" type="Number" placeholder="100" editable="false"/>
                                             <Input value="{wizardData>LimitCurrency}" editable="false" width="70px"/>
                                             <DatePicker value="{wizardData>ValidityDate}" valueFormat="yyyy-MM-dd" displayFormat="medium" editable="{= !${wizardData>/isReadOnly} }"/>
                                             <Button icon="sap-icon://delete" type="Reject" press="onRemoveCreditSegment" visible="{= !${wizardData>/isReadOnly} }"/>

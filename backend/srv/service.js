@@ -160,6 +160,51 @@ module.exports = cds.service.impl(async function () {
         }
     });
 
+    this.on('searchCustomersByName', async (req) => {
+        const { name } = req.data;
+        if (!name || name.trim().length < 2) {
+            return JSON.stringify([]);
+        }
+        const sSearch = name.trim().replace(/'/g, "''");
+        console.log(`[SUGGESTIONS] Searching for customers matching: ${sSearch}`);
+
+        try {
+            const destService = await cds.connect.to('devlb');
+            const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=contains(Name, '${sSearch}')&$top=15`;
+            const response = await destService.get(sApiPath);
+            const aResults = (response && response.value) || [];
+            console.log(`[SUGGESTIONS] Found ${aResults.length} records matching: ${sSearch}`);
+            return JSON.stringify(aResults);
+        } catch (err) {
+            console.error(`[SUGGESTIONS] Error with contains filter: ${err.message}`);
+            // Fallback: try startswith
+            try {
+                const destService = await cds.connect.to('devlb');
+                const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=startswith(Name, '${sSearch}')&$top=15`;
+                const response = await destService.get(sApiPath);
+                const aResults = (response && response.value) || [];
+                return JSON.stringify(aResults);
+            } catch (err2) {
+                console.error(`[SUGGESTIONS] Error with startswith filter: ${err2.message}`);
+                // Safe fallback: try City eq 'Kampala' and filter in-memory
+                try {
+                    const destService = await cds.connect.to('devlb');
+                    const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=City eq 'Kampala'`;
+                    const response = await destService.get(sApiPath);
+                    const aResults = (response && response.value) || [];
+                    const lowerSearch = sSearch.toLowerCase();
+                    const filtered = aResults
+                        .filter(item => item.Name && item.Name.toLowerCase().includes(lowerSearch))
+                        .slice(0, 15);
+                    return JSON.stringify(filtered);
+                } catch (err3) {
+                    console.error(`[SUGGESTIONS] Fallback failed: ${err3.message}`);
+                    return JSON.stringify([]);
+                }
+            }
+        }
+    });
+
     this.on('getUserInfo', async (req) => {
         const userEmail = req.user?.id;
         console.log("[AUTH DEBUG] Starting getUserInfo for:", userEmail);

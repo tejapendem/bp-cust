@@ -35,6 +35,14 @@ service BusinessPartnerService {
     entity VH_Title as projection on cust.VH_Title;
     entity VH_TaxStatus as projection on cust.VH_TaxStatus;
 
+    entity VH_Currency as projection on cust.VH_Currency;
+    entity VH_ExchangeRateType as projection on cust.VH_ExchangeRateType;
+    entity VH_PricingProcedure as projection on cust.VH_PricingProcedure;
+    entity VH_StatisticsGroup as projection on cust.VH_StatisticsGroup;
+    entity VH_PaymentTerms as projection on cust.VH_PaymentTerms;
+    entity VH_Incoterms as projection on cust.VH_Incoterms;
+    entity VH_OutputTaxCategory as projection on cust.VH_OutputTaxCategory;
+
     entity Users as projection on cust.Users;
     
     entity AccessRequests as projection on cust.AccessRequests;
@@ -51,6 +59,8 @@ service BusinessPartnerService {
         recordCount: Integer;
         message: String;
     };
+
+    function searchCustomersByName(name: String) returns String;
 
     @(requires: 'authenticated-user')
     function getUserInfo() returns {

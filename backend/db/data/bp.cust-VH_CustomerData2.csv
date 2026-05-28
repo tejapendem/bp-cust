@@ -1,2 +1,5 @@
 code;name;isActive
+01;Government;true
 02;Other than Govt.;true
+03;Export;true
+04;Cash Customer;true
