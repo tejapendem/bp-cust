@@ -820,48 +820,72 @@ sap.ui.define([
             var sTemplateID = oWizardModel.getProperty("/TemplateID");
             var that = this;
 
+            console.log("=== FULL SUBMISSION PAYLOAD ===");
+            console.log(JSON.stringify(oPayload, null, 2));
+            console.log("=== END PAYLOAD ===");
+
             this._oBusyDialog.open();
 
             if (sTemplateID) {
-                // Update existing record (PATCH)
-                var sPath = "/BusinessPartners(" + sTemplateID + ")";
+                // Update existing record via direct PATCH request
+                var sSrvUrl = oModel.getServiceUrl().replace(/\/+$/, "");
+                if (sSrvUrl.indexOf("/") !== 0 && sSrvUrl.indexOf("://") < 0) {
+                    sSrvUrl = "/" + sSrvUrl;
+                }
 
-                // Use model-level setProperty to avoid OData V4 context resolution issues
-                // that can cause 'Cannot read properties of undefined (reading '@$ui5._')'
-                Object.keys(oPayload).forEach(function (sKey) {
-                    oModel.setProperty(sPath + "/" + sKey, oPayload[sKey]);
-                });
+                var doUpdate = function (sCsrfToken) {
+                    var oHeaders = { "Accept": "application/json" };
+                    if (sCsrfToken) oHeaders["X-CSRF-Token"] = sCsrfToken;
 
-                // Wait for the model to submit the changes automatically (via $auto group)
-                oModel.submitBatch("$auto").then(function () {
-                    if (oPayload.LifecycleStatus === 'pending_approval') {
-                        // Call the submitForApproval action for existing record too
-                        var oActionCtx = oModel.bindContext("/submitForApproval(...)");
-                        oActionCtx.setParameter("bpID", sTemplateID);
-                        oActionCtx.execute().then(function () {
-                            that._oBusyDialog.close();
-                            MessageBox.success(sMsg, {
-                                onClose: function () {
-                                    that.onNavBack();
-                                }
-                            });
-                        }).catch(function (oActionErr) {
-                            that._oBusyDialog.close();
-                            MessageBox.error("Data updated, but failed to trigger approval workflow: " + that._getErrorMessage(oActionErr));
-                        });
-                    } else {
-                        that._oBusyDialog.close();
-                        MessageBox.success(sMsg, {
-                            onClose: function () {
-                                that.onNavBack();
+                    jQuery.ajax({
+                        url: sSrvUrl + "/BusinessPartners(" + sTemplateID + ")",
+                        type: "PATCH",
+                        contentType: "application/json",
+                        headers: oHeaders,
+                        data: JSON.stringify(oPayload),
+                        success: function () {
+                            try { oModel.refresh(); } catch (e) { /* ignore */ }
+
+                            if (oPayload.LifecycleStatus === 'pending_approval') {
+                                var oActionCtx = oModel.bindContext("/submitForApproval(...)");
+                                oActionCtx.setParameter("bpID", sTemplateID);
+                                oActionCtx.execute().then(function () {
+                                    that._oBusyDialog.close();
+                                    MessageBox.success(sMsg, {
+                                        onClose: function () { that.onNavBack(); }
+                                    });
+                                }).catch(function (oActionErr) {
+                                    that._oBusyDialog.close();
+                                    MessageBox.error("Data updated, but failed to trigger approval workflow: " + that._getErrorMessage(oActionErr));
+                                });
+                            } else {
+                                that._oBusyDialog.close();
+                                MessageBox.success(sMsg, {
+                                    onClose: function () { that.onNavBack(); }
+                                });
                             }
-                        });
-                    }
-                }).catch(function (oErr) {
-                    that._oBusyDialog.close();
-                    var sError = that._getErrorMessage(oErr);
-                    MessageBox.error("Update failed: " + sError);
-                });
+                        },
+                        error: function (xhr, status, error) {
+                            if (xhr.status === 403 && !sCsrfToken) {
+                                that._fetchCsrfToken(sSrvUrl, function (sToken) {
+                                    doUpdate(sToken);
+                                }, function () {
+                                    that._oBusyDialog.close();
+                                    MessageBox.error("Update failed: CSRF token could not be obtained.");
+                                });
+                                return;
+                            }
+                            that._oBusyDialog.close();
+                            var sErrorMsg = that._getErrorMessage({
+                                responseText: xhr.responseText,
+                                message: error
+                            });
+                            MessageBox.error("Update failed: " + sErrorMsg);
+                        }
+                    });
+                };
+
+                doUpdate(null);
             } else {
                 // Create new record via direct REST call to bypass OData V4 managed context
                 // bugs that cause 'Cannot read properties of undefined (reading '@$ui5._')'

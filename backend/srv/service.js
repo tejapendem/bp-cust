@@ -1,4 +1,5 @@
 const cds = require('@sap/cds');
+const { getDestination } = require('@sap-cloud-sdk/connectivity');
 const nodemailer = require('nodemailer');
 const puppeteer = require('puppeteer');
 const fs = require('fs');
@@ -275,9 +276,9 @@ module.exports = cds.service.impl(async function () {
             .where({ ID: bpID })
             .columns(b => {
                 b('*'),
-                b.CompanyCodes('*'),
-                b.SalesAreas('*'),
-                b.CreditSegments('*')
+                    b.CompanyCodes('*'),
+                    b.SalesAreas('*'),
+                    b.CreditSegments('*')
             });
         if (!bp) return req.error(404, `Business Partner with ID ${bpID} not found`);
 
@@ -406,9 +407,9 @@ module.exports = cds.service.impl(async function () {
                 .where({ ID: workflow.businessPartner_ID })
                 .columns(b => {
                     b('*'),
-                    b.CompanyCodes('*'),
-                    b.SalesAreas('*'),
-                    b.CreditSegments('*')
+                        b.CompanyCodes('*'),
+                        b.SalesAreas('*'),
+                        b.CreditSegments('*')
                 });
             if (bp) {
                 const subject = "Your Business Partner request has been rejected";
@@ -442,9 +443,9 @@ module.exports = cds.service.impl(async function () {
                 .where({ ID: workflow.businessPartner_ID })
                 .columns(b => {
                     b('*'),
-                    b.CompanyCodes('*'),
-                    b.SalesAreas('*'),
-                    b.CreditSegments('*')
+                        b.CompanyCodes('*'),
+                        b.SalesAreas('*'),
+                        b.CreditSegments('*')
                 });
             const subject = `Approval Required: Level ${nextLevel} - ${bp.Name}`;
             const html = _getWorkflowEmailTemplate(
@@ -466,9 +467,9 @@ module.exports = cds.service.impl(async function () {
                 .where({ ID: workflow.businessPartner_ID })
                 .columns(b => {
                     b('*'),
-                    b.CompanyCodes('*'),
-                    b.SalesAreas('*'),
-                    b.CreditSegments('*')
+                        b.CompanyCodes('*'),
+                        b.SalesAreas('*'),
+                        b.CreditSegments('*')
                 });
             if (bp) {
                 const subject = "Business Partner Approved!";
@@ -485,6 +486,656 @@ module.exports = cds.service.impl(async function () {
 
         return `Level ${workflow.currentLevel} approval completed${nextApprover ? ', moved to Level ' + nextLevel : ', fully approved'}`;
     });
+
+    // ─── SAP ODATA SCHEMA GENERATOR AND PUSH INTEGRATION ──────────────────
+
+    this.after(['CREATE', 'UPDATE'], 'BusinessPartners', async (data, req) => {
+        const bpId = data.ID || req.data.ID;
+        if (!bpId) return;
+
+        const { BusinessPartners } = this.entities;
+
+        try {
+            // Fetch the fully expanded BP record
+            const bp = await SELECT.one.from(BusinessPartners)
+                .where({ ID: bpId })
+                .columns(b => {
+                    b('*'),
+                        b.CompanyCodes('*'),
+                        b.SalesAreas('*'),
+                        b.CreditSegments('*')
+                });
+
+            if (bp) {
+                console.log(`[PAYLOAD GEN] Generating SAP payloads for BP ID: ${bpId}`);
+                const { bpPayload, creditPayload } = generateSAPPayloads(bp);
+
+                console.log("=== SAP BP PAYLOAD ===");
+                console.log(JSON.stringify(bpPayload, null, 2));
+                console.log("=== END SAP BP PAYLOAD ===");
+                console.log("=== SAP CREDIT PAYLOAD ===");
+                console.log(JSON.stringify(creditPayload, null, 2));
+                console.log("=== END SAP CREDIT PAYLOAD ===");
+
+                await UPDATE(BusinessPartners)
+                    .set({
+                        SAPBUPAPayload: JSON.stringify(bpPayload, null, 2),
+                        SAPCreditPayload: JSON.stringify(creditPayload, null, 2)
+                    })
+                    .where({ ID: bpId });
+                console.log(`[PAYLOAD GEN] Successfully updated payloads in DB`);
+            }
+        } catch (err) {
+            console.error(`[PAYLOAD GEN ERROR] Failed to auto-generate SAP payloads:`, err);
+        }
+    });
+
+    this.on('pushToSAP', async (req) => {
+        const { bpID } = req.data;
+        const { BusinessPartners, SAPPushLogs } = this.entities;
+        const logs = [];
+
+        logs.push(`[${new Date().toLocaleTimeString()}] Initiating push to SAP for Business Partner ID: ${bpID}...`);
+
+        try {
+            // 1. Fetch Business Partner details
+            const bp = await SELECT.one.from(BusinessPartners).where({ ID: bpID });
+            if (!bp) {
+                return req.error(404, `Business Partner with ID ${bpID} not found`);
+            }
+
+            if (!bp.SAPBUPAPayload) {
+                return req.error(400, `SAP Business Partner payload is empty. Please save/update the Business Partner form first.`);
+            }
+
+            let bpPayload;
+            try {
+                bpPayload = JSON.parse(bp.SAPBUPAPayload);
+            } catch (e) {
+                return req.error(400, `Stored SAP Business Partner payload is invalid JSON: ${e.message}`);
+            }
+
+            // 2. Connect to the 'devlb' destination
+            logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'devlb'...`);
+            const destService = await cds.connect.to('devlb');
+
+            // 3. Post A_BusinessPartner
+            logs.push(`[${new Date().toLocaleTimeString()}] Pushing Business Partner payload to /sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner...`);
+            let bpResponse;
+            let httpStatus = '';
+            try {
+                bpResponse = await destService.post('/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner', bpPayload);
+                logs.push(`[${new Date().toLocaleTimeString()}] Business Partner posted successfully.`);
+            } catch (postErr) {
+                console.error("SAP BP Push Error:", postErr);
+                httpStatus = postErr.response?.status || '';
+                const statusText = postErr.response?.statusText || '';
+                let errDetail = postErr.message;
+                if (postErr.response && postErr.response.data) {
+                    errDetail += " - " + (typeof postErr.response.data === 'string' ? postErr.response.data : JSON.stringify(postErr.response.data));
+                }
+                throw new Error(`Business Partner push failed: ${errDetail}`, { cause: { httpStatus, statusText } });
+            }
+
+            // 4. Parse response to extract Business Partner Number
+            let bpNumber = '';
+            const responseStr = typeof bpResponse === 'string' ? bpResponse : JSON.stringify(bpResponse);
+
+            if (bpResponse && bpResponse.d && bpResponse.d.BusinessPartner) {
+                bpNumber = bpResponse.d.BusinessPartner;
+            } else if (bpResponse && bpResponse.BusinessPartner) {
+                bpNumber = bpResponse.BusinessPartner;
+            }
+
+            if (!bpNumber) {
+                const rx1 = /A_BusinessPartner\('(\d+)'\)/i;
+                const rx2 = /BusinessPartner\('(\d+)'\)/i;
+                const rx3 = /"BusinessPartner"\s*:\s*"(\d+)"/i;
+
+                const m1 = responseStr.match(rx1);
+                const m2 = responseStr.match(rx2);
+                const m3 = responseStr.match(rx3);
+
+                if (m1 && m1[1]) bpNumber = m1[1];
+                else if (m2 && m2[1]) bpNumber = m2[1];
+                else if (m3 && m3[1]) bpNumber = m3[1];
+            }
+
+            if (!bpNumber) {
+                logs.push(`[${new Date().toLocaleTimeString()}] WARNING: Could not parse Business Partner number from SAP response. Using local BP number.`);
+                bpNumber = bp.BusinessPartnerNumber || Math.floor(Math.random() * 9000000000 + 1000000000).toString();
+            } else {
+                if (bpNumber.length < 10) bpNumber = bpNumber.padStart(10, '0');
+                logs.push(`[${new Date().toLocaleTimeString()}] SUCCESS: SAP Business Partner created with ID: ${bpNumber}`);
+            }
+
+            // Update local BusinessPartnerNumber in database
+            await UPDATE(BusinessPartners).set({ BusinessPartnerNumber: bpNumber }).where({ ID: bpID });
+
+            // 5. Post Credit Segment
+            let creditPushed = false;
+            if (bp.SAPCreditPayload) {
+                let creditPayload;
+                try {
+                    creditPayload = JSON.parse(bp.SAPCreditPayload);
+                } catch (e) {
+                    logs.push(`[${new Date().toLocaleTimeString()}] ERROR: Failed to parse stored SAP Credit Segment payload: ${e.message}`);
+                }
+
+                if (creditPayload) {
+                    logs.push(`[${new Date().toLocaleTimeString()}] Injecting Business Partner ID '${bpNumber}' into Credit Segment payload...`);
+                    creditPayload.BusinessPartner = bpNumber;
+
+                    if (creditPayload.to_CreditMgmtAccountTP && Array.isArray(creditPayload.to_CreditMgmtAccountTP.results)) {
+                        creditPayload.to_CreditMgmtAccountTP.results.forEach(result => {
+                            result.BusinessPartner = bpNumber;
+                        });
+                    }
+
+                    logs.push(`[${new Date().toLocaleTimeString()}] Pushing Credit Segment payload to /sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/CreditMgmtBusinessPartner...`);
+                    try {
+                        await destService.post('/sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/CreditMgmtBusinessPartner', creditPayload);
+                        logs.push(`[${new Date().toLocaleTimeString()}] SUCCESS: Credit Segment pushed successfully.`);
+                        creditPushed = true;
+                    } catch (creditErr) {
+                        console.error("SAP Credit Push Error:", creditErr);
+                        let errDetail = creditErr.message;
+                        if (creditErr.response && creditErr.response.data) {
+                            errDetail += " - " + (typeof creditErr.response.data === 'string' ? creditErr.response.data : JSON.stringify(creditErr.response.data));
+                        }
+                        logs.push(`[${new Date().toLocaleTimeString()}] WARNING: Credit Segment push failed: ${errDetail}`);
+                    }
+                }
+            } else {
+                logs.push(`[${new Date().toLocaleTimeString()}] No Credit Segment payload found, skipping.`);
+            }
+
+            // 6. Save logs and status
+            const finalStatus = 'Pushed';
+            const logStr = logs.join('\n');
+            await UPDATE(BusinessPartners).set({
+                SAPPushStatus: finalStatus,
+                SAPPushLogs: logStr
+            }).where({ ID: bpID });
+
+            await INSERT.into(SAPPushLogs).entries({
+                businessPartner_ID: bpID,
+                status: finalStatus,
+                logs: logStr,
+                timestamp: new Date()
+            });
+
+            return {
+                success: true,
+                bpNumber: bpNumber,
+                httpStatus: '200',
+                logs: logStr
+            };
+
+        } catch (err) {
+            console.error("SAP Push Action Error:", err);
+            const httpStatus = err.cause?.httpStatus || '500';
+            logs.push(`[${new Date().toLocaleTimeString()}] CRITICAL ERROR (HTTP ${httpStatus}): ${err.message}`);
+            const logStr = logs.join('\n');
+            await UPDATE(BusinessPartners).set({
+                SAPPushStatus: 'Failed',
+                SAPPushLogs: logStr
+            }).where({ ID: bpID });
+
+            await INSERT.into(SAPPushLogs).entries({
+                businessPartner_ID: bpID,
+                status: 'Failed',
+                logs: logStr,
+                timestamp: new Date()
+            });
+
+            return {
+                success: false,
+                bpNumber: '',
+                httpStatus: httpStatus,
+                logs: logStr
+            };
+        }
+    });
+
+    // Delete Business Partners (admin only, draft/pending_approval only)
+    this.on('deleteBusinessPartners', async (req) => {
+        const { bpIDs } = req.data;
+        const { BusinessPartners, ApprovalWorkflows, SAPPushLogs } = this.entities;
+
+        if (!bpIDs || !bpIDs.length) {
+            return req.error(400, 'No BP IDs provided');
+        }
+
+        if (!req.user.is('Admin')) {
+            return req.error(403, 'Only admins can delete Business Partners');
+        }
+
+        let deleted = 0;
+        let skipped = 0;
+
+        for (const id of bpIDs) {
+            const bp = await SELECT.one.from(BusinessPartners)
+                .columns(['ID', 'LifecycleStatus', 'Name', 'BusinessPartnerNumber'])
+                .where({ ID: id });
+
+            if (!bp) {
+                skipped++;
+                continue;
+            }
+
+            if (bp.LifecycleStatus === 'active') {
+                skipped++;
+                continue;
+            }
+
+            // Delete related records first
+            await DELETE.from(SAPPushLogs).where({ businessPartner_ID: id });
+            const workflows = await SELECT.from(ApprovalWorkflows).columns('ID').where({ businessPartner_ID: id });
+            for (const wf of workflows) {
+                await DELETE.from(ApprovalWorkflows).where({ ID: wf.ID });
+            }
+
+            await DELETE.from(BusinessPartners).where({ ID: id });
+            deleted++;
+            console.log(`[DELETE] BP ${bp.BusinessPartnerNumber || bp.Name} (${id}) deleted by ${req.user.id}`);
+        }
+
+        return `${deleted} BP(s) deleted, ${skipped} skipped (active BPs cannot be deleted).`;
+    });
+
+    function generateSAPPayloads(bp) {
+        const creationDate = new Date().toISOString().split('T')[0] + "T00:00:00";
+        const timeNow = new Date().toLocaleTimeString('en-US', { hour12: false });
+        const [h, m, s] = timeNow.split(':');
+        const sapTime = `PT${h}H${m}M${s}S`;
+
+        let category = "2"; // Default Organization
+        if (bp.BusinessPartnerCategory === "Person") {
+            category = "1";
+        }
+
+        const email = bp.Email || "";
+        const name = bp.Name || "";
+        const street = bp.StreetAddress ? bp.StreetAddress.trim() : "";
+        const postalCode = bp.PostalCode || "";
+        const country = bp.Country || "";
+        const region = bp.Region || "";
+        const lang = bp.Language || "EN";
+        const mobileCountry = bp.MobileCountryCode || "";
+        const mobileNum = bp.MobileNumber || "";
+        const tel = bp.Telephone || "";
+        const title = bp.Title || "0003";
+
+        // 1. Build to_BusinessPartnerAddress
+        const addresses = [{
+            "BusinessPartner": "",
+            "AddressID": "",
+            "ValidityStartDate": "2026-04-23T00:00:00Z",
+            "ValidityEndDate": "9999-12-31T23:59:59Z",
+            "AuthorizationGroup": "",
+            "AddressUUID": "0911721a-db8d-1ede-b8a6-ef04ace846d9",
+            "AdditionalStreetPrefixName": "",
+            "AdditionalStreetSuffixName": "",
+            "AddressTimeZone": "UTC+3",
+            "CareOfName": "",
+            "CityCode": "",
+            "CityName": "",
+            "CompanyPostalCode": "",
+            "Country": country,
+            "County": "",
+            "DeliveryServiceNumber": "",
+            "DeliveryServiceTypeCode": "",
+            "District": "",
+            "FormOfAddress": title,
+            "FullName": name,
+            "HomeCityName": "",
+            "HouseNumber": "",
+            "HouseNumberSupplementText": "",
+            "Language": lang,
+            "POBox": "",
+            "POBoxDeviatingCityName": "",
+            "POBoxDeviatingCountry": "",
+            "POBoxDeviatingRegion": "",
+            "POBoxIsWithoutNumber": false,
+            "POBoxLobbyName": "",
+            "POBoxPostalCode": "",
+            "Person": "",
+            "PostalCode": postalCode,
+            "PrfrdCommMediumType": "",
+            "Region": region,
+            "StreetName": street,
+            "StreetPrefixName": "",
+            "StreetSuffixName": "",
+            "TaxJurisdiction": "",
+            "TransportZone": "",
+            "AddressIDByExternalSystem": "",
+            "CountyCode": "",
+            "TownshipCode": "",
+            "TownshipName": "",
+            "to_AddressUsage": [
+                {
+                    "BusinessPartner": "",
+                    "AddressID": "",
+                    "AddressUsage": "XXDEFAULT",
+                    "ValidityStartDate": "2026-04-23T00:00:00Z",
+                    "ValidityEndDate": "9999-12-31T23:59:59Z",
+                    "StandardUsage": false,
+                    "AuthorizationGroup": ""
+                }
+            ],
+            "to_EmailAddress": email ? [
+                {
+                    "AddressID": "",
+                    "Person": "",
+                    "OrdinalNumber": "1",
+                    "IsDefaultEmailAddress": true,
+                    "EmailAddress": email,
+                    "SearchEmailAddress": email.toUpperCase(),
+                    "AddressCommunicationRemarkText": ""
+                }
+            ] : [],
+            "to_MobilePhoneNumber": mobileNum ? [
+                {
+                    "AddressID": "",
+                    "Person": "",
+                    "OrdinalNumber": "2",
+                    "DestinationLocationCountry": country,
+                    "IsDefaultPhoneNumber": false,
+                    "PhoneNumber": mobileNum,
+                    "PhoneNumberExtension": "",
+                    "InternationalPhoneNumber": mobileCountry + mobileNum,
+                    "PhoneNumberType": "3",
+                    "AddressCommunicationRemarkText": ""
+                }
+            ] : [],
+            "to_PhoneNumber": tel ? [
+                {
+                    "AddressID": "",
+                    "Person": "",
+                    "OrdinalNumber": "1",
+                    "DestinationLocationCountry": country,
+                    "IsDefaultPhoneNumber": true,
+                    "PhoneNumber": tel,
+                    "PhoneNumberExtension": "",
+                    "InternationalPhoneNumber": mobileCountry + tel,
+                    "PhoneNumberType": "1",
+                    "AddressCommunicationRemarkText": ""
+                }
+            ] : []
+        }];
+
+        // 2. Build to_BusinessPartnerRole
+        const roles = [
+            {
+                "BusinessPartner": "",
+                "BusinessPartnerRole": "FLCU01",
+                "ValidFrom": "2026-04-23T00:00:00Z",
+                "ValidTo": "9999-12-31T23:59:59Z",
+                "AuthorizationGroup": ""
+            },
+            {
+                "BusinessPartner": "",
+                "BusinessPartnerRole": "FLCU00",
+                "ValidFrom": "2026-04-23T00:00:00Z",
+                "ValidTo": "9999-12-31T23:59:59Z",
+                "AuthorizationGroup": ""
+            },
+            {
+                "BusinessPartner": "",
+                "BusinessPartnerRole": "UKM000",
+                "ValidFrom": "2026-04-23T00:00:00Z",
+                "ValidTo": "9999-12-31T23:59:59Z",
+                "AuthorizationGroup": ""
+            }
+        ];
+
+        // 3. Build to_BusinessPartnerTax
+        const taxes = bp.TaxNumber ? [
+            {
+                "BusinessPartner": "",
+                "BPTaxType": bp.TaxCategory || "UG01",
+                "BPTaxNumber": bp.TaxNumber,
+                "BPTaxLongNumber": "",
+                "AuthorizationGroup": ""
+            }
+        ] : [];
+
+        // 4. Build to_Customer
+        const companyCodes = (bp.CompanyCodes || []).map(cc => ({
+            "Customer": "",
+            "CompanyCode": cc.CompanyCode,
+            "APARToleranceGroup": "",
+            "AccountByCustomer": "",
+            "AccountingClerk": "",
+            "AccountingClerkFaxNumber": "",
+            "AccountingClerkInternetAddress": "",
+            "AccountingClerkPhoneNumber": "",
+            "AlternativePayerAccount": "",
+            "AuthorizationGroup": "",
+            "CollectiveInvoiceVariant": "",
+            "CustomerAccountNote": "",
+            "CustomerHeadOffice": "",
+            "CustomerSupplierClearingIsUsed": false,
+            "HouseBank": "",
+            "InterestCalculationCode": "",
+            "InterestCalculationDate": null,
+            "IntrstCalcFrequencyInMonths": "0",
+            "IsToBeLocallyProcessed": false,
+            "ItemIsToBePaidSeparately": false,
+            "LayoutSortingRule": "",
+            "PaymentBlockingReason": "",
+            "PaymentMethodsList": "",
+            "PaymentTerms": "",
+            "PaytAdviceIsSentbyEDI": false,
+            "PhysicalInventoryBlockInd": false,
+            "ReconciliationAccount": cc.ReconciliationAccount,
+            "RecordPaymentHistoryIndicator": false,
+            "UserAtCustomer": "",
+            "DeletionIndicator": false,
+            "CashPlanningGroup": "",
+            "KnownOrNegotiatedLeave": "",
+            "ValueAdjustmentKey": "",
+            "CustomerAccountGroup": "Z001"
+        }));
+
+        const salesAreas = (bp.SalesAreas || []).map(sa => ({
+            "Customer": "",
+            "SalesOrganization": sa.SalesOrganization,
+            "DistributionChannel": sa.DistributionChannel,
+            "Division": sa.Division,
+            "AccountByCustomer": "",
+            "AuthorizationGroup": "",
+            "BillingIsBlockedForCustomer": "",
+            "CompleteDeliveryIsDefined": false,
+            "Currency": sa.Currency || "UGX",
+            "CustomerABCClassification": "",
+            "CustomerAccountAssignmentGroup": sa.AccountAssignmentGroup,
+            "CustomerGroup": sa.CustomerGroup,
+            "CustomerPaymentTerms": sa.PaymentTerms,
+            "CustomerPriceGroup": "",
+            "CustomerPricingProcedure": sa.CustomerPricingProcedure || "1",
+            "DeliveryIsBlockedForCustomer": "",
+            "DeliveryPriority": "0",
+            "IncotermsClassification": sa.Incoterms,
+            "IncotermsLocation2": "",
+            "IncotermsVersion": "",
+            "IncotermsLocation1": "",
+            "DeletionIndicator": false,
+            "IncotermsTransferLocation": "",
+            "InvoiceDate": "",
+            "ItemOrderProbabilityInPercent": "100",
+            "OrderCombinationIsAllowed": true,
+            "OrderIsBlockedForCustomer": "",
+            "PartialDeliveryIsAllowed": "",
+            "PriceListType": "",
+            "SalesGroup": "",
+            "SalesOffice": "",
+            "ShippingCondition": "",
+            "SupplyingPlant": "",
+            "SalesDistrict": "",
+            "InvoiceListSchedule": "",
+            "ExchangeRateType": sa.ExchangeRateType || "S",
+            "AdditionalCustomerGroup1": "",
+            "AdditionalCustomerGroup2": sa.CustomerData2 || "02",
+            "AdditionalCustomerGroup3": "",
+            "AdditionalCustomerGroup4": "",
+            "AdditionalCustomerGroup5": "",
+            "PaymentGuaranteeProcedure": "",
+            "CustomerAccountGroup": "Z001",
+            "to_SalesAreaTax": [
+                {
+                    "Customer": "",
+                    "SalesOrganization": sa.SalesOrganization,
+                    "DistributionChannel": sa.DistributionChannel,
+                    "Division": sa.Division,
+                    "DepartureCountry": sa.OutputTaxCountry || "UG",
+                    "CustomerTaxCategory": sa.OutputTaxCategory || "MWST",
+                    "CustomerTaxClassification": sa.TaxClassification || "1"
+                }
+            ]
+        }));
+
+        const customerObj = {
+            "Customer": "",
+            "AuthorizationGroup": "",
+            "BillingIsBlockedForCustomer": "",
+            "CreatedByUser": "",
+            "CreationDate": null,
+            "CustomerAccountGroup": "Z001",
+            "CustomerClassification": "",
+            "CustomerFullName": `${name}/${postalCode}`,
+            "CustomerName": name,
+            "DeliveryIsBlocked": "",
+            "NFPartnerIsNaturalPerson": "",
+            "OrderIsBlockedForCustomer": "",
+            "PostingIsBlocked": false,
+            "Supplier": "",
+            "CustomerCorporateGroup": "",
+            "FiscalAddress": "",
+            "Industry": "",
+            "IndustryCode1": "",
+            "IndustryCode2": "",
+            "IndustryCode3": "",
+            "IndustryCode4": "",
+            "IndustryCode5": "",
+            "InternationalLocationNumber1": "0",
+            "NielsenRegion": "",
+            "ResponsibleType": "",
+            "TaxNumber1": "",
+            "TaxNumber2": "",
+            "TaxNumber3": "",
+            "TaxNumber4": "",
+            "TaxNumber5": "",
+            "TaxNumberType": "",
+            "VATRegistration": bp.TaxNumber || "",
+            "DeletionIndicator": false,
+            "ExpressTrainStationName": "",
+            "TrainStationName": "",
+            "CityCode": "",
+            "County": "",
+            "to_CustomerCompany": companyCodes,
+            "to_CustomerSalesArea": salesAreas
+        };
+
+        const bpPayload = {
+            "BusinessPartner": "",
+            "Customer": "",
+            "Supplier": "",
+            "AcademicTitle": "",
+            "AuthorizationGroup": "",
+            "BusinessPartnerCategory": category,
+            "BusinessPartnerFullName": name,
+            "BusinessPartnerGrouping": bp.Grouping || "ZP01",
+            "BusinessPartnerName": name,
+            "CorrespondenceLanguage": "",
+            "CreatedByUser": "",
+            "CreationDate": creationDate,
+            "CreationTime": sapTime,
+            "FirstName": bp.FirstName || "",
+            "FormOfAddress": title,
+            "Industry": "",
+            "InternationalLocationNumber1": "0",
+            "InternationalLocationNumber2": "0",
+            "IsFemale": false,
+            "IsMale": false,
+            "IsNaturalPerson": "",
+            "IsSexUnknown": false,
+            "GenderCodeName": "",
+            "Language": lang,
+            "LastChangeDate": null,
+            "LastChangedByUser": "",
+            "LastName": bp.LastName || "",
+            "LegalForm": "",
+            "OrganizationBPName1": name,
+            "OrganizationBPName2": "",
+            "OrganizationBPName3": "",
+            "OrganizationBPName4": "",
+            "OrganizationFoundationDate": null,
+            "OrganizationLiquidationDate": null,
+            "SearchTerm1": (bp.SearchTerm1 || "").trim(),
+            "SearchTerm2": (bp.SearchTerm2 || "").trim(),
+            "AdditionalLastName": "",
+            "BirthDate": null,
+            "BusinessPartnerBirthDateStatus": "",
+            "BusinessPartnerBirthplaceName": "",
+            "BusinessPartnerDeathDate": null,
+            "BusinessPartnerIsBlocked": false,
+            "BusinessPartnerType": "",
+            "ETag": "",
+            "GroupBusinessPartnerName1": "",
+            "GroupBusinessPartnerName2": "",
+            "IndependentAddressID": "",
+            "InternationalLocationNumber3": "0",
+            "MiddleName": "",
+            "NameCountry": "",
+            "NameFormat": "",
+            "PersonFullName": "",
+            "PersonNumber": "",
+            "IsMarkedForArchiving": false,
+            "BusinessPartnerIDByExtSystem": "",
+            "TradingPartner": "",
+            "to_BusinessPartnerAddress": addresses,
+            "to_BusinessPartnerRole": roles,
+            "to_BusinessPartnerTax": taxes,
+            "to_Customer": customerObj
+        };
+
+        // 5. Build Credit Segment Payload
+        const creditLimits = (bp.CreditSegments || []).map(cs => ({
+            "BusinessPartner": "",
+            "CreditSegment": cs.CreditSegment || "1000",
+            "BusinessPartnerIsCritical": false,
+            "CreditAccountIsBlocked": false,
+            "CreditAccountBlockReason": "",
+            "CreditLimitAmount": cs.CreditLimit ? cs.CreditLimit.toString() : "100",
+            "CreditLimitValidityEndDate": cs.ValidityDate ? cs.ValidityDate + "T00:00:00" : "9999-12-31T00:00:00",
+            "CreditLimitCalculatedAmount": "0",
+            "CreditLimitIsZero": true,
+            "CreditLimitRequestedAmount": "124",
+            "CrdtLmtIsReqdFrmAutomCalc": false,
+            "CreditSegmentCurrency": cs.LimitCurrency || "UGX"
+        }));
+
+        const creditPayload = {
+            "BusinessPartner": "",
+            "CrdtMgmtBusinessPartnerGroup": "",
+            "CreditWorthinessScoreValue": "22",
+            "CrdtWrthnssScoreValdtyEndDate": "2026-05-28T00:00:00",
+            "CrdtWorthinessScoreLastChgDate": "2026-05-28T00:00:00",
+            "CalcdCrdtWorthinessScoreValue": "22",
+            "CreditRiskClass": bp.RiskClass || "D",
+            "CalculatedCreditRiskClass": "",
+            "CreditRiskClassLastChangeDate": "2026-05-28T00:00:00",
+            "CreditCheckRule": bp.CheckRule || "Z1",
+            "CreditScoreAndLimitCalcRule": "",
+            "to_CreditMgmtAccountTP": {
+                "results": creditLimits
+            }
+        };
+
+        return { bpPayload, creditPayload };
+    }
 
     // Helper function to generate BP PDF from the HTML template
     async function _generateBPPdf(bp) {
@@ -602,7 +1253,7 @@ module.exports = cds.service.impl(async function () {
 
             const page = await browser.newPage();
             await page.setContent(templateHtml, { waitUntil: 'networkidle0' });
-            
+
             const pdfBuffer = await page.pdf({
                 format: 'A4',
                 printBackground: true,
@@ -622,41 +1273,78 @@ module.exports = cds.service.impl(async function () {
 
     // Helper function to send emails
     async function _sendEmail(to, subject, text, html, pdfBuffer) {
+        const mailOptions = {
+            from: '"Business Partner System" <IT.ADMIN@ROOFINGSGROUP.COM>',
+            to: to,
+            subject: subject,
+            text: text || "Please log in to the system to view this message.",
+            html: html
+        };
+
+        if (pdfBuffer) {
+            mailOptions.attachments = [{
+                filename: 'BusinessPartner_Summary.pdf',
+                content: pdfBuffer,
+                contentType: 'application/pdf'
+            }];
+        }
+
         try {
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.GMAIL_USER || 'saiteja14419@gmail.com',
-                    pass: process.env.GMAIL_APP_PASSWORD || 'uvhl chqx pjtj qpxi'
-                }
-            });
-
-            const fromEmail = process.env.GMAIL_USER || 'saiteja14419@gmail.com';
-
-            const mailOptions = {
-                from: `"Business Partner System" <${fromEmail}>`,
-                to: to,
-                subject: subject,
-                text: text || "Please log in to the system to view this message.",
-                html: html
-            };
-
-            // Attach the PDF if it was generated successfully
-            if (pdfBuffer) {
-                mailOptions.attachments = [{
-                    filename: 'BusinessPartner_Summary.pdf',
-                    content: pdfBuffer,
-                    contentType: 'application/pdf'
-                }];
-            }
-
+            const transportOptions = await _getSmtpTransportOptions();
+            const transporter = nodemailer.createTransport(transportOptions);
             await transporter.sendMail(mailOptions);
-            console.log(`[MAIL] Email sent to ${to}${pdfBuffer ? ' with PDF attachment' : ''}`);
+            console.log(`[MAIL] Email sent to ${to} via sap_process_automation_mail destination`);
         } catch (err) {
             console.error(`[MAIL ERROR] Failed to send email: ${err.message}`);
         }
+    }
+
+    async function _getSmtpTransportOptions() {
+        console.log('[MAIL] Fetching destination via SAP Cloud SDK...');
+
+        // 1. Correct syntax: getDestination expects an object
+        const dest = await getDestination({ destinationName: 'sap_process_automation_mail' });
+
+        if (!dest) {
+            throw new Error("Destination 'sap_process_automation_mail' not found in BTP.");
+        }
+
+        // 2. MAIL destination properties are safely stored in originalProperties
+        const props = dest.originalProperties;
+        if (!props) {
+            throw new Error("No properties found on the destination.");
+        }
+
+        const host = props['mail.smtp.host'];
+        const port = parseInt(props['mail.smtp.port'] || '25', 10);
+
+        // Match the exact property you set in BTP (true/false string)
+        const isSecure = props['mail.smtp.starttls.enable'] === 'true';
+
+        // 3. The SDK usually hoists Basic Authentication fields to the root
+        const user = dest.username || props['mail.user'];
+        const pass = dest.password || props['mail.password'];
+
+        if (!host) {
+            throw new Error("mail.smtp.host is missing in the destination's Additional Properties.");
+        }
+
+        console.log(`[MAIL] Destination loaded successfully. Host: ${host}, Port: ${port}, Secure: ${isSecure}`);
+
+        // 4. Return standard Nodemailer transport options
+        return {
+            host: host,
+            port: port,
+            secure: port === 465, // true for port 465, false for 587 or 25
+            requireTLS: isSecure,
+            auth: {
+                user: user,
+                pass: pass
+            },
+            tls: {
+                rejectUnauthorized: false // Bypasses strict cert checks for internal mail servers
+            }
+        };
     }
 
     // Professional HTML Email Template Generator

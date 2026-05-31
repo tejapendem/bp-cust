@@ -60,3 +60,6 @@ coverage/
 
 # added by cds
 .cdsrc-private.json
+puppeteer_dev/
+puppeteer/
+puppeteer-cache/

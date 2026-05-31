@@ -27,6 +27,7 @@
                     <tnt:NavigationListItem text="User Management" icon="sap-icon://group" key="admin" visible="{userModel>/isAdmin}" />
                     <tnt:NavigationListItem text="Approval Workflow" icon="sap-icon://action-settings" key="approvalLevels" visible="{userModel>/isAdmin}" />
                     <tnt:NavigationListItem text="Approval Inbox" icon="sap-icon://inbox" key="approvalInbox" visible="{userModel>/isAdmin}" />
+                    <tnt:NavigationListItem text="Approval Data" icon="sap-icon://accept" key="approvalData" visible="{userModel>/isAdmin}" />
                 </tnt:NavigationList>
             </tnt:SideNavigation>
         </tnt:sideContent>

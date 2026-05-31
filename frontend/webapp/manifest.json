@@ -144,6 +144,13 @@
           "target": [
             "TargetApprovalInbox"
           ]
+        },
+        {
+          "name": "ApprovalData",
+          "pattern": "admin/approval-data",
+          "target": [
+            "TargetApprovalData"
+          ]
         }
       ],
       "targets": {
@@ -174,6 +181,10 @@
         "TargetApprovalInbox": {
           "viewType": "XML",
           "viewName": "ApprovalInbox"
+        },
+        "TargetApprovalData": {
+          "viewType": "XML",
+          "viewName": "ApprovalData"
         }
       }
     }

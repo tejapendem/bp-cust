@@ -44,9 +44,9 @@
 
                     <!-- Detail -->
                     <VBox id="detailContainer" visible="false" class="destinationDetailContainer sapUiMediumMarginBegin" width="100%">
-                        <Panel id="detailPanel" headerText="Request Details" class="sapUiNoContentPadding">
+                        <Panel id="detailPanel" class="sapUiNoContentPadding">
                             <Toolbar>
-                                <Title text="Request Details: {selectedBP>/Name}" />
+                                <Title text="Request Details" class="sapUiMediumMarginBegin" />
                                 <ToolbarSpacer />
                                 <Button text="Approve" type="Accept" icon="sap-icon://accept" press=".onApprove" visible="{= ${workflowData>/status} === 'pending' }"/>
                                 <Button text="Reject" type="Reject" icon="sap-icon://decline" press=".onReject" visible="{= ${workflowData>/status} === 'pending' }"/>

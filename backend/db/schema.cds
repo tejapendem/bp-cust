@@ -63,6 +63,10 @@ entity BusinessPartners : cuid, managed {
     CreditSegments : Composition of many BPCreditSegments on CreditSegments.parent = $self;
 
     LifecycleStatus : String(20) default 'active'; // 'active', 'draft'
+    SAPBUPAPayload : LargeString;
+    SAPCreditPayload : LargeString;
+    SAPPushStatus : String(20) default 'Not Pushed'; // 'Not Pushed', 'Pushed', 'Failed'
+    SAPPushLogs : LargeString;
 }
 
 entity BPSalesAreas : cuid {
@@ -194,4 +198,11 @@ entity ApprovalLogs : cuid, managed {
     action    : String(20); // 'approved', 'rejected', 'commented'
     comment   : String(500);
     timestamp : DateTime;
+}
+
+entity SAPPushLogs : cuid, managed {
+    businessPartner : Association to BusinessPartners;
+    status          : String(20); // 'Pushed', 'Failed'
+    logs            : LargeString;
+    timestamp       : DateTime;
 }

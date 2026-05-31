@@ -49,11 +49,18 @@ service BusinessPartnerService {
     entity ApprovalLevels as projection on cust.ApprovalLevels;
     entity ApprovalWorkflows as projection on cust.ApprovalWorkflows;
     entity ApprovalLogs as projection on cust.ApprovalLogs;
+    entity SAPPushLogs as projection on cust.SAPPushLogs;
 
     action sendOTP(mobileNumber: String) returns String;
     action verifyOTP(mobileNumber: String, otp: String) returns Boolean;
+    action deleteBusinessPartners(bpIDs: array of UUID) returns String;
     action submitForApproval(bpID: UUID) returns String;
     action processApproval(workflowID: UUID, action: String, approverEmail: String) returns String;
+    action pushToSAP(bpID: UUID) returns {
+        success: Boolean;
+        bpNumber: String;
+        logs: String;
+    };
     action validateVATNumber(taxNumber: String, taxCategory: String) returns {
         isValid: Boolean;
         recordCount: Integer;

@@ -111,6 +111,7 @@
                 <!-- Data Table View -->
                 <Table id="bpTable"
                     visible="{= ${userModel>/role} !== 'guest' }"
+                    mode="MultiSelect"
                     items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }"
                     sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
                     autoPopinMode="true">
@@ -122,17 +123,21 @@
                             <Button icon="sap-icon://refresh" type="Transparent" press="onRefresh" tooltip="Refresh Data"/>
                             <Button icon="sap-icon://sort" type="Transparent"/>
                             <Button icon="sap-icon://filter" type="Transparent"/>
+                            <Button icon="sap-icon://delete" type="Transparent" text="Delete"
+                                visible="{userModel>/isAdmin}"
+                                press="onDeleteSelected"
+                                tooltip="Delete selected BPs"/>
                             <Button icon="sap-icon://action-settings" type="Transparent" visible="{userModel>/isAdmin}"/>
                         </OverflowToolbar>
                     </headerToolbar>
                     
                     <columns>
-                        <Column width="25%"><Text text="Business Partner Details" /></Column>
-                        <Column width="15%"><Text text="Category" /></Column>
+                        <Column width="20%"><Text text="Business Partner Details" /></Column>
+                        <Column width="10%"><Text text="Category" /></Column>
                         <Column width="10%"><Text text="Grouping" /></Column>
                         <Column width="15%"><Text text="Status" /></Column>
                         <Column width="15%"><Text text="Created At" /></Column>
-                        <Column width="20%"><Text text="Assigned Roles" /></Column>
+                        <Column width="15%"><Text text="Assigned Roles" /></Column>
                     </columns>
                     
                     <items>

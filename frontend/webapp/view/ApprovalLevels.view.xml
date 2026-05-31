@@ -41,13 +41,13 @@
                 </VBox>
 
                 <VBox class="sapUiMediumMarginTop destinationDetailContainer shadowBox">
-                    <form:SimpleForm editable="false" layout="ResponsiveGridLayout" title="Communication Channel: Gmail SMTP">
+                    <form:SimpleForm editable="false" layout="ResponsiveGridLayout" title="Communication Channel: SAP Process Automation Mail">
                         <Label text="SMTP Status" />
                         <ObjectStatus text="Active" state="Success" icon="sap-icon://sys-enter-2" />
                         <Label text="System Email" />
-                        <Text text="saiteja14419@gmail.com" />
+                        <Text text="IT.ADMIN@ROOFINGSGROUP.COM" />
                         <Label text="Notification Service" />
-                        <Text text="Nodemailer (In-App Configuration)" />
+                        <Text text="BTP Destination (sap_process_automation_mail)" />
                     </form:SimpleForm>
                 </VBox>
 

@@ -129,6 +129,9 @@ sap.ui.define(
                 } else if (sKey === "approvalInbox") {
                     if (!bIsAdmin) { sap.m.MessageBox.warning("Access Denied"); return; }
                     this.getOwnerComponent().getRouter().navTo("ApprovalInbox");
+                } else if (sKey === "approvalData") {
+                    if (!bIsAdmin) { sap.m.MessageBox.warning("Access Denied"); return; }
+                    this.getOwnerComponent().getRouter().navTo("ApprovalData");
                 } else if (sKey === "home") {
                     this.getOwnerComponent().getRouter().navTo("Main");
                 } else if (sKey === "createBP") {
