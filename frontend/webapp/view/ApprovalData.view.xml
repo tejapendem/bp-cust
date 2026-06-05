@@ -1,8 +1,8 @@
 <mvc:View controllerName="bp.cust.ui.controller.ApprovalData"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:f="sap.f"
-    xmlns:core="sap.ui.core">
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f">
     <f:DynamicPage id="approvalDataPage" headerExpanded="true" showFooter="true">
         <f:title>
             <f:DynamicPageTitle>
@@ -16,12 +16,36 @@
         </f:title>
 
         <f:content>
-            <VBox>
+            <VBox class="sapUiSmallMargin">
+                <HBox id="kpiContainer" class="kpiGlassRow" justifyContent="SpaceBetween" wrap="Wrap">
+                    <VBox class="kpiGlassBox kpiApproved" alignItems="Center" justifyContent="Center">
+                        <core:Icon src="sap-icon://business-partner-group" size="1.4rem" color="#2e7d32" class="kpiGlassIcon"/>
+                        <Text text="{kpiModel>/total}" class="kpiGlassNumber" wrapping="false"/>
+                        <Text text="Total Approved" class="kpiGlassLabel" wrapping="false"/>
+                    </VBox>
+                    <VBox class="kpiGlassBox kpiPushed" alignItems="Center" justifyContent="Center">
+                        <core:Icon src="sap-icon://cloud-upload" size="1.4rem" color="#1565c0" class="kpiGlassIcon"/>
+                        <Text text="{kpiModel>/pushed}" class="kpiGlassNumber" wrapping="false"/>
+                        <Text text="Pushed to SAP" class="kpiGlassLabel" wrapping="false"/>
+                    </VBox>
+                    <VBox class="kpiGlassBox kpiPending" alignItems="Center" justifyContent="Center">
+                        <core:Icon src="sap-icon://pending" size="1.4rem" color="#e65100" class="kpiGlassIcon"/>
+                        <Text text="{kpiModel>/pending}" class="kpiGlassNumber" wrapping="false"/>
+                        <Text text="Pending Push" class="kpiGlassLabel" wrapping="false"/>
+                    </VBox>
+                    <VBox class="kpiGlassBox kpiFailed" alignItems="Center" justifyContent="Center">
+                        <core:Icon src="sap-icon://message-error" size="1.2rem" color="#c62828" class="kpiGlassIcon"/>
+                        <Text text="{kpiModel>/failed}" class="kpiGlassNumber" wrapping="false"/>
+                        <Text text="Push Failed" class="kpiGlassLabel" wrapping="false"/>
+                    </VBox>
+                </HBox>
                 <Table id="approvedBPTable"
                     items="{approvedList>/}"
                     sticky="HeaderToolbar,ColumnHeaders"
                     autoPopinMode="true"
-                    class="sapUiResponsiveMargin">
+                    class="sapUiResponsiveMargin"
+                    growing="true"
+                    growingThreshold="25">
 
                     <headerToolbar>
                         <OverflowToolbar>
@@ -32,25 +56,35 @@
                     </headerToolbar>
 
                     <columns>
-                        <Column width="15%"><Text text="BP Reference Number" /></Column>
+                        <Column width="10%"><Text text="Ref Number" /></Column>
+                        <Column width="10%"><Text text="SAP BP Number" /></Column>
                         <Column width="22%"><Text text="Name" /></Column>
                         <Column width="10%"><Text text="Grouping" /></Column>
-                        <Column width="10%"><Text text="Status" /></Column>
-                        <Column width="18%"><Text text="SAP Push Status" /></Column>
-                        <Column width="25%" hAlign="Center"><Text text="Push Data" /></Column>
+                        <Column width="15%"><Text text="SAP Push Status" /></Column>
+                        <Column width="15%" hAlign="Center"><Text text="Actions" /></Column>
                     </columns>
 
                     <items>
                         <ColumnListItem press=".onItemPress">
                             <cells>
-                                <Text text="{approvedList>BusinessPartnerNumber}" />
-                                <Title text="{approvedList>Name}" titleStyle="H6" />
-                                <Text text="{approvedList>Grouping}" />
-                                <ObjectStatus text="Approved" state="Success" icon="sap-icon://sys-enter-2" inverted="true" />
+                                <ObjectStatus text="{approvedList>BusinessPartnerNumber}" state="Information" inverted="true" />
+                                <Text text="{approvedList>SAPBPNumber}"
+                                    visible="{= ${approvedList>SAPPushStatus} === 'Pushed' }" />
+                                <VBox>
+                                    <Text text="{approvedList>Name}" wrapping="false" />
+                                    <Label text="{approvedList>Email}" wrapping="false" />
+                                </VBox>
+                                <ObjectStatus text="{approvedList>Grouping}"
+                                    state="{= ${approvedList>Grouping} === 'ZP01' ? 'Success' : (${approvedList>Grouping} === 'ZP05' ? 'Warning' : 'None') }"
+                                    inverted="true" />
                                 <HBox alignItems="Center">
+                                    <core:Icon src="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'sap-icon://cloud-upload' : (${approvedList>SAPPushStatus} === 'Failed' ? 'sap-icon://message-error' : 'sap-icon://cloud') }"
+                                        size="1.2rem"
+                                        color="{= ${approvedList>SAPPushStatus} === 'Pushed' ? '#188918' : (${approvedList>SAPPushStatus} === 'Failed' ? '#bb0000' : '#c0a000') }"
+                                        class="sapUiTinyMarginEnd" />
                                     <ObjectStatus text="{approvedList>SAPPushStatus}"
-                                        state="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'Success' : (${approvedList>SAPPushStatus} === 'Failed' ? 'Error' : 'None') }"
-                                        inverted="true" />
+                                        state="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'Success' : (${approvedList>SAPPushStatus} === 'Failed' ? 'Error' : 'Warning') }"
+                                        inverted="false" />
                                     <Button icon="sap-icon://hint"
                                         visible="{= ${approvedList>SAPPushStatus} === 'Failed' || ${approvedList>SAPPushStatus} === 'Pushed' }"
                                         press=".onShowPushLogs"
@@ -59,7 +93,7 @@
                                 </HBox>
                                 <HBox justifyContent="Center" alignItems="Center">
                                     <Button icon="sap-icon://upload-to-cloud"
-                                        type="Emphasized"
+                                        type="{= ${approvedList>SAPPushStatus} === 'Failed' ? 'Attention' : 'Emphasized' }"
                                         tooltip="Push to SAP"
                                         width="100%"
                                         visible="{= ${approvedList>SAPPushStatus} !== 'Pushed' }"

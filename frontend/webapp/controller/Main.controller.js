@@ -73,6 +73,33 @@ sap.ui.define([
             }
 
             this.getOwnerComponent().getRouter().getRoute("Main").attachPatternMatched(this._onMainMatched, this);
+            this._bSortDescending = true;
+
+            // Load company codes into dropdown
+            var oModel = this.getOwnerComponent().getModel();
+            if (oModel) {
+                var oCCBinding = oModel.bindList("/VH_CompanyCode");
+                oCCBinding.requestContexts().then(function (aContexts) {
+                    var oSelect = this.byId("filterCompanyCode");
+                    if (oSelect) {
+                        aContexts.forEach(function (oCtx) {
+                            var item = oCtx.getObject();
+                            oSelect.addItem(new sap.ui.core.Item({ key: item.code, text: item.code + " - " + item.name }));
+                        });
+                    }
+                }.bind(this)).catch(function () {});
+
+                var oSOBinding = oModel.bindList("/VH_SalesOrganization");
+                oSOBinding.requestContexts().then(function (aContexts) {
+                    var oSelect = this.byId("filterSalesOrg");
+                    if (oSelect) {
+                        aContexts.forEach(function (oCtx) {
+                            var item = oCtx.getObject();
+                            oSelect.addItem(new sap.ui.core.Item({ key: item.code, text: item.code + " - " + item.name }));
+                        });
+                    }
+                }.bind(this)).catch(function () {});
+            }
         },
 
         _onMainMatched: function () {
@@ -87,52 +114,68 @@ sap.ui.define([
         // MULTI-FIELD FILTER LOGIC
         // ─────────────────────────────────────────────
         onSearch: function () {
-            // 1. Get values from the individual FilterBar inputs
-            var sCompanyCode = this.byId("filterCompanyCode").getValue();
-            var sSalesArea = this.byId("filterSalesArea").getValue();
-            var sBPRole = this.byId("filterBPRole").getValue();
-            var sGrouping = this.byId("filterGrouping").getSelectedKey(); // Using getSelectedKey for dropdown
+            var sStatus = this.byId("filterStatus").getSelectedKey();
+            var sGrouping = this.byId("filterGrouping").getSelectedKey();
+            var sCompanyCode = this.byId("filterCompanyCode").getSelectedKey();
+            var sSalesOrg = this.byId("filterSalesOrg").getSelectedKey();
+            var sBPNumber = this.byId("filterBPNumber").getValue();
+            var sName = this.byId("filterName").getValue();
+            var sCategory = this.byId("filterCategory").getSelectedKey();
 
             var aFilters = [];
 
-            // 2. Add filters only if the user typed/selected something
-            if (sCompanyCode) {
-                aFilters.push(new Filter("CompanyCode", FilterOperator.Contains, sCompanyCode));
-            }
-            if (sSalesArea) {
-                aFilters.push(new Filter("SalesOrganization", FilterOperator.Contains, sSalesArea));
-            }
-            if (sBPRole) {
-                aFilters.push(new Filter("BPRole", FilterOperator.Contains, sBPRole));
+            if (sStatus) {
+                aFilters.push(new Filter("LifecycleStatus", FilterOperator.EQ, sStatus));
             }
             if (sGrouping) {
-                // Using EQ (Equals) because the dropdown values match the backend exactly
                 aFilters.push(new Filter("Grouping", FilterOperator.EQ, sGrouping));
             }
+            if (sCompanyCode) {
+                aFilters.push(new Filter({
+                    path: "CompanyCodes/any(d:d/CompanyCode eq '" + sCompanyCode + "')",
+                    operator: FilterOperator.EQ,
+                    value1: true
+                }));
+            }
+            if (sSalesOrg) {
+                aFilters.push(new Filter({
+                    path: "SalesAreas/any(d:d/SalesOrganization eq '" + sSalesOrg + "')",
+                    operator: FilterOperator.EQ,
+                    value1: true
+                }));
+            }
+            if (sBPNumber) {
+                aFilters.push(new Filter("BusinessPartnerNumber", FilterOperator.Contains, sBPNumber));
+            }
+            if (sName) {
+                aFilters.push(new Filter("Name", FilterOperator.Contains, sName));
+            }
+            if (sCategory) {
+                aFilters.push(new Filter("BPType", FilterOperator.EQ, sCategory));
+            }
 
-            // 3. Apply to table binding
             var oTable = this.byId("bpTable");
             var oBinding = oTable.getBinding("items");
 
             if (aFilters.length > 0) {
-                // Combine all filters with AND logic
                 oBinding.filter(new Filter({
                     filters: aFilters,
                     and: true
                 }));
             } else {
-                oBinding.filter([]); // Show all if search is empty
+                oBinding.filter([]);
             }
         },
 
         onClear: function () {
-            // 1. Clear all inputs visually
-            this.byId("filterCompanyCode").setValue("");
-            this.byId("filterSalesArea").setValue("");
-            this.byId("filterBPRole").setValue("");
-            this.byId("filterGrouping").setSelectedKey(""); // Reset dropdown
+            this.byId("filterStatus").setSelectedKey("");
+            this.byId("filterGrouping").setSelectedKey("");
+            this.byId("filterCompanyCode").setSelectedKey("");
+            this.byId("filterSalesOrg").setSelectedKey("");
+            this.byId("filterBPNumber").setValue("");
+            this.byId("filterName").setValue("");
+            this.byId("filterCategory").setSelectedKey("");
 
-            // 2. Clear the table binding to show all records
             var oBinding = this.byId("bpTable").getBinding("items");
             if (oBinding) {
                 oBinding.filter([]);
@@ -150,6 +193,17 @@ sap.ui.define([
                 this.getOwnerComponent().getRouter().navTo("WizardEdit", {
                     bpID: sId
                 });
+            }
+        },
+
+        onToggleSort: function () {
+            this._bSortDescending = !this._bSortDescending;
+            var oBtn = this.byId("mainSortBtn");
+            oBtn.setIcon(this._bSortDescending ? "sap-icon://sort-descending" : "sap-icon://sort-ascending");
+            oBtn.setTooltip(this._bSortDescending ? "Sort newest first" : "Sort oldest first");
+            var oBinding = this.byId("bpTable").getBinding("items");
+            if (oBinding) {
+                oBinding.sort(new sap.ui.model.Sorter("createdAt", this._bSortDescending));
             }
         },
 

@@ -2,8 +2,9 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
-], function (Controller, JSONModel, Filter, FilterOperator) {
+    "sap/ui/model/FilterOperator",
+    "sap/m/MessageBox"
+], function (Controller, JSONModel, Filter, FilterOperator, MessageBox) {
     "use strict";
 
     return Controller.extend("bp.cust.ui.controller.ApprovalData", {
@@ -12,7 +13,7 @@ sap.ui.define([
             if (oUserModel) {
                 var bIsAdmin = oUserModel.getProperty("/isAdmin");
                 if (!bIsAdmin) {
-                    sap.m.MessageBox.warning("You don't have permission to access this page.", {
+                    MessageBox.warning("You don't have permission to access this page.", {
                         onClose: function () {
                             this.getOwnerComponent().getRouter().navTo("Main");
                         }.bind(this)
@@ -20,7 +21,13 @@ sap.ui.define([
                 }
             }
 
+            this.getView().setModel(new JSONModel({ total: 0, pushed: 0, pending: 0, failed: 0 }), "kpiModel");
             this.getView().setModel(new JSONModel([]), "approvedList");
+
+            this.getOwnerComponent().getRouter().getRoute("ApprovalData").attachPatternMatched(this._onPatternMatched, this);
+        },
+
+        _onPatternMatched: function () {
             this._loadApprovedBPs();
         },
 
@@ -39,11 +46,24 @@ sap.ui.define([
                     return oContext.getObject();
                 });
                 that.getView().getModel("approvedList").setData(aItems);
+                that._updateKPIs(aItems);
                 console.log("Approved BPs loaded:", aItems.length);
             }).catch(function (oError) {
                 console.error("Error loading approved BPs:", oError);
-                sap.m.MessageBox.error("Failed to load approved business partners");
+                MessageBox.error("Failed to load approved business partners");
             });
+        },
+
+        _updateKPIs: function (aItems) {
+            var oKPI = { total: 0, pushed: 0, pending: 0, failed: 0 };
+            oKPI.total = aItems.length;
+            aItems.forEach(function (oItem) {
+                var sStatus = oItem.SAPPushStatus || 'Not Pushed';
+                if (sStatus === 'Pushed') oKPI.pushed++;
+                else if (sStatus === 'Failed') oKPI.failed++;
+                else oKPI.pending++;
+            });
+            this.getView().getModel("kpiModel").setData(oKPI);
         },
 
         onRefresh: function () {
@@ -74,6 +94,7 @@ sap.ui.define([
                     return oContext.getObject();
                 });
                 that.getView().getModel("approvedList").setData(aItems);
+                that._updateKPIs(aItems);
             }).catch(function (oError) {
                 console.error("Error searching approved BPs:", oError);
             });
@@ -87,9 +108,9 @@ sap.ui.define([
             var sName = oCtx.getProperty("Name");
             var that = this;
 
-            sap.m.MessageBox.confirm("Push Business Partner \"" + sName + "\" to SAP?", {
+            MessageBox.confirm("Push Business Partner \"" + sName + "\" to SAP?", {
                 onClose: function (sAction) {
-                    if (sAction === sap.m.MessageBox.Action.OK) {
+                    if (sAction === MessageBox.Action.OK) {
                         that._executePush(sID);
                     }
                 }
@@ -111,11 +132,11 @@ sap.ui.define([
                 var oResult = oBound && oBound.value ? oBound.value : oBound;
 
                 if (oResult && oResult.success) {
-                    sap.m.MessageBox.success("Pushed to SAP successfully!\nSAP ID: " + oResult.bpNumber);
+                    MessageBox.success("Pushed to SAP successfully!\nSAP ID: " + oResult.bpNumber);
                 } else {
                     var sHttp = oResult && oResult.httpStatus ? "HTTP " + oResult.httpStatus + ": " : "";
                     var sErrMsg = oResult && oResult.logs ? sHttp + oResult.logs : "Unknown error";
-                    sap.m.MessageBox.error("Push failed.\n" + sErrMsg);
+                    MessageBox.error("Push failed.\n" + sErrMsg);
                 }
 
                 that._loadApprovedBPs();
@@ -123,7 +144,7 @@ sap.ui.define([
                 sap.ui.core.BusyIndicator.hide();
                 console.log("Push error:", oErr);
                 var sMsg = that._getErrorMessage(oErr) || "Unknown error";
-                sap.m.MessageBox.error("Push failed:\n" + sMsg);
+                MessageBox.error("Push failed:\n" + sMsg);
                 that._loadApprovedBPs();
             });
         },

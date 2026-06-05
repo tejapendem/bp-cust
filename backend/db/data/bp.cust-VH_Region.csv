@@ -1,8 +1,8 @@
 code;country;name;isActive
-C;UG;Central;true
-E;UG;Eastern;true
-N;UG;Northern;true
-W;UG;Western;true
+01;UG;Central;true
+02;UG;Eastern;true
+03;UG;Northern;true
+04;UG;Western;true
 AR;UY;Artigas;true
 CA;UY;Canelones;true
 MO;UY;Montevideo;true

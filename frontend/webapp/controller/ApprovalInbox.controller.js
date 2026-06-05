@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
+    "sap/m/BusyDialog",
     "sap/ui/model/Filter"
-], function (Controller, JSONModel, MessageToast, MessageBox, Filter) {
+], function (Controller, JSONModel, MessageToast, MessageBox, BusyDialog, Filter) {
     "use strict";
 
     return Controller.extend("bp.cust.ui.controller.ApprovalInbox", {
@@ -22,12 +23,23 @@ sap.ui.define([
                 }
             }
 
+            this._oBusyDialog = new BusyDialog({ title: "Processing", text: "Approving Business Partner..." });
+            this.getView().addDependent(this._oBusyDialog);
+
             this.getView().setModel(new JSONModel({}), "selectedBP");
             this.getView().setModel(new JSONModel({}), "userInfo");
             this.getView().setModel(new JSONModel({}), "workflowData");
             this.getView().setModel(new JSONModel([]), "approvalList");
+            this._bSortDescending = true;
+
+            // Reload data every time the route is matched (entering this page)
+            this.getOwnerComponent().getRouter().getRoute("ApprovalInbox").attachPatternMatched(this._onPatternMatched, this);
 
             // Get current user info and load their inbox
+            this._loadUserInfo();
+        },
+
+        _onPatternMatched: function () {
             this._loadUserInfo();
         },
 
@@ -68,10 +80,12 @@ sap.ui.define([
             console.log("Loading items for:", sUserEmail, "role:", sRole, "status:", sStatus);
 
             // Fetch ApprovalWorkflows with businessPartner and logs expanded
+            var sOrder = this._bSortDescending ? "createdAt desc" : "createdAt asc";
             var oListBinding = oModel.bindList("/ApprovalWorkflows", null, null, [
                 new Filter("status", "EQ", sStatus)
             ], {
-                $expand: "businessPartner,logs"
+                $expand: "businessPartner,logs",
+                $orderby: sOrder
             });
 
             oListBinding.requestContexts().then(function (aContexts) {
@@ -92,6 +106,37 @@ sap.ui.define([
                 this._loadApprovalItems(oUserInfo.email, oUserInfo.role);
             }
             this.getView().byId("detailContainer").setVisible(false);
+            this.byId("approvalSearch").setValue("");
+        },
+
+        onToggleSort: function () {
+            this._bSortDescending = !this._bSortDescending;
+            var oBtn = this.byId("sortBtn");
+            oBtn.setIcon(this._bSortDescending ? "sap-icon://sort-descending" : "sap-icon://sort-ascending");
+            oBtn.setTooltip(this._bSortDescending ? "Sort newest first" : "Sort oldest first");
+            var oUserInfo = this.getView().getModel("userInfo").getData();
+            if (oUserInfo && oUserInfo.email) {
+                this._loadApprovalItems(oUserInfo.email, oUserInfo.role);
+            }
+        },
+
+        onSearch: function (oEvent) {
+            var sQuery = oEvent.getParameter("query") || oEvent.getParameter("value") || "";
+            var aItems = this._aAllApprovalItems || [];
+            var oModel = this.getView().getModel("approvalList");
+
+            if (!sQuery) {
+                oModel.setData(aItems);
+                return;
+            }
+
+            var sLower = sQuery.toLowerCase();
+            var aFiltered = aItems.filter(function (oItem) {
+                var sName = (oItem.bpName || "").toLowerCase();
+                var sNumber = (oItem.bpNumber || "").toLowerCase();
+                return sName.indexOf(sLower) > -1 || sNumber.indexOf(sLower) > -1;
+            });
+            oModel.setData(aFiltered);
         },
 
         _loadBPDetails: function (aWorkflows) {
@@ -106,6 +151,7 @@ sap.ui.define([
                         currentLevel: oWorkflow.currentLevel,
                         status: oWorkflow.status,
                         approverEmail: oWorkflow.approverEmail,
+                        levelEmails: oWorkflow.levelEmails,
                         businessPartner_ID: oWorkflow.businessPartner_ID,
                         bpName: oBP.Name,
                         bpNumber: oBP.BusinessPartnerNumber,
@@ -115,6 +161,10 @@ sap.ui.define([
                         bpGrouping: oBP.Grouping,
                         bpMobile: oBP.MobileNumber,
                         bpCountry: oBP.Country,
+                        bpStreet: oBP.StreetAddress,
+                        bpHouseNumber: oBP.HouseNumber,
+                        bpTaxCategory: oBP.TaxCategory,
+                        bpTaxNumber: oBP.TaxNumber,
                         logs: oWorkflow.logs || []
                     });
                 }
@@ -129,6 +179,7 @@ sap.ui.define([
             }
 
             this.getView().getModel("approvalList").setData(aResults);
+            this._aAllApprovalItems = aResults;
             console.log("Final approval list:", aResults.length);
         },
 
@@ -150,7 +201,11 @@ sap.ui.define([
                 Grouping: oData.bpGrouping || "",
                 Email: oData.bpEmail,
                 MobileNumber: oData.bpMobile || "",
-                Country: oData.bpCountry || ""
+                Country: oData.bpCountry || "",
+                StreetAddress: oData.bpStreet || "",
+                HouseNumber: oData.bpHouseNumber || "",
+                TaxCategory: oData.bpTaxCategory || "",
+                TaxNumber: oData.bpTaxNumber || ""
             };
 
             this.getView().getModel("selectedBP").setData(oBPData);
@@ -162,20 +217,26 @@ sap.ui.define([
         _updateWorkflowProgress: function (oWorkflowData) {
             var oModel = this.getOwnerComponent().getModel();
             var that = this;
-            
+
+            // Parse frozen levelEmails snapshot from workflow (captured at submission time)
+            var oLevelEmails = {};
+            try {
+                oLevelEmails = JSON.parse(oWorkflowData.levelEmails || '{}');
+            } catch (_) {}
+
             // 1. Get all Approval Levels
             var oLevelsBinding = oModel.bindList("/ApprovalLevels", null, null, null, { $orderby: "level" });
             oLevelsBinding.requestContexts().then(function (aLevelContexts) {
                 var aLevels = aLevelContexts.map(c => c.getObject());
-                
+
                 // 2. Get Logs from the workflow data
                 var aLogs = oWorkflowData.logs || [];
-                
+
                 // 3. Map status for each level
                 var aSteps = aLevels.map(function (oLevel) {
                     var oLog = aLogs.find(l => l.level === oLevel.level);
                     var sStatus = "Pending";
-                    
+
                     if (oWorkflowData.status === 'approved') {
                         sStatus = "Approved";
                     } else if (oWorkflowData.status === 'rejected' && oLog && (oLog.action === 'reject' || oLog.action === 'rejected')) {
@@ -187,15 +248,18 @@ sap.ui.define([
                     } else if (oWorkflowData.status === 'pending' && oLevel.level < oWorkflowData.currentLevel) {
                         sStatus = "Approved";
                     }
-                    
+
+                    // Use frozen email from levelEmails snapshot if available, otherwise fall back to live ApprovalLevels
+                    var sEmail = oLevelEmails[oLevel.level] || oLevel.email;
+
                     return {
                         level: oLevel.level,
                         levelName: oLevel.levelName,
-                        email: oLevel.email,
+                        email: sEmail,
                         status: sStatus
                     };
                 });
-                
+
                 that.getView().setModel(new JSONModel(aSteps), "progressData");
             });
         },
@@ -251,6 +315,9 @@ sap.ui.define([
             var oModel = this.getOwnerComponent().getModel();
             var that = this;
 
+            this._oBusyDialog.setText(sAction === 'approve' ? "Approving Business Partner..." : "Rejecting request...");
+            this._oBusyDialog.open();
+
             var oCtx = oModel.bindContext("/processApproval(...)");
 
             oCtx.setParameter("workflowID", sWorkflowID);
@@ -258,10 +325,12 @@ sap.ui.define([
             oCtx.setParameter("approverEmail", sApproverEmail);
 
             oCtx.execute().then(function () {
+                that._oBusyDialog.close();
                 var sMsg = sAction === 'approve' ? "Approved successfully!" : "Request rejected";
                 MessageToast.show(sMsg);
                 that.onRefresh();
             }).catch(function (oError) {
+                that._oBusyDialog.close();
                 MessageBox.error("Action failed: " + oError.message);
             });
         }

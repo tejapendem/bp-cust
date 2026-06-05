@@ -4,6 +4,7 @@ using { cuid, managed } from '@sap/cds/common';
 
 entity BusinessPartners : cuid, managed {
     BusinessPartnerNumber : String(10);
+    SAPBPNumber : String(10);
     
     // Step 1: General Data
     BPRole : String(10) default '000000';
@@ -42,6 +43,7 @@ entity BusinessPartners : cuid, managed {
     Country : String(2);
     Region : String(3);
     Language : String(2);
+    CorrespondenceLanguage : String(2);
     MobileCountryCode : String(5);
     MobileNumber : String(15);
     Telephone : String(15);
@@ -63,6 +65,7 @@ entity BusinessPartners : cuid, managed {
     CreditSegments : Composition of many BPCreditSegments on CreditSegments.parent = $self;
 
     LifecycleStatus : String(20) default 'active'; // 'active', 'draft'
+    HasSalesAreas : Boolean default false;
     SAPBUPAPayload : LargeString;
     SAPCreditPayload : LargeString;
     SAPPushStatus : String(20) default 'Not Pushed'; // 'Not Pushed', 'Pushed', 'Failed'
@@ -188,6 +191,7 @@ entity ApprovalWorkflows : cuid, managed {
     currentLevel    : Integer;
     status          : String(20); // 'pending', 'approved', 'rejected'
     approverEmail   : String(100);
+    levelEmails     : LargeString; // JSON snapshot of {level: email} at submission time
     logs            : Composition of many ApprovalLogs on logs.parent = $self;
 }
 

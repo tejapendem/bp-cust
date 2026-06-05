@@ -223,7 +223,7 @@ sap.ui.define(
             },
 
             onLogoutPress: function () {
-                sap.m.MessageToast.show("Logging out...");
+                window.location.href = "/logout";
             }
         });
     }

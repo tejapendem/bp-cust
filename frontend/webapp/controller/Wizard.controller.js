@@ -46,16 +46,20 @@ sap.ui.define([
 
                 // Fields
                 BPRole: "000000",
-                BusinessPartnerCategory: "Organization",
+                BusinessPartnerCategory: "2",
                 BPType: "Customer",
                 Grouping: "ZP01",
                 Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
                 StreetAddress: "", PostalCode: "", Country: "UG", Region: "", Language: "EN", MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
-                TaxCategory: "UG01", TaxNumber: "", TaxStatus: "",
+                TaxCategory: "UG01", TaxNumber: "", TaxStatus: "", TaxNumberDup: "",
                 vatValidationSuccess: false,
                 vatValidationFailed: false,
                 vatValidationMessage: "",
                 vatValidated: false,
+                taxDupValidationSuccess: false,
+                taxDupValidationFailed: false,
+                taxDupValidationMessage: "",
+                taxDupValidated: false,
 
                 // Credit Management
                 RiskClass: "D",
@@ -120,7 +124,7 @@ sap.ui.define([
             this._oBusyDialog.open();
             var sPath = "/BusinessPartners(" + sBpID + ")";
             var oContext = oODataModel.bindContext(sPath, null, {
-                "$expand": "SalesAreas,CompanyCodes"
+                "$expand": "SalesAreas,CompanyCodes,CreditSegments"
             });
 
             oContext.requestObject().then(function (oData) {
@@ -154,12 +158,13 @@ sap.ui.define([
         _getDefaultData: function () {
             return {
                 BPRole: "000000",
-                BusinessPartnerCategory: "Organization",
+                BusinessPartnerCategory: "2",
                 BPType: "Customer",
                 Grouping: "ZP01",
                 Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
-                TaxCategory: "UG01", TaxNumber: "", TaxStatus: "",
+                TaxCategory: "UG01", TaxNumber: "", TaxStatus: "", TaxNumberDup: "",
                 vatValidationSuccess: false, vatValidationFailed: false, vatValidationMessage: "", vatValidated: false,
+                taxDupValidationSuccess: false, taxDupValidationFailed: false, taxDupValidationMessage: "", taxDupValidated: false,
                 showExtendedAddress: false,
                 RiskClass: "D",
                 CheckRule: "Z1",
@@ -265,13 +270,14 @@ sap.ui.define([
         onCompanyCodeChange: function (oEvent) {
             var sCompanyCode = oEvent.getParameter("selectedItem") ? oEvent.getParameter("selectedItem").getKey() : "";
             var oModel = this.getView().getModel("wizardData");
-            if (sCompanyCode === "1000" || sCompanyCode === "2000") {
+            var sSegment = sCompanyCode === "4000" ? "4000" : (sCompanyCode === "1000" || sCompanyCode === "2000" ? "1000" : "");
+            if (sSegment) {
                 var aSegments = oModel.getProperty("/CreditSegments") || [];
                 if (aSegments.length > 0) {
-                    aSegments[0].CreditSegment = "1000";
+                    aSegments[0].CreditSegment = sSegment;
                 } else {
                     aSegments.push({
-                        CreditSegment: "1000",
+                        CreditSegment: sSegment,
                         CreditLimitRules: "B2B-NEW",
                         LimitDefined: true,
                         CreditLimit: 100,
@@ -282,32 +288,67 @@ sap.ui.define([
                 oModel.setProperty("/CreditSegments", aSegments);
                 oModel.refresh();
             }
+            if (sCompanyCode === "4000") {
+                var aSalesAreas = oModel.getProperty("/SalesAreas") || [];
+                if (aSalesAreas.length > 0) {
+                    for (var i = 0; i < aSalesAreas.length; i++) {
+                        aSalesAreas[i].SalesOrganization = "4000";
+                    }
+                    oModel.setProperty("/SalesAreas", aSalesAreas);
+                    oModel.refresh();
+                }
+            }
         },
 
         onNextStep: function () {
             var oWizard = this.byId("bpWizard");
             var sCurrentStepId = oWizard.getCurrentStep();
+            var oModel = this.getView().getModel("wizardData");
+            var oData = oModel.getData();
+
+            // Step 3 duplicate tax check: show confirm instead of blocking
+            if (sCurrentStepId.includes("step3")) {
+                var bIsUgCategory = oData.TaxCategory && oData.TaxCategory.indexOf("UG") === 0;
+                if (bIsUgCategory && oData.taxDupValidated && oData.taxDupValidationSuccess) {
+                    MessageBox.confirm("This Tax Number is already registered in SAP.\nAre you sure you want to use this number?", {
+                        title: "Duplicate Tax Number",
+                        onClose: function (oAction) {
+                            if (oAction === "OK") {
+                                this._proceedNextStep(oWizard, sCurrentStepId);
+                            }
+                        }.bind(this)
+                    });
+                    return;
+                }
+            }
+
+            this._proceedNextStep(oWizard, sCurrentStepId);
+        },
+
+        _proceedNextStep: function (oWizard, sCurrentStepId) {
             if (this._validateStep(sCurrentStepId)) {
-                // Un-skip the step when user explicitly clicks Next (data should be saved)
                 var oModel = this.getView().getModel("wizardData");
                 var sStepKey = this._getStepKey(sCurrentStepId);
                 if (sStepKey) {
                     oModel.setProperty("/skippedSteps/" + sStepKey, false);
                 }
 
-                // Default credit segment to 1000 for 1000/2000 company codes when moving from step4
+                // Default credit segment based on company code when moving from step4
                 if (sStepKey === "step4") {
                     var aCompanyCodes = oModel.getProperty("/CompanyCodes") || [];
-                    var bHas1000or2000 = aCompanyCodes.some(function (cc) {
-                        return cc.CompanyCode === "1000" || cc.CompanyCode === "2000";
-                    });
-                    if (bHas1000or2000) {
+                    var sSegment = "";
+                    for (var i = 0; i < aCompanyCodes.length; i++) {
+                        var cc = aCompanyCodes[i].CompanyCode;
+                        if (cc === "4000") { sSegment = "4000"; break; }
+                        if (cc === "1000" || cc === "2000") { sSegment = "1000"; }
+                    }
+                    if (sSegment) {
                         var aSegments = oModel.getProperty("/CreditSegments") || [];
                         if (aSegments.length > 0) {
-                            aSegments[0].CreditSegment = "1000";
+                            aSegments[0].CreditSegment = sSegment;
                         } else {
                             aSegments.push({
-                                CreditSegment: "1000",
+                                CreditSegment: sSegment,
                                 CreditLimitRules: "B2B-NEW",
                                 LimitDefined: true,
                                 CreditLimit: 100,
@@ -425,7 +466,7 @@ sap.ui.define([
             if (oModel.getProperty("/isReadOnly")) return true;
 
             if (sStepId.includes("step2")) {
-                if (oData.BusinessPartnerCategory === "Person") {
+                if (oData.BusinessPartnerCategory === "1") {
                     if (!oData.FirstName) aMissing.push("Firstname");
                     if (!oData.LastName) aMissing.push("Lastname");
                 } else {
@@ -441,24 +482,30 @@ sap.ui.define([
                     }
                 }
 
-                // Mobile number validation
-                if (!oData.MobileNumber) {
-                    aMissing.push("Mobile Number");
-                } else {
-                    var phoneRegex = /^\d+$/;
-                    if (!phoneRegex.test(oData.MobileNumber)) {
-                        aMissing.push("Mobile Number (Digits only, no spaces, no signs like + or -)");
+                // Mobile number validation (skip for Person)
+                if (oData.BusinessPartnerCategory !== "1") {
+                    if (!oData.MobileNumber) {
+                        aMissing.push("Mobile Number");
+                    } else {
+                        var phoneRegex = /^\d+$/;
+                        if (!phoneRegex.test(oData.MobileNumber)) {
+                            aMissing.push("Mobile Number (Digits only, no spaces, no signs like + or -)");
+                        }
                     }
                 }
+
+                // Search terms mandatory (only Term 1 is required)
+                if (!oData.SearchTerm1) aMissing.push("Search Term 1");
             } else if (sStepId.includes("step3")) {
                 if (!oData.TaxCategory) aMissing.push("Tax Category");
-                if (!oData.TaxNumber) aMissing.push("Tax Number");
-                // For UG categories (UG01-UG06), require tax number validation before proceeding
+                if (!oData.TaxNumber) aMissing.push("Tin Number");
+                // For UG categories (UG01-UG06), require Tin Number validation before proceeding
                 var bIsUgCategory = oData.TaxCategory && oData.TaxCategory.indexOf("UG") === 0;
                 if (bIsUgCategory && oData.TaxNumber && !oData.vatValidated) {
-                    MessageBox.warning("Please validate the Tax Number before proceeding.");
+                    MessageBox.warning("Please validate the Tin Number before proceeding.");
                     return false;
                 }
+
             }
 
             if (aMissing.length > 0) {
@@ -513,21 +560,19 @@ sap.ui.define([
         onCountryChange: function (oEvent) {
             var sKey = oEvent.getParameter("selectedItem") ? oEvent.getParameter("selectedItem").getKey() : "";
             this.getView().getModel("wizardData").setProperty("/Region", "");
-            var oBinding = this.byId("regionSelect").getBinding("items");
-            if (oBinding) {
-                var aFilters = [new Filter("isActive", FilterOperator.EQ, true)];
-                if (sKey) {
-                    aFilters.push(new Filter("country", FilterOperator.EQ, sKey));
-                }
-                oBinding.filter(new Filter({
-                    filters: aFilters,
-                    and: true
-                }));
-            }
+            this._applyRegionFilter();
         },
 
         /**
-         * Dynamic suggestions for Name field using SAP Customer API
+         * Ensures model commits Name value on every keystroke (fix for showSuggestion mode)
+         */
+        onNameInputLiveChange: function (oEvent) {
+            var sValue = oEvent.getParameter("value");
+            this.getView().getModel("wizardData").setProperty("/Name", sValue);
+        },
+
+        /**
+         * Dynamic suggestions for Name field using SAP Customer API via devlb destination
          */
         onNameSuggest: function (oEvent) {
             var sValue = oEvent.getParameter("suggestValue");
@@ -552,10 +597,9 @@ sap.ui.define([
                     }
                 }
 
-                // Get or create suggestions model
                 var oSuggestionsModel = that.getView().getModel("suggestions");
                 if (!oSuggestionsModel) {
-                    oSuggestionsModel = new JSONModel();
+                    oSuggestionsModel = new sap.ui.model.json.JSONModel();
                     that.getView().setModel(oSuggestionsModel, "suggestions");
                 }
                 oSuggestionsModel.setData(aResults);
@@ -566,14 +610,7 @@ sap.ui.define([
         },
 
         /**
-         * Handle selection of a suggested Customer
-         */
-        onNameSuggestionItemSelected: function (oEvent) {
-            // No-op: suggestions are shown but no autofill is performed
-        },
-
-        /**
-         * Validates the entered Tax Number against the SAP Customer API
+         * Validates the entered Tin Number against the SAP Taxpayer API
          * via the backend CDS action validateVATNumber.
          */
         onValidateTaxNumber: function () {
@@ -581,11 +618,10 @@ sap.ui.define([
             var sTaxNumber = (oModel.getProperty("/TaxNumber") || "").trim();
 
             if (!sTaxNumber) {
-                MessageBox.warning("Please enter a Tax Number to validate.");
+                MessageBox.warning("Please enter a Tin Number to validate.");
                 return;
             }
 
-            // Reset validation state
             oModel.setProperty("/vatValidationSuccess", false);
             oModel.setProperty("/vatValidationFailed", false);
             oModel.setProperty("/vatValidationMessage", "Validating...");
@@ -594,7 +630,6 @@ sap.ui.define([
             var that = this;
             this._oBusyDialog.open();
 
-            // Call the backend CDS action via OData V4
             var oODataModel = this.getOwnerComponent().getModel();
             var sTaxCategory = oModel.getProperty("/TaxCategory");
             var oActionCtx = oODataModel.bindContext("/validateVATNumber(...)");
@@ -606,19 +641,25 @@ sap.ui.define([
                 var oResult = oActionCtx.getBoundContext().getObject();
 
                 if (oResult && oResult.isValid) {
-                    // Tax number found in the system
                     oModel.setProperty("/vatValidationSuccess", true);
                     oModel.setProperty("/vatValidationFailed", false);
                     oModel.setProperty("/vatValidationMessage", "✓ " + oResult.message);
                     oModel.setProperty("/vatValidated", true);
-                    MessageToast.show("Tax Number validated successfully.");
+                    MessageToast.show("Tin Number validated successfully.");
+
+                    var sDetails =
+                        "Legal Name: " + (oResult.legalName || "N/A") + "\n" +
+                        "Business Name: " + (oResult.businessName || "N/A") + "\n" +
+                        "Contact Number: " + (oResult.contactNumber || "N/A") + "\n" +
+                        "Contact Email: " + (oResult.contactEmail || "N/A") + "\n" +
+                        "Address: " + (oResult.address || "N/A");
+                    MessageBox.success(sDetails, { title: "Taxpayer Details" });
                 } else {
-                    // VAT number NOT found
                     oModel.setProperty("/vatValidationSuccess", false);
                     oModel.setProperty("/vatValidationFailed", true);
-                    oModel.setProperty("/vatValidationMessage", "✗ " + (oResult ? oResult.message : "VAT Number not found"));
+                    oModel.setProperty("/vatValidationMessage", "✗ " + (oResult ? oResult.message : "Tin Number not found"));
                     oModel.setProperty("/vatValidated", false);
-                    MessageBox.error(oResult ? oResult.message : "The VAT Registration Number was not found in the system.");
+                    MessageBox.error(oResult ? oResult.message : "The taxpayer does not exist or the state is abnormal!");
                 }
             }).catch(function (oError) {
                 that._oBusyDialog.close();
@@ -626,19 +667,91 @@ sap.ui.define([
                 oModel.setProperty("/vatValidationFailed", true);
                 oModel.setProperty("/vatValidationMessage", "✗ Validation service unavailable");
                 oModel.setProperty("/vatValidated", false);
-                MessageBox.error("Failed to validate VAT number: " + that._getErrorMessage(oError));
+                MessageBox.error("Failed to validate Tin Number: " + (oError.message || "Service unavailable"));
             });
         },
 
         /**
-         * Resets VAT validation status when the user changes the Tax Number.
+         * Validates the Tax Number (duplicate check) against the Customer API.
          */
-        onTaxNumberLiveChange: function () {
+        onValidateTaxNumberDup: function () {
             var oModel = this.getView().getModel("wizardData");
+            var sTaxNumberDup = (oModel.getProperty("/TaxNumberDup") || "").trim();
+
+            if (!sTaxNumberDup) {
+                MessageBox.warning("Please enter a Tax Number to validate.");
+                return;
+            }
+
+            oModel.setProperty("/taxDupValidationSuccess", false);
+            oModel.setProperty("/taxDupValidationFailed", false);
+            oModel.setProperty("/taxDupValidationMessage", "Validating...");
+            oModel.setProperty("/taxDupValidated", false);
+
+            var that = this;
+            this._oBusyDialog.open();
+
+            var oODataModel = this.getOwnerComponent().getModel();
+            var sTaxCategory = oModel.getProperty("/TaxCategory");
+            var oActionCtx = oODataModel.bindContext("/validateTaxNumber(...)");
+            oActionCtx.setParameter("taxNumber", sTaxNumberDup);
+            oActionCtx.setParameter("taxCategory", sTaxCategory);
+
+            oActionCtx.execute().then(function () {
+                that._oBusyDialog.close();
+                var oResult = oActionCtx.getBoundContext().getObject();
+
+                if (oResult && oResult.isDuplicate) {
+                    oModel.setProperty("/taxDupValidationSuccess", true);
+                    oModel.setProperty("/taxDupValidationFailed", false);
+                    oModel.setProperty("/taxDupValidationMessage", "✓ " + oResult.message);
+                    oModel.setProperty("/taxDupValidated", true);
+
+                    var sDetails =
+                        "BP Number: " + (oResult.customerID || "N/A") + "\n" +
+                        "Name: " + (oResult.name || "N/A") + "\n" +
+                        "Street/House No: " + (oResult.streetHouseNo || "N/A") + "\n" +
+                        "City: " + (oResult.city || "N/A") + "\n" +
+                        "Mobile: " + (oResult.mobile || "N/A") + "\n" +
+                        "Found In: " + (oResult.registrationField || "N/A") + " = " + (oResult.registrationValue || "N/A") + "\n" +
+                        "Company Code: " + (oResult.companyCode || "N/A");
+                    MessageBox.warning("This Tax Number is already registered in SAP:\n\n" + sDetails, {
+                        title: "Duplicate Tax Number"
+                    });
+                } else {
+                    oModel.setProperty("/taxDupValidationSuccess", false);
+                    oModel.setProperty("/taxDupValidationFailed", false);
+                    oModel.setProperty("/taxDupValidationMessage", "✓ " + (oResult ? oResult.message : "Tax number is available"));
+                    oModel.setProperty("/taxDupValidated", false);
+                }
+            }).catch(function (oError) {
+                that._oBusyDialog.close();
+                oModel.setProperty("/taxDupValidationSuccess", false);
+                oModel.setProperty("/taxDupValidationFailed", false);
+                oModel.setProperty("/taxDupValidationMessage", "✓ Validation service not available — proceeding without duplicate check");
+                oModel.setProperty("/taxDupValidated", false);
+            });
+        },
+
+        /**
+         * Resets VAT validation status when the user changes the Tin Number.
+         * Auto-copies to Tax Number only when value changes.
+         */
+        onTinNumberLiveChange: function (oEvent) {
+            var oModel = this.getView().getModel("wizardData");
+            var sVal = oEvent.getParameter("value") || "";
             oModel.setProperty("/vatValidationSuccess", false);
             oModel.setProperty("/vatValidationFailed", false);
             oModel.setProperty("/vatValidationMessage", "");
             oModel.setProperty("/vatValidated", false);
+            var sOld = oModel.getProperty("/TaxNumberDup") || "";
+            if (sVal !== sOld) {
+                oModel.setProperty("/TaxNumberDup", sVal);
+                oModel.setProperty("/taxDupValidationSuccess", false);
+                oModel.setProperty("/taxDupValidationFailed", false);
+                oModel.setProperty("/taxDupValidationMessage", "");
+                oModel.setProperty("/taxDupValidated", false);
+            }
         },
 
         /**
@@ -650,6 +763,10 @@ sap.ui.define([
             oModel.setProperty("/vatValidationFailed", false);
             oModel.setProperty("/vatValidationMessage", "");
             oModel.setProperty("/vatValidated", false);
+            oModel.setProperty("/taxDupValidationSuccess", false);
+            oModel.setProperty("/taxDupValidationFailed", false);
+            oModel.setProperty("/taxDupValidationMessage", "");
+            oModel.setProperty("/taxDupValidated", false);
         },
 
         onSalesOrgChange: function (oEvent) {
@@ -678,11 +795,22 @@ sap.ui.define([
                 }
             }.bind(this));
 
-            // Also refresh table-based selects in Steps 4 and 6
-            // Note: Since these are in tables, their internal Selects will be refreshed if the table items are refreshed,
-            // but here we just want to ensure the metadata/data for the VH entities is fresh.
-            // In V4, refreshing the binding of one control usually refreshes others sharing the same collection path 
-            // if they are in the same model and use the same parameters.
+            this._applyRegionFilter();
+        },
+
+        _applyRegionFilter: function () {
+            var sCountry = this.getView().getModel("wizardData").getProperty("/Country");
+            var oBinding = this.byId("regionSelect").getBinding("items");
+            if (oBinding) {
+                var aFilters = [new Filter("isActive", FilterOperator.EQ, true)];
+                if (sCountry) {
+                    aFilters.push(new Filter("country", FilterOperator.EQ, sCountry));
+                }
+                oBinding.filter(new Filter({
+                    filters: aFilters,
+                    and: true
+                }));
+            }
         },
 
         onSendOTP: function () {
@@ -743,7 +871,9 @@ sap.ui.define([
 
         onWizardCompleted: function () {
             var oPayload = this._preparePayload(this.getView().getModel("wizardData").getData());
-            oPayload.LifecycleStatus = 'pending_approval'; // Changed from 'active'
+            oPayload.LifecycleStatus = 'pending_approval';
+            // Open busy dialog BEFORE closing review to prevent flicker
+            this._oBusyDialog.open();
             this.onCloseReview();
             this._submitData(oPayload, "Business Partner submitted for approval!");
         },
@@ -753,6 +883,9 @@ sap.ui.define([
             var oPayload = this._preparePayload(oData);
             oPayload.LifecycleStatus = 'draft';
             if (!oPayload.Name) oPayload.Name = "Draft BP " + new Date().toLocaleTimeString();
+            // Open busy dialog BEFORE closing review to prevent flicker
+            this._oBusyDialog.open();
+            this.onCloseReview();
             this._submitData(oPayload, "Draft saved!");
         },
 
@@ -766,7 +899,7 @@ sap.ui.define([
                 Grouping: oData.Grouping,
                 FirstName: oData.FirstName,
                 LastName: oData.LastName,
-                Name: oData.BusinessPartnerCategory === "Person" ? (oData.FirstName + " " + oData.LastName).trim() : oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
+                Name: oData.BusinessPartnerCategory === "1" ? (oData.FirstName + " " + oData.LastName).trim() : oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
                 StreetAddress: oData.StreetAddress, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
                 TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus
             };
@@ -824,7 +957,7 @@ sap.ui.define([
             console.log(JSON.stringify(oPayload, null, 2));
             console.log("=== END PAYLOAD ===");
 
-            this._oBusyDialog.open();
+            // Busy dialog already opened by caller (onWizardCompleted/onSaveDraft)
 
             if (sTemplateID) {
                 // Update existing record via direct PATCH request
@@ -837,6 +970,8 @@ sap.ui.define([
                     var oHeaders = { "Accept": "application/json" };
                     if (sCsrfToken) oHeaders["X-CSRF-Token"] = sCsrfToken;
 
+                    that._oBusyDialog.setText("Updating Business Partner...");
+
                     jQuery.ajax({
                         url: sSrvUrl + "/BusinessPartners(" + sTemplateID + ")",
                         type: "PATCH",
@@ -844,26 +979,32 @@ sap.ui.define([
                         headers: oHeaders,
                         data: JSON.stringify(oPayload),
                         success: function () {
-                            try { oModel.refresh(); } catch (e) { /* ignore */ }
-
                             if (oPayload.LifecycleStatus === 'pending_approval') {
+                                that._oBusyDialog.setText("Submitting for approval...");
                                 var oActionCtx = oModel.bindContext("/submitForApproval(...)");
                                 oActionCtx.setParameter("bpID", sTemplateID);
                                 oActionCtx.execute().then(function () {
-                                    that._oBusyDialog.close();
                                     MessageBox.success(sMsg, {
-                                        onClose: function () { that.onNavBack(); }
+                                        onClose: function () {
+                                            that._oBusyDialog.close();
+                                            that.onNavBack();
+                                        }
                                     });
                                 }).catch(function (oActionErr) {
-                                    that._oBusyDialog.close();
-                                    MessageBox.error("Data updated, but failed to trigger approval workflow: " + that._getErrorMessage(oActionErr));
+                                    MessageBox.error("Data updated, but failed to trigger approval workflow: " + that._getErrorMessage(oActionErr), {
+                                        onClose: function () { that._oBusyDialog.close(); }
+                                    });
                                 });
                             } else {
-                                that._oBusyDialog.close();
                                 MessageBox.success(sMsg, {
-                                    onClose: function () { that.onNavBack(); }
+                                    onClose: function () {
+                                        that._oBusyDialog.close();
+                                        that.onNavBack();
+                                    }
                                 });
                             }
+
+                            try { oModel.refresh(); } catch (e) { /* ignore */ }
                         },
                         error: function (xhr, status, error) {
                             if (xhr.status === 403 && !sCsrfToken) {
@@ -899,6 +1040,8 @@ sap.ui.define([
                     var oHeaders = { "Accept": "application/json" };
                     if (sCsrfToken) oHeaders["X-CSRF-Token"] = sCsrfToken;
 
+                    that._oBusyDialog.setText("Creating Business Partner...");
+
                     jQuery.ajax({
                         url: sSrvUrl + "/BusinessPartners",
                         type: "POST",
@@ -910,37 +1053,44 @@ sap.ui.define([
                             var sID = oCreatedData.ID;
 
                             if (!sID) {
-                                that._oBusyDialog.close();
                                 MessageBox.success(sMsg, {
-                                    onClose: function () { that.onNavBack(); }
+                                    onClose: function () {
+                                        that._oBusyDialog.close();
+                                        that.onNavBack();
+                                    }
                                 });
                                 return;
                             }
 
-                            // Refresh model cache
-                            try {
-                                oModel.refresh();
-                            } catch (e) { /* ignore */ }
-
                             if (oPayload.LifecycleStatus === 'pending_approval') {
+                                that._oBusyDialog.setText("Submitting for approval...");
                                 var oActionCtx = oModel.bindContext("/submitForApproval(...)");
                                 oActionCtx.setParameter("bpID", sID);
                                 oActionCtx.execute().then(function () {
-                                    that._oBusyDialog.close();
                                     MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
-                                        onClose: function () { that.onNavBack(); }
+                                        onClose: function () {
+                                            that._oBusyDialog.close();
+                                            that.onNavBack();
+                                        }
                                     });
                                 }).catch(function () {
-                                    that._oBusyDialog.close();
-                                    MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""));
-                                    that.onNavBack();
+                                    MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
+                                        onClose: function () {
+                                            that._oBusyDialog.close();
+                                            that.onNavBack();
+                                        }
+                                    });
                                 });
                             } else {
-                                that._oBusyDialog.close();
                                 MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
-                                    onClose: function () { that.onNavBack(); }
+                                    onClose: function () {
+                                        that._oBusyDialog.close();
+                                        that.onNavBack();
+                                    }
                                 });
                             }
+
+                            try { oModel.refresh(); } catch (e) { /* ignore */ }
                         },
                         error: function (xhr, status, error) {
                             that._oBusyDialog.close();

@@ -65,6 +65,23 @@ service BusinessPartnerService {
         isValid: Boolean;
         recordCount: Integer;
         message: String;
+        legalName: String;
+        businessName: String;
+        contactNumber: String;
+        contactEmail: String;
+        address: String;
+    };
+
+    action validateTaxNumber(taxNumber: String, taxCategory: String) returns {
+        isDuplicate: Boolean;
+        message: String;
+        name: String;
+        streetHouseNo: String;
+        city: String;
+        mobile: String;
+        registrationField: String;
+        registrationValue: String;
+        companyCode: String;
     };
 
     function searchCustomersByName(name: String) returns String;
@@ -114,25 +131,29 @@ annotate BusinessPartnerService.BPCreditSegments with @(restrict: [
 
 // Secure the User Management and configuration entities
 annotate BusinessPartnerService.Users with @(restrict: [
+    { grant: ['READ'], to: ['admin', 'Admin', 'authenticated-user'] },
     { grant: '*', to: ['admin', 'Admin'] }
 ]);
 
 annotate BusinessPartnerService.ApprovalLevels with @(restrict: [
+    { grant: ['READ'], to: ['admin', 'Admin', 'authenticated-user'] },
     { grant: '*', to: ['admin', 'Admin'] }
 ]);
 
 // Explicitly allow CREATE for all authenticated users, and READ for admins/owners
 annotate BusinessPartnerService.AccessRequests with @(restrict: [
     { grant: 'CREATE', to: 'authenticated-user' },
+    { grant: ['READ', 'UPDATE'], to: ['admin', 'Admin', 'authenticated-user'] },
     { grant: '*', to: ['admin', 'Admin'] }
 ]);
 
 // Allow approvers to read items assigned to them
 annotate BusinessPartnerService.ApprovalWorkflows with @(restrict: [
-    { grant: 'READ', to: ['admin', 'Admin'] },
+    { grant: 'READ', to: ['admin', 'Admin', 'authenticated-user'] },
     { grant: 'READ', where: 'approverEmail = $user' }
 ]);
 
 annotate BusinessPartnerService.ApprovalLogs with @(restrict: [
+    { grant: ['READ'], to: ['admin', 'Admin', 'authenticated-user'] },
     { grant: '*', to: ['admin', 'Admin'] }
 ]);

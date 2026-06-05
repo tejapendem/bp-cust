@@ -64,9 +64,18 @@ module.exports = cds.service.impl(async function () {
         data.IsBP = true;
         data.IsCustomer = true;
 
-        // 12. Save Logic - Generate Business Partner Number
-        // Generating a random 10-digit number for demonstration
-        data.BusinessPartnerNumber = Math.floor(Math.random() * 9000000000 + 1000000000).toString();
+        // 12. Save Logic - Generate sequential S-number
+        const { BusinessPartners } = this.entities;
+        const lastBP = await SELECT.one.from(BusinessPartners)
+            .columns('BusinessPartnerNumber')
+            .where({ BusinessPartnerNumber: { like: 'S%' } })
+            .orderBy('BusinessPartnerNumber desc');
+        let nextSeq = 1;
+        if (lastBP && lastBP.BusinessPartnerNumber) {
+            const numPart = parseInt(lastBP.BusinessPartnerNumber.substring(1), 10);
+            if (!isNaN(numPart)) nextSeq = numPart + 1;
+        }
+        data.BusinessPartnerNumber = 'S' + String(nextSeq).padStart(5, '0');
     });
 
     const otps = {}; // Simple in-memory storage for OTPs
@@ -95,13 +104,6 @@ module.exports = cds.service.impl(async function () {
 
     // Tax Category → SAP API field mapping
     // Each tax category validates against a different field in the Customer entity
-    const TAX_CATEGORY_FIELD_MAP = {
-        'UG01': 'VATRegistrationNumber',
-        'UG02': 'IncomeTaxRegNo',
-        'UG03': 'NationalID',
-        'UG04': 'PassportNumber'
-    };
-
     // Tax Number Validation against external SAP API
     this.on('validateVATNumber', async (req) => {
         const { taxNumber, taxCategory } = req.data;
@@ -112,52 +114,137 @@ module.exports = cds.service.impl(async function () {
             return { isValid: false, recordCount: 0, message: 'Tax category is required' };
         }
 
-        // Look up the API field for this tax category
-        const sApiField = TAX_CATEGORY_FIELD_MAP[taxCategory];
-        if (!sApiField) {
-            // No validation configured for this tax category — treat as valid
-            console.log(`[TAX VALIDATION] No API field mapping for category: ${taxCategory}, skipping validation`);
+        // Only validate UG categories against the new Taxpayer API
+        if (!taxCategory.startsWith('UG')) {
             return { isValid: true, recordCount: 0, message: 'No validation required for this tax category' };
         }
 
-        const sTaxNum = taxNumber.trim();
-        const sBaseUrl = 'https://devlb.roofingsgroup.com/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001';
-        const sUrl = `${sBaseUrl}/Customer?sap-client=400&$filter=${sApiField} eq '${sTaxNum}'`;
-
-        console.log(`[TAX VALIDATION] Category: ${taxCategory}, Field: ${sApiField}, Value: ${sTaxNum}`);
-        console.log(`[TAX VALIDATION] URL: ${sUrl}`);
+        const sTaxNum = taxNumber.trim().replace(/'/g, "''");
 
         try {
             let response;
             try {
-                // Use CDS destination service (for BTP deployed)
                 const destService = await cds.connect.to('devlb');
-                const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=${sApiField} eq '${sTaxNum}'`;
+                const sApiPath = `/sap/opu/odata/sap/ZAPI_BP_INVOICE_T119_CALL_SRV/TaxpayerSet?sap-client=400&` +
+                    `$filter=Tin eq '${sTaxNum}'`;
                 response = await destService.get(sApiPath);
             } catch (destErr) {
                 console.error(`[TAX VALIDATION] Destination error: ${destErr.message}`);
                 return { isValid: false, recordCount: 0, message: `System error: SAP destination 'devlb' unavailable.` };
             }
 
-            const aResults = (response && response.value) || [];
-            console.log(`[TAX VALIDATION] Found ${aResults.length} record(s) for ${sApiField}: ${sTaxNum}`);
+            const aResults = (response && response.d && response.d.results) || (response && response.value) || [];
+            console.log(`[TAX VALIDATION] Found ${aResults.length} taxpayer(s) for Tin: ${sTaxNum}`);
 
             if (aResults.length > 0) {
+                const tp = aResults[0];
+                const legalName = (tp.LegalName || '').trim();
+                const businessName = (tp.BusinessName || '').trim();
+                const contactNumber = (tp.ContactNumber || '').trim();
+                const contactEmail = (tp.ContactEmail || '').trim();
+                const address = (tp.Address || '').trim();
+                const returnMessage = (tp.ReturnMessage || '').trim();
+
+                // If the SAP API is offline (Offline Enabler), allow the user to proceed
+                if (returnMessage && returnMessage.toLowerCase().includes('offline')) {
+                    return {
+                        isValid: true,
+                        recordCount: 1,
+                        message: 'Validation service offline — proceeding without TIN validation',
+                        legalName: 'N/A', businessName: 'N/A', contactNumber: 'N/A', contactEmail: 'N/A', address: 'N/A'
+                    };
+                }
+
+                // If all fields are N/A or empty, the taxpayer does not exist or state is abnormal
+                const allNa = !legalName && !businessName && !contactNumber && !contactEmail && !address;
+                if (allNa) {
+                    return {
+                        isValid: false,
+                        recordCount: 0,
+                        message: 'The taxpayer does not exist or the state is abnormal!'
+                    };
+                }
+
                 return {
                     isValid: true,
                     recordCount: aResults.length,
-                    message: `Tax Number verified (${aResults.length} record(s) found)`
+                    message: 'Taxpayer verified successfully',
+                    legalName: legalName || 'N/A',
+                    businessName: businessName || 'N/A',
+                    contactNumber: contactNumber || 'N/A',
+                    contactEmail: contactEmail || 'N/A',
+                    address: address || 'N/A'
                 };
             } else {
                 return {
                     isValid: false,
                     recordCount: 0,
-                    message: `Tax Number '${sTaxNum}' not found for category ${taxCategory}`
+                    message: 'The taxpayer does not exist or the state is abnormal!'
                 };
             }
         } catch (err) {
             console.error(`[TAX VALIDATION] Error: ${err.message}`);
             return { isValid: false, recordCount: 0, message: `Validation service error: ${err.message}` };
+        }
+    });
+
+    // Tax Number validation against Customer API (checks category-specific field)
+    this.on('validateTaxNumber', async (req) => {
+        const { taxNumber, taxCategory } = req.data;
+        if (!taxNumber || !taxNumber.trim()) {
+            return { isDuplicate: false, message: 'Tax number is required', name: '', streetHouseNo: '', city: '', mobile: '', registrationField: '', registrationValue: '', companyCode: '' };
+        }
+        if (!taxCategory) {
+            return { isDuplicate: false, message: 'Tax category is required', name: '', streetHouseNo: '', city: '', mobile: '', registrationField: '', registrationValue: '', companyCode: '' };
+        }
+
+        const fieldMap = { UG01: 'VATRegistrationNumber', UG02: 'IncomeTaxRegNo', UG03: 'NationalID', UG04: 'PassportNumber' };
+        const fieldName = fieldMap[taxCategory];
+        if (!fieldName) {
+            return { isDuplicate: false, message: `No validation required for ${taxCategory}`, name: '', streetHouseNo: '', city: '', mobile: '', registrationField: '', registrationValue: '', companyCode: '' };
+        }
+
+        const sTaxNum = taxNumber.trim().replace(/'/g, "''");
+
+        try {
+            let response;
+            try {
+                const destService = await cds.connect.to('devlb');
+                const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&` +
+                    `$filter=${fieldName} eq '${sTaxNum}'`;
+                response = await destService.get(sApiPath);
+            } catch (destErr) {
+                console.error(`[TAX NUMBER VALIDATION] Destination error: ${destErr.message}`);
+                return { isDuplicate: false, message: `System error: SAP destination unavailable.`, name: '', customerID: '', streetHouseNo: '', city: '', mobile: '', registrationField: '', registrationValue: '', companyCode: '' };
+            }
+
+            const aResults = (response && response.d && response.d.results) || (response && response.value) || [];
+            console.log(`[TAX NUMBER VALIDATION] Found ${aResults.length} customer(s) for ${fieldName}: ${sTaxNum}`);
+
+            if (aResults.length > 0) {
+                const c = aResults[0];
+                return {
+                    isDuplicate: true,
+                    message: `Tax Number already exists in ${fieldName}`,
+                    name: (c.Name || c.CustomerName || '').trim() || 'N/A',
+                    customerID: (c.CustomerID || c.CustomerId || '').toString().trim() || 'N/A',
+                    streetHouseNo: (c.StreetHouseNo || c.Street_HouseNo || '').trim() || 'N/A',
+                    city: (c.City || '').trim() || 'N/A',
+                    mobile: (c.Mobile || c.MobileNumber || '').trim() || 'N/A',
+                    registrationField: fieldName,
+                    registrationValue: (c[fieldName] || '').toString() || 'N/A',
+                    companyCode: (c.CompanyCode || '').trim() || 'N/A'
+                };
+            } else {
+                return {
+                    isDuplicate: false,
+                    message: 'Tax Number not found in any Business Partner - OK to proceed',
+                    name: '', customerID: '', streetHouseNo: '', city: '', mobile: '', registrationField: '', registrationValue: '', companyCode: ''
+                };
+            }
+        } catch (err) {
+            console.error(`[TAX NUMBER VALIDATION] Error: ${err.message}`);
+            return { isDuplicate: false, message: `Validation service error: ${err.message}`, name: '', customerID: '', streetHouseNo: '', city: '', mobile: '', registrationField: '', registrationValue: '', companyCode: '' };
         }
     });
 
@@ -282,16 +369,22 @@ module.exports = cds.service.impl(async function () {
             });
         if (!bp) return req.error(404, `Business Partner with ID ${bpID} not found`);
 
-        // 2. Get the Level 1 Approver
-        const level1 = await SELECT.one.from(ApprovalLevels).where({ level: 1 });
-        if (!level1) return req.error(400, "Level 1 approver not configured in Admin settings");
+        // 2. Get all approval levels and create a snapshot
+        const allLevels = await SELECT.from(ApprovalLevels).orderBy('level');
+        if (!allLevels || allLevels.length === 0) return req.error(400, "No approvers configured in Admin settings");
 
-        // 3. Create the Approval Workflow entry
+        const levelEmailMap = {};
+        for (const l of allLevels) {
+            levelEmailMap[l.level] = l.email;
+        }
+
+        // 3. Create the Approval Workflow entry with frozen level emails
         const workflowEntry = {
             businessPartner_ID: bpID,
             currentLevel: 1,
             status: 'pending',
-            approverEmail: level1.email
+            approverEmail: allLevels[0].email,
+            levelEmails: JSON.stringify(levelEmailMap)
         };
         await INSERT.into(ApprovalWorkflows).entries(workflowEntry);
 
@@ -307,9 +400,11 @@ module.exports = cds.service.impl(async function () {
             true
         );
         const pdfBuffer = await _generateBPPdf(bp);
-        await _sendEmail(workflowEntry.approverEmail, subject, null, html, pdfBuffer);
+        _sendEmail(workflowEntry.approverEmail, subject, null, html, pdfBuffer).catch(e =>
+            console.error(`[APPROVAL] Background email to Level 1 approver failed:`, e)
+        );
 
-        return `Submitted for Level 1 approval to ${level1.email}`;
+        return `Submitted for Level 1 approval to ${allLevels[0].email}`;
     });
 
     this.on('getAdminStats', async (req) => {
@@ -342,6 +437,12 @@ module.exports = cds.service.impl(async function () {
         };
     });
 
+    this.before('CREATE', 'AccessRequests', async (req) => {
+        if (!req.data.userEmail || !req.data.userEmail.trim()) {
+            return req.error(400, 'User email is required to submit an access request');
+        }
+    });
+
     this.after('CREATE', 'AccessRequests', async (data) => {
         console.log("SUCCESS: New Access Request created for:", data.userEmail);
 
@@ -359,7 +460,7 @@ module.exports = cds.service.impl(async function () {
             // 1. Fetch the full request data (since 'data' only contains changed fields)
             const fullRequest = await SELECT.one.from(AccessRequests).where({ ID: data.ID });
 
-            if (fullRequest) {
+            if (fullRequest && fullRequest.userEmail && fullRequest.userEmail.trim()) {
                 // 2. Promote the user to the Users table
                 await UPSERT.into(Users).entries({
                     email: fullRequest.userEmail,
@@ -420,24 +521,42 @@ module.exports = cds.service.impl(async function () {
                     false
                 );
                 const pdfBuffer = await _generateBPPdf(bp);
-                await _sendEmail(bp.Email, subject, null, html, pdfBuffer);
+                _sendEmail(bp.Email, subject, null, html, pdfBuffer).catch(e =>
+                    console.error(`[APPROVAL] Background rejection email failed:`, e)
+                );
             }
 
             return "Request rejected";
         }
 
-        // 4b. If approved, check if there's a next level
+        // 4b. If approved, check if there's a next level from the frozen snapshot
         const nextLevel = workflow.currentLevel + 1;
-        const nextApprover = await SELECT.one.from(ApprovalLevels).where({ level: nextLevel });
+        let nextApproverEmail;
+        let levelEmails = {};
+        try { levelEmails = JSON.parse(workflow.levelEmails || '{}'); } catch (_) { }
+        nextApproverEmail = levelEmails[nextLevel];
 
-        if (nextApprover) {
+        // Backfill snapshot for old workflows that were created before the levelEmails feature
+        if (!nextApproverEmail && !workflow.levelEmails) {
+            const allLevels = await SELECT.from(ApprovalLevels).orderBy('level');
+            if (allLevels && allLevels.length > 0) {
+                const emailMap = {};
+                for (const l of allLevels) {
+                    emailMap[l.level] = l.email;
+                }
+                await UPDATE(ApprovalWorkflows).set({ levelEmails: JSON.stringify(emailMap) }).where({ ID: workflowID });
+                levelEmails = emailMap;
+                nextApproverEmail = emailMap[nextLevel];
+            }
+        }
+
+        if (nextApproverEmail) {
             // Move to next level
             await UPDATE(ApprovalWorkflows).set({
                 currentLevel: nextLevel,
-                approverEmail: nextApprover.email
+                approverEmail: nextApproverEmail
             }).where({ ID: workflowID });
 
-            // Send email to next level approver
             // Send email to next level approver with full details
             const bp = await SELECT.one.from(BusinessPartners)
                 .where({ ID: workflow.businessPartner_ID })
@@ -455,14 +574,15 @@ module.exports = cds.service.impl(async function () {
                 true
             );
             const pdfBuffer = await _generateBPPdf(bp);
-            await _sendEmail(nextApprover.email, subject, null, html, pdfBuffer);
+            _sendEmail(nextApproverEmail, subject, null, html, pdfBuffer).catch(e =>
+                console.error(`[APPROVAL] Background email to next approver failed:`, e)
+            );
         } else {
             // No more levels - finalize the approval
             await UPDATE(ApprovalWorkflows).set({ status: 'approved' }).where({ ID: workflowID });
             await UPDATE(BusinessPartners).set({ LifecycleStatus: 'active' }).where({ ID: workflow.businessPartner_ID });
 
             // Send approval email to requester
-            // Send approval email to requester with full details
             const bp = await SELECT.one.from(BusinessPartners)
                 .where({ ID: workflow.businessPartner_ID })
                 .columns(b => {
@@ -480,11 +600,13 @@ module.exports = cds.service.impl(async function () {
                     false
                 );
                 const pdfBuffer = await _generateBPPdf(bp);
-                await _sendEmail(bp.Email, subject, null, html, pdfBuffer);
+                _sendEmail(bp.Email, subject, null, html, pdfBuffer).catch(e =>
+                    console.error(`[APPROVAL] Background email to requester failed:`, e)
+                );
             }
         }
 
-        return `Level ${workflow.currentLevel} approval completed${nextApprover ? ', moved to Level ' + nextLevel : ', fully approved'}`;
+        return `Level ${workflow.currentLevel} approval completed${nextApproverEmail ? ', moved to Level ' + nextLevel : ', fully approved'}`;
     });
 
     // ─── SAP ODATA SCHEMA GENERATOR AND PUSH INTEGRATION ──────────────────
@@ -507,7 +629,7 @@ module.exports = cds.service.impl(async function () {
                 });
 
             if (bp) {
-                console.log(`[PAYLOAD GEN] Generating SAP payloads for BP ID: ${bpId}`);
+                console.log(`[PAYLOAD GEN] Generating SAP payloads for BP ID: ${bpId}, BusinessPartnerNumber: ${bp.BusinessPartnerNumber}, SAPBPNumber: ${bp.SAPBPNumber}`);
                 const { bpPayload, creditPayload } = generateSAPPayloads(bp);
 
                 console.log("=== SAP BP PAYLOAD ===");
@@ -555,26 +677,55 @@ module.exports = cds.service.impl(async function () {
                 return req.error(400, `Stored SAP Business Partner payload is invalid JSON: ${e.message}`);
             }
 
-            // 2. Connect to the 'devlb' destination
+            // 2. Connect to the 'devlb' destination and get base URL
             logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'devlb'...`);
             const destService = await cds.connect.to('devlb');
 
-            // 3. Post A_BusinessPartner
-            logs.push(`[${new Date().toLocaleTimeString()}] Pushing Business Partner payload to /sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner...`);
+            async function _resolveDevlbDestination() {
+                // Try destService.options.credentials (local dev via .env)
+                if (destService.options.credentials && destService.options.credentials.url) {
+                    const baseUrl = destService.options.credentials.url.replace(/\/+$/, '');
+                    const authUser = destService.options.credentials.username || '';
+                    const authPass = destService.options.credentials.password || '';
+                    return { baseUrl, authUser, authPass };
+                }
+                // Try destService.options.destination (some CAP/dest-service setups)
+                if (destService.options.destination) {
+                    const dest = destService.options.destination;
+                    const baseUrl = (dest.url || dest.URL || '').replace(/\/+$/, '');
+                    const authUser = dest.username || '';
+                    const authPass = dest.password || '';
+                    if (baseUrl) return { baseUrl, authUser, authPass };
+                }
+                // Fallback: fetch devlb destination from destination service (BTP)
+                const dest = await getDestination({ destinationName: 'devlb' });
+                if (!dest) throw new Error("Destination 'devlb' not found in BTP destination service.");
+                const baseUrl = (dest.url || dest.URL || '').replace(/\/+$/, '');
+                const authUser = dest.username || '';
+                const authPass = dest.password || '';
+                if (!baseUrl) throw new Error("devlb destination resolved but has no url.");
+                return { baseUrl, authUser, authPass };
+            }
+
+            const { baseUrl, authUser, authPass } = await _resolveDevlbDestination();
+            const authHeader = 'Basic ' + Buffer.from(authUser + ':' + authPass).toString('base64');
+
+            // 3. Fetch CSRF token (includes session cookie)
+            logs.push(`[${new Date().toLocaleTimeString()}] Fetching CSRF token...`);
+            const { csrfToken, cookie } = await _fetchCsrfToken(baseUrl, authHeader);
+            logs.push(`[${new Date().toLocaleTimeString()}] CSRF token obtained, session cookie acquired.`);
+
+            // 4. Post A_BusinessPartner with CSRF token + cookie
+            logs.push(`[${new Date().toLocaleTimeString()}] Pushing Business Partner payload...`);
             let bpResponse;
             let httpStatus = '';
             try {
-                bpResponse = await destService.post('/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner', bpPayload);
+                bpResponse = await _sapPost(baseUrl + '/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner',
+                    bpPayload, authHeader, csrfToken, cookie);
                 logs.push(`[${new Date().toLocaleTimeString()}] Business Partner posted successfully.`);
             } catch (postErr) {
-                console.error("SAP BP Push Error:", postErr);
-                httpStatus = postErr.response?.status || '';
-                const statusText = postErr.response?.statusText || '';
-                let errDetail = postErr.message;
-                if (postErr.response && postErr.response.data) {
-                    errDetail += " - " + (typeof postErr.response.data === 'string' ? postErr.response.data : JSON.stringify(postErr.response.data));
-                }
-                throw new Error(`Business Partner push failed: ${errDetail}`, { cause: { httpStatus, statusText } });
+                httpStatus = postErr.status || '';
+                throw new Error(`Business Partner push failed: ${postErr.message}`, { cause: { httpStatus } });
             }
 
             // 4. Parse response to extract Business Partner Number
@@ -609,8 +760,8 @@ module.exports = cds.service.impl(async function () {
                 logs.push(`[${new Date().toLocaleTimeString()}] SUCCESS: SAP Business Partner created with ID: ${bpNumber}`);
             }
 
-            // Update local BusinessPartnerNumber in database
-            await UPDATE(BusinessPartners).set({ BusinessPartnerNumber: bpNumber }).where({ ID: bpID });
+            // Update SAP BP number in database (keep original BusinessPartnerNumber unchanged)
+            await UPDATE(BusinessPartners).set({ SAPBPNumber: bpNumber }).where({ ID: bpID });
 
             // 5. Post Credit Segment
             let creditPushed = false;
@@ -632,18 +783,15 @@ module.exports = cds.service.impl(async function () {
                         });
                     }
 
-                    logs.push(`[${new Date().toLocaleTimeString()}] Pushing Credit Segment payload to /sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/CreditMgmtBusinessPartner...`);
+                    logs.push(`[${new Date().toLocaleTimeString()}] Pushing Credit Segment payload...`);
                     try {
-                        await destService.post('/sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/CreditMgmtBusinessPartner', creditPayload);
+                        await _sapPost(baseUrl + '/sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/CreditMgmtBusinessPartner',
+                            creditPayload, authHeader, csrfToken, cookie);
                         logs.push(`[${new Date().toLocaleTimeString()}] SUCCESS: Credit Segment pushed successfully.`);
                         creditPushed = true;
                     } catch (creditErr) {
                         console.error("SAP Credit Push Error:", creditErr);
-                        let errDetail = creditErr.message;
-                        if (creditErr.response && creditErr.response.data) {
-                            errDetail += " - " + (typeof creditErr.response.data === 'string' ? creditErr.response.data : JSON.stringify(creditErr.response.data));
-                        }
-                        logs.push(`[${new Date().toLocaleTimeString()}] WARNING: Credit Segment push failed: ${errDetail}`);
+                        logs.push(`[${new Date().toLocaleTimeString()}] WARNING: Credit Segment push failed: ${creditErr.message}`);
                     }
                 }
             } else {
@@ -707,7 +855,7 @@ module.exports = cds.service.impl(async function () {
             return req.error(400, 'No BP IDs provided');
         }
 
-        if (!req.user.is('Admin')) {
+        if (!(await _isAdmin(req))) {
             return req.error(403, 'Only admins can delete Business Partners');
         }
 
@@ -751,13 +899,15 @@ module.exports = cds.service.impl(async function () {
         const sapTime = `PT${h}H${m}M${s}S`;
 
         let category = "2"; // Default Organization
-        if (bp.BusinessPartnerCategory === "Person") {
+        if (bp.BusinessPartnerCategory === "1") {
             category = "1";
         }
 
         const email = bp.Email || "";
         const name = bp.Name || "";
         const street = bp.StreetAddress ? bp.StreetAddress.trim() : "";
+        const houseNum = bp.HouseNumber || "";
+        const city = bp.City || "";
         const postalCode = bp.PostalCode || "";
         const country = bp.Country || "";
         const region = bp.Region || "";
@@ -780,7 +930,7 @@ module.exports = cds.service.impl(async function () {
             "AddressTimeZone": "UTC+3",
             "CareOfName": "",
             "CityCode": "",
-            "CityName": "",
+            "CityName": city,
             "CompanyPostalCode": "",
             "Country": country,
             "County": "",
@@ -790,7 +940,7 @@ module.exports = cds.service.impl(async function () {
             "FormOfAddress": title,
             "FullName": name,
             "HomeCityName": "",
-            "HouseNumber": "",
+            "HouseNumber": houseNum,
             "HouseNumberSupplementText": "",
             "Language": lang,
             "POBox": "",
@@ -831,7 +981,7 @@ module.exports = cds.service.impl(async function () {
                     "OrdinalNumber": "1",
                     "IsDefaultEmailAddress": true,
                     "EmailAddress": email,
-                    "SearchEmailAddress": email.toUpperCase(),
+                    // "SearchEmailAddress": email.toUpperCase(),
                     "AddressCommunicationRemarkText": ""
                 }
             ] : [],
@@ -877,13 +1027,6 @@ module.exports = cds.service.impl(async function () {
             {
                 "BusinessPartner": "",
                 "BusinessPartnerRole": "FLCU00",
-                "ValidFrom": "2026-04-23T00:00:00Z",
-                "ValidTo": "9999-12-31T23:59:59Z",
-                "AuthorizationGroup": ""
-            },
-            {
-                "BusinessPartner": "",
-                "BusinessPartnerRole": "UKM000",
                 "ValidFrom": "2026-04-23T00:00:00Z",
                 "ValidTo": "9999-12-31T23:59:59Z",
                 "AuthorizationGroup": ""
@@ -939,52 +1082,57 @@ module.exports = cds.service.impl(async function () {
             "CustomerAccountGroup": "Z001"
         }));
 
-        const salesAreas = (bp.SalesAreas || []).map(sa => ({
-            "Customer": "",
-            "SalesOrganization": sa.SalesOrganization,
-            "DistributionChannel": sa.DistributionChannel,
-            "Division": sa.Division,
-            "AccountByCustomer": "",
-            "AuthorizationGroup": "",
-            "BillingIsBlockedForCustomer": "",
-            "CompleteDeliveryIsDefined": false,
-            "Currency": sa.Currency || "UGX",
-            "CustomerABCClassification": "",
-            "CustomerAccountAssignmentGroup": sa.AccountAssignmentGroup,
-            "CustomerGroup": sa.CustomerGroup,
-            "CustomerPaymentTerms": sa.PaymentTerms,
-            "CustomerPriceGroup": "",
-            "CustomerPricingProcedure": sa.CustomerPricingProcedure || "1",
-            "DeliveryIsBlockedForCustomer": "",
-            "DeliveryPriority": "0",
-            "IncotermsClassification": sa.Incoterms,
-            "IncotermsLocation2": "",
-            "IncotermsVersion": "",
-            "IncotermsLocation1": "",
-            "DeletionIndicator": false,
-            "IncotermsTransferLocation": "",
-            "InvoiceDate": "",
-            "ItemOrderProbabilityInPercent": "100",
-            "OrderCombinationIsAllowed": true,
-            "OrderIsBlockedForCustomer": "",
-            "PartialDeliveryIsAllowed": "",
-            "PriceListType": "",
-            "SalesGroup": "",
-            "SalesOffice": "",
-            "ShippingCondition": "",
-            "SupplyingPlant": "",
-            "SalesDistrict": "",
-            "InvoiceListSchedule": "",
-            "ExchangeRateType": sa.ExchangeRateType || "S",
-            "AdditionalCustomerGroup1": "",
-            "AdditionalCustomerGroup2": sa.CustomerData2 || "02",
-            "AdditionalCustomerGroup3": "",
-            "AdditionalCustomerGroup4": "",
-            "AdditionalCustomerGroup5": "",
-            "PaymentGuaranteeProcedure": "",
-            "CustomerAccountGroup": "Z001",
-            "to_SalesAreaTax": [
-                {
+        const salesAreas = (bp.SalesAreas || []).map(sa => {
+            const salesAreaEntry = {
+                "Customer": "",
+                "SalesOrganization": sa.SalesOrganization,
+                "DistributionChannel": sa.DistributionChannel,
+                "Division": sa.Division,
+                "AccountByCustomer": "",
+                "AuthorizationGroup": "",
+                "BillingIsBlockedForCustomer": "",
+                "CompleteDeliveryIsDefined": false,
+                "Currency": sa.Currency || "UGX",
+                "CustomerABCClassification": "",
+                "CustomerAccountAssignmentGroup": sa.AccountAssignmentGroup,
+                "CustomerGroup": sa.CustomerGroup,
+                "CustomerPaymentTerms": sa.PaymentTerms,
+                "CustomerPriceGroup": "",
+                "CustomerPricingProcedure": sa.CustomerPricingProcedure || "1",
+                "DeliveryIsBlockedForCustomer": "",
+                "DeliveryPriority": "0",
+                "IncotermsClassification": sa.Incoterms,
+                "IncotermsLocation2": "",
+                "IncotermsVersion": "",
+                "IncotermsLocation1": "",
+                "DeletionIndicator": false,
+                "IncotermsTransferLocation": "",
+                "InvoiceDate": "",
+                "ItemOrderProbabilityInPercent": "100",
+                "OrderCombinationIsAllowed": true,
+                "OrderIsBlockedForCustomer": "",
+                "PartialDeliveryIsAllowed": "",
+                "PriceListType": "",
+                "SalesGroup": "",
+                "SalesOffice": "",
+                "ShippingCondition": "",
+                "SupplyingPlant": "",
+                "SalesDistrict": "",
+                "InvoiceListSchedule": "",
+                "ExchangeRateType": sa.ExchangeRateType || "S",
+                "AdditionalCustomerGroup1": "",
+                "AdditionalCustomerGroup2": sa.CustomerData2 || "02",
+                "AdditionalCustomerGroup3": "",
+                "AdditionalCustomerGroup4": "",
+                "AdditionalCustomerGroup5": "",
+                "PaymentGuaranteeProcedure": "",
+                "CustomerAccountGroup": "Z001"
+            };
+
+            if (sa.SalesOrganization === "2000") {
+                salesAreaEntry["to_SalesAreaTax"] = [];
+            } else {
+                salesAreaEntry["to_SalesAreaTax"] = [{
                     "Customer": "",
                     "SalesOrganization": sa.SalesOrganization,
                     "DistributionChannel": sa.DistributionChannel,
@@ -992,9 +1140,11 @@ module.exports = cds.service.impl(async function () {
                     "DepartureCountry": sa.OutputTaxCountry || "UG",
                     "CustomerTaxCategory": sa.OutputTaxCategory || "MWST",
                     "CustomerTaxClassification": sa.TaxClassification || "1"
-                }
-            ]
-        }));
+                }];
+            }
+
+            return salesAreaEntry;
+        });
 
         const customerObj = {
             "Customer": "",
@@ -1048,7 +1198,7 @@ module.exports = cds.service.impl(async function () {
             "BusinessPartnerFullName": name,
             "BusinessPartnerGrouping": bp.Grouping || "ZP01",
             "BusinessPartnerName": name,
-            "CorrespondenceLanguage": "",
+            "CorrespondenceLanguage": bp.CorrespondenceLanguage || lang,
             "CreatedByUser": "",
             "CreationDate": creationDate,
             "CreationTime": sapTime,
@@ -1093,7 +1243,7 @@ module.exports = cds.service.impl(async function () {
             "PersonFullName": "",
             "PersonNumber": "",
             "IsMarkedForArchiving": false,
-            "BusinessPartnerIDByExtSystem": "",
+            "BusinessPartnerIDByExtSystem": bp.BusinessPartnerNumber || "",
             "TradingPartner": "",
             "to_BusinessPartnerAddress": addresses,
             "to_BusinessPartnerRole": roles,
@@ -1125,10 +1275,10 @@ module.exports = cds.service.impl(async function () {
             "CrdtWorthinessScoreLastChgDate": "2026-05-28T00:00:00",
             "CalcdCrdtWorthinessScoreValue": "22",
             "CreditRiskClass": bp.RiskClass || "D",
-            "CalculatedCreditRiskClass": "",
+            "CalculatedCreditRiskClass": bp.RiskClass || "",
             "CreditRiskClassLastChangeDate": "2026-05-28T00:00:00",
             "CreditCheckRule": bp.CheckRule || "Z1",
-            "CreditScoreAndLimitCalcRule": "",
+            "CreditScoreAndLimitCalcRule": (bp.CreditSegments?.[0]?.CreditLimitRules) || "",
             "to_CreditMgmtAccountTP": {
                 "results": creditLimits
             }
@@ -1239,7 +1389,7 @@ module.exports = cds.service.impl(async function () {
 
             // Launch Puppeteer with cloud-friendly flags
             browser = await puppeteer.launch({
-                headless: 'new',
+                headless: true,
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
@@ -1252,7 +1402,7 @@ module.exports = cds.service.impl(async function () {
             });
 
             const page = await browser.newPage();
-            await page.setContent(templateHtml, { waitUntil: 'networkidle0' });
+            await page.setContent(templateHtml, { waitUntil: 'networkidle0', timeout: 15000 });
 
             const pdfBuffer = await page.pdf({
                 format: 'A4',
@@ -1335,16 +1485,79 @@ module.exports = cds.service.impl(async function () {
         return {
             host: host,
             port: port,
-            secure: port === 465, // true for port 465, false for 587 or 25
+            secure: port === 465,
             requireTLS: isSecure,
             auth: {
                 user: user,
                 pass: pass
             },
             tls: {
-                rejectUnauthorized: false // Bypasses strict cert checks for internal mail servers
-            }
+                rejectUnauthorized: false
+            },
+            connectionTimeout: 10000,
+            socketTimeout: 15000
         };
+    }
+
+    // Helper: fetch CSRF token + session cookie from SAP OData service
+    function _fetchCsrfToken(baseUrl, authHeader) {
+        return new Promise((resolve, reject) => {
+            const u = new URL(baseUrl + '/sap/opu/odata/sap/API_BUSINESS_PARTNER');
+            const mod = require('https');
+            const opts = {
+                hostname: u.hostname, port: u.port, path: u.pathname + u.search,
+                method: 'GET',
+                headers: { 'Authorization': authHeader, 'X-CSRF-Token': 'Fetch' }
+            };
+            const req = mod.request(opts, res => {
+                const csrfToken = res.headers['x-csrf-token'] || '';
+                const setCookie = res.headers['set-cookie'] || [];
+                const cookie = Array.isArray(setCookie) ? setCookie.join('; ') : setCookie;
+                let body = '';
+                res.on('data', d => body += d);
+                res.on('end', () => {
+                    if (csrfToken) resolve({ csrfToken, cookie });
+                    else reject(new Error('No CSRF token in response'));
+                });
+            });
+            req.on('error', reject);
+            req.end();
+        });
+    }
+
+    // Helper: POST to SAP with CSRF token + session cookie
+    function _sapPost(url, data, authHeader, csrfToken, cookie) {
+        return new Promise((resolve, reject) => {
+            const u = new URL(url);
+            const body = JSON.stringify(data);
+            const mod = require('https');
+            const headers = {
+                'Authorization': authHeader,
+                'X-CSRF-Token': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Content-Length': Buffer.byteLength(body)
+            };
+            if (cookie) headers['Cookie'] = cookie;
+            const opts = { hostname: u.hostname, port: u.port, path: u.pathname + u.search, method: 'POST', headers };
+            const req = mod.request(opts, res => {
+                let responseBody = '';
+                res.on('data', d => responseBody += d);
+                res.on('end', () => {
+                    if (res.statusCode >= 200 && res.statusCode < 300) {
+                        try { resolve(JSON.parse(responseBody)); }
+                        catch (e) { resolve(responseBody); }
+                    } else {
+                        const err = new Error(`HTTP ${res.statusCode}: ${responseBody.substring(0, 500)}`);
+                        err.status = res.statusCode;
+                        reject(err);
+                    }
+                });
+            });
+            req.on('error', reject);
+            req.write(body);
+            req.end();
+        });
     }
 
     // Professional HTML Email Template Generator
@@ -1366,5 +1579,22 @@ module.exports = cds.service.impl(async function () {
                 </p>
             </div>
         `;
+    }
+
+    async function _isAdmin(req) {
+        // Check XSUAA scope first
+        if (req.user.is('Admin') || req.user.is('admin')) return true;
+        // Check user.roles array
+        if (Array.isArray(req.user.roles)) {
+            if (req.user.roles.some(r => typeof r === 'string' && r.toLowerCase().includes('admin'))) return true;
+        }
+        // Fallback: check application Users table
+        try {
+            const { Users } = cds.entities('BusinessPartnerService');
+            const user = await SELECT.one.from(Users)
+                .where('LOWER(email) =', req.user.id.toLowerCase());
+            if (user && user.role === 'admin') return true;
+        } catch (_) { /* ignore */ }
+        return false;
     }
 });

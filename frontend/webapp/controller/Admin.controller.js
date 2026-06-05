@@ -49,20 +49,35 @@ sap.ui.define([
             var oContext = oEvent.getSource().getBindingContext();
             var sRequestedRole = oContext.getProperty("requestedRole");
             var sUserEmail = oContext.getProperty("userEmail");
+            var oModel = oContext.getModel();
 
-            // 1. Mark request as approved
+            // 1. Mark request as approved locally
             oContext.setProperty("status", "approved");
 
-            // 2. Refresh the tables to show the new user and remove the request
-            this.onRefreshUsers();
-            
-            MessageToast.show("Request approved. User role updated.");
+            // 2. Submit the change to the backend via OData V4 batch
+            oModel.submitBatch("$auto").then(function () {
+                MessageToast.show("Request approved. User role updated.");
+                this.onRefreshUsers();
+            }.bind(this)).catch(function (oError) {
+                // Revert local change on failure
+                oContext.setProperty("status", "pending");
+                sap.m.MessageBox.error("Failed to approve request: " + (oError.message || oError.response?.message));
+            });
         },
 
         onRejectRequest: function (oEvent) {
             var oContext = oEvent.getSource().getBindingContext();
+            var oModel = oContext.getModel();
+
             oContext.setProperty("status", "rejected");
-            MessageToast.show("Request rejected.");
+
+            oModel.submitBatch("$auto").then(function () {
+                MessageToast.show("Request rejected.");
+                this.onRefreshUsers();
+            }.bind(this)).catch(function (oError) {
+                oContext.setProperty("status", "pending");
+                sap.m.MessageBox.error("Failed to reject request: " + (oError.message || oError.response?.message));
+            });
         },
 
         onDeleteUsers: function () {

@@ -61,9 +61,9 @@
                         </HBox>
                     </WizardStep>
 
-                    <WizardStep id="step2" title="{= ${wizardData>/BusinessPartnerCategory} === 'Person' ? 'Address Details (Name)' : 'Address Details (Identity,Standard Address,Communication)' }" icon="sap-icon://map-2" validated="true">
+                    <WizardStep id="step2" title="{= ${wizardData>/BusinessPartnerCategory} === '1' ? 'Address Details (Name)' : 'Address Details (Identity,Standard Address,Communication)' }" icon="sap-icon://map-2" validated="true">
                         <!-- Form for Organization -->
-                        <HBox width="100%" wrap="Wrap" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }">
+                        <HBox width="100%" wrap="Wrap" visible="{= ${wizardData>/BusinessPartnerCategory} !== '1' }">
                             
                             <!-- Left Column: Identity & Communication -->
                             <VBox width="48%" class="sapUiSmallMarginEnd">
@@ -76,19 +76,20 @@
                                     </Select>
 
                                     <Label text="Name" required="true"/>
-                                    <Input id="nameInput" 
-                                           value="{wizardData>/Name}" 
-                                           placeholder="Full / Company Name" 
-                                           editable="{= !${wizardData>/isReadOnly} }"
-                                           showSuggestion="true"
-                                           suggest="onNameSuggest"
-                                           suggestionItems="{suggestions>/}">
+                                     <Input id="nameInput" 
+                                            value="{wizardData>/Name}" 
+                                            placeholder="Full / Company Name" 
+                                            editable="{= !${wizardData>/isReadOnly} }"
+                                            showSuggestion="true"
+                                            suggest="onNameSuggest"
+                                            liveChange="onNameInputLiveChange"
+                                            suggestionItems="{suggestions>/}">
                                         <suggestionItems>
                                             <core:Item key="{suggestions>CustomerID}" text="{= ${suggestions>City} ? ${suggestions>Name} + ' (' + ${suggestions>City} + ')' : ${suggestions>Name} }"/>
                                         </suggestionItems>
                                     </Input>
                                     
-                                    <Label text="Search terms 1/2"/>
+                                    <Label text="Search terms 1/2" required="true"/>
                                     <Input value="{wizardData>/SearchTerm1}" placeholder="Term 1" editable="{= !${wizardData>/isReadOnly} }">
                                         <layoutData><layout:GridData span="XL4 L4 M4 S6" /></layoutData>
                                     </Input>
@@ -221,13 +222,8 @@
                         </HBox>
 
                         <!-- Form for Person -->
-                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }">
+                        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1" visible="{= ${wizardData>/BusinessPartnerCategory} === '1' }">
                             <core:Title text="Name"/>
-                            
-                            <Label text="Title" required="true"/>
-                            <Select selectedKey="{wizardData>/Title}" items="{path: '/VH_Title', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
-                                <core:Item key="{code}" text="{code} - {name}"/>
-                            </Select>
 
                             <Label text="Firstname" required="true"/>
                             <Input value="{wizardData>/FirstName}" placeholder="First Name" editable="{= !${wizardData>/isReadOnly} }"/>
@@ -240,6 +236,18 @@
                                 <Input value="{wizardData>/SearchTerm1}" placeholder="Term 1" editable="{= !${wizardData>/isReadOnly} }"/>
                                 <Input value="{wizardData>/SearchTerm2}" placeholder="Term 2" class="sapUiSmallMarginBegin" editable="{= !${wizardData>/isReadOnly} }"/>
                             </HBox>
+
+                            <core:Title text="Communication"/>
+
+                            <Label text="Language"/>
+                            <Select selectedKey="{wizardData>/Language}" items="{path: '/VH_Language', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
+
+                            <Label text="Country"/>
+                            <Select selectedKey="{wizardData>/Country}" items="{path: '/VH_Country', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" editable="{= !${wizardData>/isReadOnly} }">
+                                <core:Item key="{code}" text="{code} - {name}"/>
+                            </Select>
                         </form:SimpleForm>
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
@@ -256,13 +264,22 @@
                                 <core:Item key="{code}" text="{code} - {name}"/>
                             </Select>
                             
-                            <Label text="Tax Number" required="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 }"/>
+                            <Label text="Tin Number" required="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 }"/>
                             <HBox alignItems="Center">
-                                <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number" editable="{= !${wizardData>/isReadOnly} }" width="250px" liveChange="onTaxNumberLiveChange"/>
+                                <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number" editable="{= !${wizardData>/isReadOnly} }" width="250px" liveChange="onTinNumberLiveChange"/>
                                 <Button id="validateVatBtn" text="Validate" icon="sap-icon://accept" type="Ghost" press="onValidateTaxNumber" class="sapUiSmallMarginBegin" visible="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 &amp;&amp; !${wizardData>/isReadOnly} }" enabled="{= !!${wizardData>/TaxNumber} }"/>
                                 <core:Icon src="sap-icon://message-success" color="#2b7c2b" class="sapUiSmallMarginBegin" visible="{wizardData>/vatValidationSuccess}" />
                                 <core:Icon src="sap-icon://message-error" color="#bb0000" class="sapUiSmallMarginBegin" visible="{wizardData>/vatValidationFailed}" />
                                 <Text text="{wizardData>/vatValidationMessage}" class="sapUiSmallMarginBegin" />
+                            </HBox>
+
+                            <Label text="Tax Number"/>
+                            <HBox alignItems="Center">
+                                <Input id="taxNumberDupInput" value="{wizardData>/TaxNumberDup}" placeholder="Auto-filled from Tin Number" editable="false" width="250px"/>
+                                <Button id="validateTaxDupBtn" text="Validate" icon="sap-icon://accept" type="Ghost" press="onValidateTaxNumberDup" class="sapUiSmallMarginBegin" visible="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 &amp;&amp; !${wizardData>/isReadOnly} }" enabled="{= !!${wizardData>/TaxNumberDup} }"/>
+                                <core:Icon src="sap-icon://message-success" color="#2b7c2b" class="sapUiSmallMarginBegin" visible="{wizardData>/taxDupValidationSuccess}" />
+                                <core:Icon src="sap-icon://message-error" color="#bb0000" class="sapUiSmallMarginBegin" visible="{wizardData>/taxDupValidationFailed}" />
+                                <Text text="{wizardData>/taxDupValidationMessage}" class="sapUiSmallMarginBegin" />
                             </HBox>
 
                             <Label text="Tax Status"/>
@@ -478,7 +495,6 @@
                                     <OverflowToolbar>
                                         <Title text="Credit Limit and Control"/>
                                         <ToolbarSpacer />
-                                        <Button icon="sap-icon://add" text="Add Segment" press="onAddCreditSegment" type="Ghost" visible="{= !${wizardData>/isReadOnly} }"/>
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>
@@ -515,7 +531,6 @@
                         <HBox justifyContent="SpaceBetween" class="sapUiMediumMarginTop">
                             <Button text="Previous" type="Transparent" press="onPrevStep" />
                             <HBox>
-                                <Button text="Skip" icon="sap-icon://journey-depart" type="Ghost" press="onSkipStep" class="sapUiSmallMarginEnd" visible="{= !${wizardData>/isReadOnly} }" />
                                 <Button text="Review &amp; Submit" type="Accept" press="onOpenReview" />
                             </HBox>
                         </HBox>
@@ -541,14 +556,10 @@
                     <Label text="Grouping"/><Text text="{wizardData>/Grouping}"/>
                     
                     <core:Title text="Address"/>
-                    <Label text="Title"/><Text text="{wizardData>/Title}"/>
+                    <Label text="Title" visible="{= ${wizardData>/BusinessPartnerCategory} !== '1' }"/><Text text="{wizardData>/Title}" visible="{= ${wizardData>/BusinessPartnerCategory} !== '1' }"/>
                     <Label text="Name" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }"/><Text text="{wizardData>/Name}" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }"/>
                     <Label text="Name" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }"/><Text text="{wizardData>/FirstName} {wizardData>/LastName}" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }"/>
                     <Label text="Search Terms"/><Text text="{wizardData>/SearchTerm1} / {wizardData>/SearchTerm2}"/>
-                    <core:Title text="Credit Profile"/>
-                    <Label text="Risk Class"/><Text text="{wizardData>/RiskClass}"/>
-                    <Label text="Check Rule"/><Text text="{wizardData>/CheckRule}"/>
-                    <Label text="Credit Group"/><Text text="{wizardData>/CreditGroup}"/>
                 </form:SimpleForm>
                 
 

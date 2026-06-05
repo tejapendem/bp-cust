@@ -29,6 +29,10 @@
                 <HBox height="100%" renderType="Bare">
                     <!-- Master: List of Workflows -->
                     <VBox width="350px" class="sapUiSmallMarginEnd shadowBox" backgroundDesign="Translucent">
+                        <Toolbar>
+                            <Button id="sortBtn" icon="sap-icon://sort-descending" type="Transparent" press=".onToggleSort" tooltip="Toggle sort order"/>
+                            <SearchField id="approvalSearch" placeholder="Search by name or BP ID..." width="100%" search=".onSearch" />
+                        </Toolbar>
                         <List id="pendingList"
                               mode="SingleSelectMaster"
                               selectionChange=".onBPSelect"
@@ -81,6 +85,19 @@
                                         
                                         <Label text="Country" />
                                         <Text text="{selectedBP>/Country}" />
+
+                                        <core:Title text="Address &amp; Tax Details" />
+                                        <Label text="Street" />
+                                        <Text text="{selectedBP>/StreetAddress}" />
+                                        
+                                        <Label text="House Number" />
+                                        <Text text="{selectedBP>/HouseNumber}" />
+                                        
+                                        <Label text="Tax Category" />
+                                        <Text text="{selectedBP>/TaxCategory}" />
+                                        
+                                        <Label text="Tax Number" />
+                                        <Text text="{selectedBP>/TaxNumber}" />
                                     </form:SimpleForm>
 
                                     <Table id="workflowStepsTable" headerText="Workflow Progress" class="sapUiMediumMarginTop" items="{progressData>/}">

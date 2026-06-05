@@ -167,6 +167,16 @@
     text-align: center;
 }
 
+/* === Status Colors === */
+.statusActive .sapMObjStatusText {
+    color: #6bb86b !important;
+    font-weight: 600;
+}
+.statusPushed .sapMObjStatusText {
+    color: #2e7d32 !important;
+    font-weight: 700;
+}
+
 /* === Monospace Code & Log Viewer === */
 .monospaceTextArea textarea {
     font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace !important;
@@ -177,3 +187,114 @@
     border: 1px solid var(--sapGroup_TitleBorderColor, #d3d3d3) !important;
     border-radius: 6px !important;
 }
+
+/* === KPI Glassmorphism Dashboard === */
+.kpiGlassRow {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.kpiGlassBox {
+    flex: 1 1 0;
+    min-width: 120px;
+    padding: 1rem 0.5rem;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    min-height: 100px;
+}
+
+.kpiGlassBox:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.kpiGlassIcon {
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.kpiGlassNumber {
+    font-size: 1.6rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+    line-height: 1.2 !important;
+}
+
+.kpiGlassLabel {
+    font-size: 0.75rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    margin-top: 0.15rem !important;
+    text-align: center !important;
+}
+
+.kpiGlassIcon {
+    margin-bottom: 0.3rem;
+    opacity: 0.9;
+}
+
+/* Accent overlays per box */
+.kpiApproved {
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.12), rgba(255, 255, 255, 0.05));
+    border-color: rgba(46, 125, 50, 0.2);
+}
+.kpiApproved:hover {
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.18), rgba(255, 255, 255, 0.08));
+    border-color: rgba(46, 125, 50, 0.35);
+}
+
+.kpiPushed {
+    background: linear-gradient(135deg, rgba(21, 101, 192, 0.12), rgba(255, 255, 255, 0.05));
+    border-color: rgba(21, 101, 192, 0.2);
+}
+.kpiPushed:hover {
+    background: linear-gradient(135deg, rgba(21, 101, 192, 0.18), rgba(255, 255, 255, 0.08));
+    border-color: rgba(21, 101, 192, 0.35);
+}
+
+.kpiPending {
+    background: linear-gradient(135deg, rgba(230, 81, 0, 0.12), rgba(255, 255, 255, 0.05));
+    border-color: rgba(230, 81, 0, 0.2);
+}
+.kpiPending:hover {
+    background: linear-gradient(135deg, rgba(230, 81, 0, 0.18), rgba(255, 255, 255, 0.08));
+    border-color: rgba(230, 81, 0, 0.35);
+}
+
+.kpiFailed {
+    background: linear-gradient(135deg, rgba(198, 40, 40, 0.12), rgba(255, 255, 255, 0.05));
+    border-color: rgba(198, 40, 40, 0.2);
+}
+.kpiFailed:hover {
+    background: linear-gradient(135deg, rgba(198, 40, 40, 0.18), rgba(255, 255, 255, 0.08));
+    border-color: rgba(198, 40, 40, 0.35);
+}
+
+@media (max-width: 768px) {
+    .kpiGlassRow {
+        flex-wrap: wrap;
+    }
+    .kpiGlassBox {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: 0;
+        min-height: 110px;
+        padding: 1rem 0.5rem;
+    }
+    .kpiGlassNumber {
+        font-size: 1.6rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpiGlassBox {
+        flex: 1 1 100%;
+        min-height: 100px;
+    }
+}
+
+/* === End KPI Glassmorphism === */
+

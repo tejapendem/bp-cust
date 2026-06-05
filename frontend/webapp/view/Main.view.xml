@@ -64,23 +64,18 @@
 
         <f:header>
             <f:DynamicPageHeader pinnable="true" visible="{= ${userModel>/role} !== 'guest' }">
-                <fb:FilterBar id="filterbar" search="onSearch" clear="onClear" showClearOnFB="true" useToolbar="false">
+                <fb:FilterBar id="filterbar" search="onSearch" clear="onClear" showClearOnFB="true" useToolbar="false"
+                    showAdaptFiltersButton="true">
                     <fb:filterGroupItems>
-                        <fb:FilterGroupItem groupName="G1" name="CompanyCode" label="Company Code" visibleInFilterBar="true">
+
+                        <fb:FilterGroupItem groupName="G1" name="LifecycleStatus" label="Status" visibleInFilterBar="true">
                             <fb:control>
-                                <Input id="filterCompanyCode" placeholder="e.g. 1000..." />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                        
-                        <fb:FilterGroupItem groupName="G1" name="SalesArea" label="Sales Area" visibleInFilterBar="true">
-                            <fb:control>
-                                <Input id="filterSalesArea" placeholder="e.g. 1000..." />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                        
-                        <fb:FilterGroupItem groupName="G1" name="BPRole" label="BP Role" visibleInFilterBar="true">
-                            <fb:control>
-                                <Input id="filterBPRole" placeholder="e.g. FLCU00..." />
+                                <Select id="filterStatus" forceSelection="false">
+                                    <core:Item key="" text="All Statuses" />
+                                    <core:Item key="active" text="Active" />
+                                    <core:Item key="draft" text="Draft" />
+                                    <core:Item key="pending_approval" text="Pending Approval" />
+                                </Select>
                             </fb:control>
                         </fb:FilterGroupItem>
 
@@ -90,6 +85,44 @@
                                     <core:Item key="" text="All Groupings" />
                                     <core:Item key="ZP01" text="ZP01" />
                                     <core:Item key="ZP05" text="ZP05" />
+                                </Select>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem groupName="G1" name="CompanyCode" label="Company Code" visibleInFilterBar="true">
+                            <fb:control>
+                                <Select id="filterCompanyCode" forceSelection="false">
+                                    <core:Item key="" text="All Company Codes" />
+                                </Select>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem groupName="G1" name="SalesOrganization" label="Sales Organization" visibleInFilterBar="true">
+                            <fb:control>
+                                <Select id="filterSalesOrg" forceSelection="false">
+                                    <core:Item key="" text="All Sales Orgs" />
+                                </Select>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem groupName="G1" name="BusinessPartnerNumber" label="Business Partner ID" visibleInFilterBar="false">
+                            <fb:control>
+                                <Input id="filterBPNumber" placeholder="Enter BP ID..." />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem groupName="G1" name="Name" label="Name" visibleInFilterBar="false">
+                            <fb:control>
+                                <Input id="filterName" placeholder="Search by name..." />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem groupName="G1" name="Category" label="Category" visibleInFilterBar="false">
+                            <fb:control>
+                                <Select id="filterCategory" forceSelection="false">
+                                    <core:Item key="" text="All Categories" />
+                                    <core:Item key="1" text="Person" />
+                                    <core:Item key="2" text="Organization" />
                                 </Select>
                             </fb:control>
                         </fb:FilterGroupItem>
@@ -121,7 +154,7 @@
                             <Title text="Available Partners" level="H2"/>
                             <ToolbarSpacer />
                             <Button icon="sap-icon://refresh" type="Transparent" press="onRefresh" tooltip="Refresh Data"/>
-                            <Button icon="sap-icon://sort" type="Transparent"/>
+                            <Button id="mainSortBtn" icon="sap-icon://sort-descending" type="Transparent" press="onToggleSort" tooltip="Sort newest first"/>
                             <Button icon="sap-icon://filter" type="Transparent"/>
                             <Button icon="sap-icon://delete" type="Transparent" text="Delete"
                                 visible="{userModel>/isAdmin}"
@@ -153,7 +186,11 @@
                                 
                                 <Text text="{Grouping}" />
                                 
-                                <ObjectStatus text="{LifecycleStatus}" state="{= ${LifecycleStatus} === 'draft' ? 'Warning' : (${LifecycleStatus} === 'pending_approval' ? 'Information' : 'Success') }" inverted="true" />
+                                <HBox alignItems="Center" class="{= ${SAPPushStatus} === 'Pushed' ? 'statusPushed' : (${LifecycleStatus} === 'active' ? 'statusActive' : '') }">
+                                    <ObjectStatus text="{= ${SAPPushStatus} === 'Pushed' ? 'Pushed' : (${LifecycleStatus} === 'draft' ? 'Draft' : (${LifecycleStatus} === 'pending_approval' ? 'Pending Approval' : 'Active')) }"
+                                                  state="{= ${SAPPushStatus} === 'Pushed' ? 'Success' : (${LifecycleStatus} === 'draft' ? 'Warning' : (${LifecycleStatus} === 'pending_approval' ? 'Information' : 'Success')) }"
+                                                  inverted="true" />
+                                </HBox>
 
                                 <HBox alignItems="Center">
                                     <core:Icon src="sap-icon://calendar" class="sapUiTinyMarginEnd" color="#1873B6" />
@@ -163,7 +200,7 @@
                                 <HBox wrap="Wrap">
                                     <ObjectStatus text="FLCU01" state="Success" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                                     <ObjectStatus text="FLCU00" state="Warning" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                    <ObjectStatus text="{BPRole}" state="Information" inverted="true" class="sapUiTinyMarginBottom"/>
+                                    <ObjectStatus text="{= ${BPRole} === '000000' ? 'UKM000' : ${BPRole} }" state="Information" inverted="true" class="sapUiTinyMarginBottom"/>
                                 </HBox>
 
                             </cells>
