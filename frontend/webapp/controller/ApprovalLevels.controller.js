@@ -8,19 +8,17 @@ sap.ui.define([
 
     return Controller.extend("bp.cust.ui.controller.ApprovalLevels", {
         onInit: function () {
-            // Access control - only admins can access this page
             var oUserModel = this.getOwnerComponent().getModel("userModel");
             if (oUserModel) {
                 var bIsAdmin = oUserModel.getProperty("/isAdmin");
                 if (!bIsAdmin) {
-                    sap.m.MessageBox.warning("You don't have permission to access this page.", {
+                    MessageBox.warning("You don't have permission to access this page.", {
                         onClose: function () {
                             this.getOwnerComponent().getRouter().navTo("Main");
                         }.bind(this)
                     });
                 }
             }
-            // No need for explicit data loading as it's bound directly in the XML view
         },
 
         onRefresh: function () {
@@ -45,31 +43,46 @@ sap.ui.define([
             oBinding.create({
                 level: iCount + 1,
                 levelName: "Level " + (iCount + 1),
-                username: "New Approver",
+                username: "Approver" + (iCount + 1),
                 email: ""
             });
 
-            MessageToast.show("New level added to queue (Unsaved).");
+            MessageToast.show("New level added (unsaved).");
         },
 
-        onDeleteLevel: function (oEvent) {
-            var oItem = oEvent.getParameter("listItem");
-            oItem.getBindingContext().delete().then(function () {
-                MessageToast.show("Level deleted from database.");
+        onDeleteRowItem: function (oEvent) {
+            var oContext = oEvent.getSource().getBindingContext();
+            MessageBox.confirm("Delete this approval level?", {
+                onClose: function (sAction) {
+                    if (sAction === MessageBox.Action.OK) {
+                        oContext.delete().then(function () {
+                            MessageToast.show("Level deleted.");
+                        });
+                    }
+                }
             });
+        },
+
+        onEditRowItem: function (oEvent) {
+            // Inputs are always editable inline; this focuses the first input in the row
+            var oItem = oEvent.getSource().getParent().getParent();
+            var aCells = oItem.getCells();
+            if (aCells[1]) {
+                aCells[1].focus();
+            }
+            MessageToast.show("Edit the fields inline, then click Save Changes.");
         },
 
         onSave: function () {
             var oModel = this.getOwnerComponent().getModel();
-
             if (oModel.hasPendingChanges()) {
                 sap.ui.core.BusyIndicator.show(0);
                 oModel.submitBatch("$auto").then(function () {
                     sap.ui.core.BusyIndicator.hide();
-                    MessageBox.success("All changes have been saved to the backend.");
+                    MessageBox.success("All changes saved to the backend.");
                 }).catch(function (oErr) {
                     sap.ui.core.BusyIndicator.hide();
-                    MessageBox.error("Failed to save changes: " + oErr.message);
+                    MessageBox.error("Failed to save: " + oErr.message);
                 });
             } else {
                 MessageToast.show("No changes to save.");

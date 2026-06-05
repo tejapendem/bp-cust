@@ -4,21 +4,21 @@
     xmlns:tnt="sap.tnt"
     xmlns:core="sap.ui.core"
     displayBlock="true">
-    <tnt:ToolPage id="toolPage">
+    <tnt:ToolPage id="toolPage" class="appToolPage">
         <tnt:header>
-            <tnt:ToolHeader>
-                <Button id="sideNavigationToggleButton" icon="sap-icon://menu2" type="Transparent" press=".onSideNavButtonPress" />
+            <tnt:ToolHeader class="appToolHeader">
+                <Button id="sideNavigationToggleButton" icon="sap-icon://menu2" type="Transparent" press=".onSideNavButtonPress" class="appMenuBtn" />
                 <ToolbarSpacer width="10px" />
                 <Image src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" height="1.5rem" />
-                <Title text="Business Partner" level="H1" />
+                <Title text="Business Partner" level="H1" class="appBrandTitle" />
                 <ToolbarSpacer />
-                <Switch state="false" customTextOn="Dark" customTextOff="Light" change=".onThemeSwitch" class="sapUiSmallMarginEnd" tooltip="Toggle Dark Mode" />
-                <Button icon="sap-icon://bell" type="Transparent" />
-                <Avatar id="profileAvatar" displaySize="XS" initials="{userModel>/initials}" press=".onProfilePress" class="sapUiSmallMarginEnd" />
+                <Switch state="false" customTextOn="Dark" customTextOff="Light" change=".onThemeSwitch" class="sapUiSmallMarginEnd appThemeSwitch" tooltip="Toggle Dark Mode" />
+                <Button icon="sap-icon://bell" type="Transparent" class="appBellBtn" />
+                <Avatar id="profileAvatar" displaySize="XS" initials="{userModel>/initials}" press=".onProfilePress" class="sapUiSmallMarginEnd appAvatar" />
             </tnt:ToolHeader>
         </tnt:header>
         <tnt:sideContent>
-            <tnt:SideNavigation id="sideNavigation" selectedKey="home" itemSelect=".onItemSelect">
+            <tnt:SideNavigation id="sideNavigation" selectedKey="home" itemSelect=".onItemSelect" class="appSideNav">
                 <tnt:NavigationList>
                     <tnt:NavigationListItem text="Home" icon="sap-icon://home" key="home" visible="{userModel>/isRegistered}" />
                     <tnt:NavigationListItem text="Create Business Partner" icon="sap-icon://create" key="createBP" visible="{= ${userModel>/role} !== 'guest' &amp;&amp; ${userModel>/isRegistered} }" />

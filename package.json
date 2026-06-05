@@ -14,7 +14,8 @@
     "puppeteer": "^22.6.0"
   },
   "devDependencies": {
-    "@sap/cds-dk": "^8"
+    "@sap/cds-dk": "^8",
+    "sqlite3": "^6.0.1"
   },
   "cds": {
     "auto-deploy": false,
@@ -23,6 +24,12 @@
         "kind": "postgres",
         "pool": {
           "acquireTimeoutMillis": 60000
+        },
+        "[development]": {
+          "kind": "sqlite",
+          "credentials": {
+            "database": "bp-cust-test.db"
+          }
         }
       },
       "auth": {

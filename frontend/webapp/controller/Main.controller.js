@@ -366,6 +366,16 @@ sap.ui.define([
             if (this.byId("sapPushDialog")) {
                 this.byId("sapPushDialog").close();
             }
+        },
+
+        formatDate: function (sValue) {
+            if (!sValue) return "";
+            var oDate = new Date(sValue);
+            if (isNaN(oDate.getTime())) return sValue;
+            return oDate.toLocaleString("en-GB", {
+                day: "2-digit", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit"
+            });
         }
     });
 });

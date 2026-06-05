@@ -24,6 +24,27 @@ sap.ui.define([
             this._currentVHEntity = "";
         },
 
+        onAfterRendering: function () {
+            // Unlock the wizard so any step can be clicked from the progress navigator
+            if (this._bWizardUnlocked) return;
+            var oWizard = this.byId("configWizard");
+            if (!oWizard) return;
+            var aSteps = oWizard.getSteps();
+            // Mark every step as validated so they're clickable in any order
+            for (var i = 0; i < aSteps.length - 1; i++) {
+                oWizard.nextStep();
+            }
+            // Jump back to first step for the initial view
+            if (aSteps.length > 0) {
+                oWizard.goToStep(aSteps[0]);
+            }
+            this._bWizardUnlocked = true;
+        },
+
+        onStepActivate: function () {
+            // Hook reserved for future per-step logic; kept so the event binding doesn't error.
+        },
+
         onNavBack: function () {
             this.getOwnerComponent().getRouter().navTo("Main");
         },

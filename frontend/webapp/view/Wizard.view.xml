@@ -9,33 +9,52 @@
     height="100%">
 
     <Page id="wizardPage"
-          title="{= ${wizardData>/isReadOnly} ? 'Business Partner Details' : 'Create Business Partner' }"
-          showNavButton="true"
-          navButtonPress="onNavBack"
-          backgroundDesign="Transparent">
-        <headerContent>
-            <Button text="Save as Draft" type="Ghost" icon="sap-icon://save" press="onSaveDraft" visible="{= !${wizardData>/isReadOnly} }" />
-        </headerContent>
+          showHeader="false"
+          backgroundDesign="List"
+          class="createBpPage">
         <content>
-            <VBox class="wizardRedBoxFrame sapUiMediumMargin">
-                
-                <HBox alignItems="Center" class="progressHeaderBox">
-                    <mc:RadialMicroChart 
-                        id="progressChart" 
-                        size="M" 
-                        percentage="{wizardData>/progress}" 
-                        valueColor="{wizardData>/progressColor}"/>
-                    <Title 
-                        text="Completion Status: {wizardData>/progressText}" 
-                        level="H3" 
-                        class="sapUiMediumMarginBegin completionText"/>
+            <VBox class="cbpOuterPadding">
+
+                <!-- ── Page Header ──────────────────────────────────── -->
+                <HBox alignItems="Center" justifyContent="SpaceBetween" class="cbpPageHeader">
+                    <HBox alignItems="Center">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="cbpHeaderIcon">
+                            <core:Icon src="sap-icon://create" size="1.6rem" color="#0a6ed1" />
+                        </FlexBox>
+                        <VBox class="sapUiSmallMarginBegin">
+                            <Title text="{= ${wizardData>/isReadOnly} ? 'Business Partner Details' : 'Create Business Partner' }" level="H2" class="cbpPageTitle" />
+                            <Text text="{= ${wizardData>/isReadOnly} ? 'View business partner master data' : 'Complete each step to register a new business partner' }" class="cbpPageSubtitle" />
+                        </VBox>
+                    </HBox>
+                    <HBox>
+                        <Button icon="sap-icon://nav-back" text="Back" type="Transparent" press="onNavBack" class="cbpBackBtn sapUiSmallMarginEnd" />
+                        <Button text="Save as Draft" icon="sap-icon://save" press="onSaveDraft" visible="{= !${wizardData>/isReadOnly} }" class="cbpDraftBtn" />
+                    </HBox>
                 </HBox>
 
-                <Wizard id="bpWizard"
-                        complete="onWizardCompleted"
-                        stepActivate="onStepActivate"
-                        showNextButton="false"
-                        renderMode="Page">
+                <!-- ── Progress Card ────────────────────────────────── -->
+                <VBox class="cbpProgressCard sapUiSmallMarginTop">
+                    <HBox alignItems="Center" class="cbpProgressInner">
+                        <mc:RadialMicroChart
+                            id="progressChart"
+                            size="M"
+                            percentage="{wizardData>/progress}"
+                            valueColor="{wizardData>/progressColor}" />
+                        <VBox class="sapUiMediumMarginBegin">
+                            <Title text="Completion Status" level="H4" class="cbpProgressTitle" />
+                            <Text text="{wizardData>/progressText}" class="cbpProgressText" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- ── Wizard Card ──────────────────────────────────── -->
+                <VBox class="cbpWizardCard sapUiSmallMarginTop sapUiMediumMarginBottom">
+                    <Wizard id="bpWizard"
+                            complete="onWizardCompleted"
+                            stepActivate="onStepActivate"
+                            showNextButton="false"
+                            renderMode="Page"
+                            class="cbpWizard">
 
                     <WizardStep id="step1" title="Basic Info (000000)" icon="sap-icon://account" validated="true">
                         <form:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="1">
@@ -537,6 +556,7 @@
                     </WizardStep>
 
                 </Wizard>
+                </VBox>
             </VBox>
         </content>
     </Page>

@@ -1,129 +1,237 @@
 <mvc:View controllerName="bp.cust.ui.controller.ApprovalInbox"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:f="sap.f"
-    xmlns:form="sap.ui.layout.form"
-    xmlns:core="sap.ui.core">
-    <f:DynamicPage id="approvalInboxPage" headerExpanded="true" showFooter="true">
-        <f:title>
-            <f:DynamicPageTitle>
-                <f:heading>
-                    <Title text="Approval Inbox"/>
-                </f:heading>
-                <f:actions>
-                    <Button text="Refresh" type="Transparent" icon="sap-icon://refresh" press=".onRefresh"/>
-                </f:actions>
-            </f:DynamicPageTitle>
-        </f:title>
+    xmlns:core="sap.ui.core"
+    xmlns:form="sap.ui.layout.form">
 
-        <f:content>
-            <VBox height="100%">
-                <IconTabBar id="approvalTabBar" select=".onFilterSelect" class="sapUiNoContentPadding">
-                    <items>
-                        <IconTabFilter key="pending" text="Pending Requests" icon="sap-icon://pending" iconColor="Critical" />
-                        <IconTabFilter key="approved" text="Approved Requests" icon="sap-icon://sys-enter-2" iconColor="Positive" />
-                        <IconTabFilter key="rejected" text="Rejected Requests" icon="sap-icon://error" iconColor="Negative" />
-                    </items>
-                </IconTabBar>
+    <Page showHeader="false" backgroundDesign="List" class="approvalInboxPage">
+        <content>
+            <VBox class="aibOuterPadding">
 
-                <HBox height="100%" renderType="Bare">
-                    <!-- Master: List of Workflows -->
-                    <VBox width="350px" class="sapUiSmallMarginEnd shadowBox" backgroundDesign="Translucent">
-                        <Toolbar>
-                            <Button id="sortBtn" icon="sap-icon://sort-descending" type="Transparent" press=".onToggleSort" tooltip="Toggle sort order"/>
-                            <SearchField id="approvalSearch" placeholder="Search by name or BP ID..." width="100%" search=".onSearch" />
-                        </Toolbar>
+                <!-- ── Page Header ──────────────────────────────────── -->
+                <HBox alignItems="Center" justifyContent="SpaceBetween" class="aibPageHeader">
+                    <HBox alignItems="Center">
+                        <core:Icon src="sap-icon://inbox" size="2.5rem" color="#0a6ed1" class="aibHeaderIcon" />
+                        <VBox class="sapUiSmallMarginBegin">
+                            <Title text="Approval Inbox" level="H2" class="aibPageTitle" />
+                            <Text text="Review and act on pending business partner approval requests" class="aibPageSubtitle" />
+                        </VBox>
+                    </HBox>
+                    <Button icon="sap-icon://refresh" text="Refresh" type="Transparent" press=".onRefresh" class="aibRefreshBtn" />
+                </HBox>
+
+                <!-- ── Tab Bar ──────────────────────────────────────── -->
+                <HBox class="aibTabRow sapUiSmallMarginTop">
+                    <Button id="tabPending"  text="Pending"  icon="sap-icon://pending"     press=".onTabPress" class="aibTab aibTabPending aibTabActive">
+                        <customData><core:CustomData key="tabKey" value="pending"  /></customData>
+                    </Button>
+                    <Button id="tabApproved" text="Approved" icon="sap-icon://sys-enter-2" press=".onTabPress" class="aibTab aibTabApproved">
+                        <customData><core:CustomData key="tabKey" value="approved" /></customData>
+                    </Button>
+                    <Button id="tabRejected" text="Rejected" icon="sap-icon://error"       press=".onTabPress" class="aibTab aibTabRejected">
+                        <customData><core:CustomData key="tabKey" value="rejected" /></customData>
+                    </Button>
+                </HBox>
+
+                <!-- ── Main Content: Master + Detail ───────────────── -->
+                <HBox class="aibContent sapUiSmallMarginTop" renderType="Bare">
+
+                    <!-- ── Master List ─────────────────────────────── -->
+                    <VBox class="aibMasterPanel">
+                        <!-- Search + Sort bar -->
+                        <HBox alignItems="Center" class="aibMasterToolbar">
+                            <SearchField id="approvalSearch"
+                                placeholder="Search name or BP ID…"
+                                width="100%"
+                                search=".onSearch"
+                                class="aibSearchField" />
+                            <Button id="sortBtn"
+                                icon="sap-icon://sort-descending"
+                                type="Transparent"
+                                press=".onToggleSort"
+                                tooltip="Toggle sort order"
+                                class="aibSortBtn sapUiTinyMarginBegin" />
+                        </HBox>
+
+                        <!-- List -->
                         <List id="pendingList"
-                              mode="SingleSelectMaster"
-                              selectionChange=".onBPSelect"
-                              items="{approvalList>/}">
-                            <StandardListItem
-                                title="{approvalList>bpName}"
-                                description="ID: {approvalList>bpNumber}"
-                                info="{approvalList>status}"
-                                infoState="{= ${approvalList>status} === 'approved' ? 'Success' : (${approvalList>status} === 'rejected' ? 'Error' : 'Warning') }"
-                                type="Active"/>
+                            mode="SingleSelectMaster"
+                            selectionChange=".onBPSelect"
+                            items="{approvalList>/}"
+                            showSeparators="None"
+                            class="aibMasterList">
+                            <CustomListItem type="Active" class="aibListItem">
+                                <VBox class="aibListItemInner">
+                                    <HBox alignItems="Center" justifyContent="SpaceBetween">
+                                        <HBox alignItems="Center">
+                                            <core:Icon src="sap-icon://business-partner"
+                                                size="1rem"
+                                                color="#0a6ed1"
+                                                class="aibListItemIcon" />
+                                            <Text text="{approvalList>bpName}" class="aibListItemName" />
+                                        </HBox>
+                                        <ObjectStatus
+                                            text="{approvalList>status}"
+                                            state="{= ${approvalList>status} === 'approved' ? 'Success' : (${approvalList>status} === 'rejected' ? 'Error' : 'Warning') }"
+                                            inverted="true"
+                                            class="aibListItemBadge" />
+                                    </HBox>
+                                    <Text text="ID: {approvalList>bpNumber}" class="aibListItemSub" />
+                                </VBox>
+                            </CustomListItem>
                         </List>
                     </VBox>
 
-                    <!-- Detail -->
-                    <VBox id="detailContainer" visible="false" class="destinationDetailContainer sapUiMediumMarginBegin" width="100%">
-                        <Panel id="detailPanel" class="sapUiNoContentPadding">
-                            <Toolbar>
-                                <Title text="Request Details" class="sapUiMediumMarginBegin" />
-                                <ToolbarSpacer />
-                                <Button text="Approve" type="Accept" icon="sap-icon://accept" press=".onApprove" visible="{= ${workflowData>/status} === 'pending' }"/>
-                                <Button text="Reject" type="Reject" icon="sap-icon://decline" press=".onReject" visible="{= ${workflowData>/status} === 'pending' }"/>
-                            </Toolbar>
-                            <content>
-                                <VBox class="sapUiMediumMargin">
-                                    <form:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" columnsXL="2" columnsL="2" columnsM="2">
-                                        <form:toolbar>
-                                            <Toolbar>
-                                                <Title text="General Information" />
-                                            </Toolbar>
-                                        </form:toolbar>
-                                        
-                                        <Label text="BP Name" />
-                                        <Text text="{selectedBP>/Name}" />
-                                        
-                                        <Label text="Reference Number" />
-                                        <Text text="{selectedBP>/BusinessPartnerNumber}" />
-                                        
-                                        <Label text="Category" />
-                                        <Text text="{selectedBP>/BusinessPartnerCategory}" />
-                                        
-                                        <Label text="Grouping" />
-                                        <Text text="{selectedBP>/Grouping}" />
+                    <!-- ── Detail Panel (hidden until item selected) ─ -->
+                    <VBox id="detailContainer" visible="false" class="aibDetailPanel">
 
-                                        <core:Title text="Contact Details" />
-                                        <Label text="Email" />
-                                        <Text text="{selectedBP>/Email}" />
-                                        
-                                        <Label text="Phone" />
-                                        <Text text="{selectedBP>/MobileNumber}" />
-                                        
-                                        <Label text="Country" />
-                                        <Text text="{selectedBP>/Country}" />
-
-                                        <core:Title text="Address &amp; Tax Details" />
-                                        <Label text="Street" />
-                                        <Text text="{selectedBP>/StreetAddress}" />
-                                        
-                                        <Label text="House Number" />
-                                        <Text text="{selectedBP>/HouseNumber}" />
-                                        
-                                        <Label text="Tax Category" />
-                                        <Text text="{selectedBP>/TaxCategory}" />
-                                        
-                                        <Label text="Tax Number" />
-                                        <Text text="{selectedBP>/TaxNumber}" />
-                                    </form:SimpleForm>
-
-                                    <Table id="workflowStepsTable" headerText="Workflow Progress" class="sapUiMediumMarginTop" items="{progressData>/}">
-                                        <columns>
-                                            <Column><Text text="Step" /></Column>
-                                            <Column><Text text="Approver" /></Column>
-                                            <Column><Text text="Status" /></Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem>
-                                                <cells>
-                                                    <Text text="{progressData>levelName}" />
-                                                    <Text text="{progressData>email}" />
-                                                    <ObjectStatus text="{progressData>status}" 
-                                                                  state="{= ${progressData>status} === 'Approved' ? 'Success' : (${progressData>status} === 'Awaiting' ? 'Warning' : (${progressData>status} === 'Rejected' ? 'Error' : 'None')) }" 
-                                                                  inverted="true" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
+                        <!-- Detail Header -->
+                        <HBox alignItems="Center" justifyContent="SpaceBetween" class="aibDetailHeader">
+                            <HBox alignItems="Center">
+                                <core:Icon src="sap-icon://business-partner" size="1.6rem" color="#0a6ed1" class="aibDetailHeaderIcon" />
+                                <VBox class="sapUiSmallMarginBegin">
+                                    <Title text="{selectedBP>/Name}" level="H3" class="aibDetailName" />
+                                    <Text text="Ref: {selectedBP>/BusinessPartnerNumber}" class="aibDetailRef" />
                                 </VBox>
-                            </content>
-                        </Panel>
+                            </HBox>
+                            <HBox>
+                                <Button text="Approve"
+                                    icon="sap-icon://accept"
+                                    type="Accept"
+                                    press=".onApprove"
+                                    visible="{= ${workflowData>/status} === 'pending' }"
+                                    class="aibApproveBtn sapUiSmallMarginEnd" />
+                                <Button text="Reject"
+                                    icon="sap-icon://decline"
+                                    type="Reject"
+                                    press=".onReject"
+                                    visible="{= ${workflowData>/status} === 'pending' }"
+                                    class="aibRejectBtn" />
+                            </HBox>
+                        </HBox>
+
+                        <!-- Info Cards Row -->
+                        <HBox class="aibInfoCardRow" wrap="Wrap">
+
+                            <!-- General Information -->
+                            <VBox class="aibInfoCard aibCardGeneral">
+                                <HBox alignItems="Center" class="aibInfoCardHeader">
+                                    <core:Icon src="sap-icon://person-placeholder" size="1rem" color="#0a6ed1" />
+                                    <Title text="General Information" level="H5" class="sapUiTinyMarginBegin aibInfoCardTitle" />
+                                </HBox>
+                                <VBox class="aibInfoCardBody">
+                                    <HBox class="aibInfoRow">
+                                        <Label text="Category" class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/BusinessPartnerCategory}" class="aibInfoValue" />
+                                    </HBox>
+                                    <HBox class="aibInfoRow">
+                                        <Label text="Grouping" class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/Grouping}" class="aibInfoValue" />
+                                    </HBox>
+                                    <HBox class="aibInfoRow">
+                                        <Label text="Tax Category" class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/TaxCategory}" class="aibInfoValue" />
+                                    </HBox>
+                                    <HBox class="aibInfoRow">
+                                        <Label text="Tax Number" class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/TaxNumber}" class="aibInfoValue" />
+                                    </HBox>
+                                </VBox>
+                            </VBox>
+
+                            <!-- Contact Details -->
+                            <VBox class="aibInfoCard aibCardContact">
+                                <HBox alignItems="Center" class="aibInfoCardHeader">
+                                    <core:Icon src="sap-icon://customer" size="1rem" color="#2E7D32" />
+                                    <Title text="Contact Details" level="H5" class="sapUiTinyMarginBegin aibInfoCardTitle" />
+                                </HBox>
+                                <VBox class="aibInfoCardBody">
+                                    <HBox class="aibInfoRow">
+                                        <Label text="Email" class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/Email}" class="aibInfoValue" />
+                                    </HBox>
+                                    <HBox class="aibInfoRow">
+                                        <Label text="Phone" class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/MobileNumber}" class="aibInfoValue" />
+                                    </HBox>
+                                    <HBox class="aibInfoRow">
+                                        <Label text="Country" class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/Country}" class="aibInfoValue" />
+                                    </HBox>
+                                </VBox>
+                            </VBox>
+
+                            <!-- Address -->
+                            <VBox class="aibInfoCard aibCardAddress">
+                                <HBox alignItems="Center" class="aibInfoCardHeader">
+                                    <core:Icon src="sap-icon://map" size="1rem" color="#E65100" />
+                                    <Title text="Address" level="H5" class="sapUiTinyMarginBegin aibInfoCardTitle" />
+                                </HBox>
+                                <VBox class="aibInfoCardBody">
+                                    <HBox class="aibInfoRow">
+                                        <Label text="Street" class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/StreetAddress}" class="aibInfoValue" />
+                                    </HBox>
+                                    <HBox class="aibInfoRow">
+                                        <Label text="House No." class="aibInfoLabel" />
+                                        <Text text="{selectedBP>/HouseNumber}" class="aibInfoValue" />
+                                    </HBox>
+                                </VBox>
+                            </VBox>
+
+                        </HBox>
+
+                        <!-- ── Workflow Progress ────────────────────── -->
+                        <VBox class="aibProgressCard sapUiSmallMarginTop">
+                            <HBox alignItems="Center" class="aibProgressHeader">
+                                <core:Icon src="sap-icon://workflow-tasks" size="1.1rem" color="#7B5EA7" />
+                                <Title text="Workflow Progress" level="H4" class="sapUiTinyMarginBegin" />
+                            </HBox>
+
+                            <Table id="workflowStepsTable"
+                                items="{progressData>/}"
+                                showSeparators="Inner"
+                                class="aibProgressTable">
+                                <columns>
+                                    <Column width="35%"><Text text="Step" /></Column>
+                                    <Column><Text text="Approver" /></Column>
+                                    <Column width="130px" hAlign="Center"><Text text="Status" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <HBox alignItems="Center">
+                                                <Text text="{progressData>level}" class="aibStepBadge" />
+                                                <Text text="{progressData>levelName}" class="sapUiSmallMarginBegin" />
+                                            </HBox>
+                                            <VBox>
+                                                <Text text="{progressData>email}" class="aibApproverEmail" />
+                                            </VBox>
+                                            <HBox justifyContent="Center">
+                                                <ObjectStatus
+                                                    text="{progressData>status}"
+                                                    state="{= ${progressData>status} === 'Approved' ? 'Success' : (${progressData>status} === 'Awaiting' ? 'Warning' : (${progressData>status} === 'Rejected' ? 'Error' : 'None')) }"
+                                                    inverted="true"
+                                                    class="aibProgressStatus" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+
                     </VBox>
+
+                    <!-- ── Empty State (nothing selected) ──────────── -->
+                    <VBox id="emptyState" visible="true" justifyContent="Center" alignItems="Center" class="aibEmptyState">
+                        <core:Icon src="sap-icon://inbox" size="4rem" color="#c0c8d0" />
+                        <Title text="Select a request" level="H4" class="aibEmptyTitle sapUiSmallMarginTop" />
+                        <Text text="Choose an item from the list to view its details and take action." class="aibEmptyText" />
+                    </VBox>
+
                 </HBox>
+
             </VBox>
-        </f:content>
-    </f:DynamicPage>
+        </content>
+    </Page>
 </mvc:View>

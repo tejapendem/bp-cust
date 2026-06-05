@@ -161,6 +161,7 @@
 .navStepBtn.sapMBtn {
     margin: 0 2px;
 }
+
 .navStepBtn.sapMBtn .sapMBtnInner {
     font-size: 0.875rem;
     min-width: 100px;
@@ -172,6 +173,7 @@
     color: #6bb86b !important;
     font-weight: 600;
 }
+
 .statusPushed .sapMObjStatusText {
     color: #2e7d32 !important;
     font-weight: 700;
@@ -242,6 +244,7 @@
     background: linear-gradient(135deg, rgba(46, 125, 50, 0.12), rgba(255, 255, 255, 0.05));
     border-color: rgba(46, 125, 50, 0.2);
 }
+
 .kpiApproved:hover {
     background: linear-gradient(135deg, rgba(46, 125, 50, 0.18), rgba(255, 255, 255, 0.08));
     border-color: rgba(46, 125, 50, 0.35);
@@ -251,6 +254,7 @@
     background: linear-gradient(135deg, rgba(21, 101, 192, 0.12), rgba(255, 255, 255, 0.05));
     border-color: rgba(21, 101, 192, 0.2);
 }
+
 .kpiPushed:hover {
     background: linear-gradient(135deg, rgba(21, 101, 192, 0.18), rgba(255, 255, 255, 0.08));
     border-color: rgba(21, 101, 192, 0.35);
@@ -260,6 +264,7 @@
     background: linear-gradient(135deg, rgba(230, 81, 0, 0.12), rgba(255, 255, 255, 0.05));
     border-color: rgba(230, 81, 0, 0.2);
 }
+
 .kpiPending:hover {
     background: linear-gradient(135deg, rgba(230, 81, 0, 0.18), rgba(255, 255, 255, 0.08));
     border-color: rgba(230, 81, 0, 0.35);
@@ -269,6 +274,7 @@
     background: linear-gradient(135deg, rgba(198, 40, 40, 0.12), rgba(255, 255, 255, 0.05));
     border-color: rgba(198, 40, 40, 0.2);
 }
+
 .kpiFailed:hover {
     background: linear-gradient(135deg, rgba(198, 40, 40, 0.18), rgba(255, 255, 255, 0.08));
     border-color: rgba(198, 40, 40, 0.35);
@@ -278,12 +284,14 @@
     .kpiGlassRow {
         flex-wrap: wrap;
     }
+
     .kpiGlassBox {
         flex: 1 1 calc(50% - 0.5rem);
         min-width: 0;
         min-height: 110px;
         padding: 1rem 0.5rem;
     }
+
     .kpiGlassNumber {
         font-size: 1.6rem !important;
     }
@@ -298,3 +306,2368 @@
 
 /* === End KPI Glassmorphism === */
 
+/* ============================================================
+   Approval Workflow Configuration Page
+   ============================================================ */
+
+.approvalWorkflowPage {
+    background-color: var(--sapBackgroundColor, #f5f6f8) !important;
+}
+
+.awcOuterPadding {
+    padding: 2rem 2.5rem;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.awcPageHeader {
+    padding-bottom: 0.5rem;
+}
+
+.awcHeaderIcon {
+    background: linear-gradient(135deg, #ede7f6, #d1c4e9);
+    border-radius: 50%;
+    padding: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.awcPageTitle .sapMTitle {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.awcPageSubtitle .sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.awcRefreshBtn.sapMBtn .sapMBtnInner {
+    border: 1.5px solid var(--sapButton_BorderColor, #0a6ed1) !important;
+    color: #0a6ed1 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+.awcAddBtn.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #7B5EA7, #5c3d9e) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-weight: 600 !important;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.awcCard {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.awcCardHeader {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--sapGroup_TitleBorderColor, #e8e8e8);
+}
+
+.awcCardHeaderIcon {
+    background: linear-gradient(135deg, #ede7f6, #d1c4e9);
+    border-radius: 8px;
+    padding: 0.4rem;
+}
+
+.awcSaveBtn.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #7B5EA7, #5c3d9e) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-weight: 600 !important;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+.awcTable.sapMList {
+    background: transparent !important;
+}
+
+.awcTable .sapMListTblHeaderCell {
+    background: #fafafa !important;
+    font-weight: 600 !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-size: 0.8125rem !important;
+    border-bottom: 1px solid #e8e8e8 !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.awcTable .sapMLIBContent {
+    padding: 0.6rem 0 !important;
+}
+
+.awcTable .sapMListTblCell {
+    padding: 0.5rem 1rem !important;
+    vertical-align: middle !important;
+}
+
+.awcTable .sapMLIB:hover {
+    background-color: #fafafa !important;
+}
+
+/* Level badge circle */
+.awcLevelBadge.sapMText {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #ede7f6, #d1c4e9) !important;
+    color: #5c3d9e !important;
+    font-weight: 700 !important;
+    font-size: 0.875rem !important;
+}
+
+/* Inline table inputs */
+.awcTableInput.sapMInputBase {
+    border-radius: 6px !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+.awcTableInput.sapMInputBase:focus-within {
+    border-color: #7B5EA7 !important;
+    box-shadow: 0 0 0 2px rgba(123, 94, 167, 0.15) !important;
+}
+
+/* Action buttons */
+.awcDeleteBtn.sapMBtn .sapMBtnInner {
+    color: #c62828 !important;
+    border-radius: 8px !important;
+    border: 1px solid #ffcdd2 !important;
+    background: #fff5f5 !important;
+    min-width: 2.25rem !important;
+    padding: 0 0.4rem !important;
+}
+
+.awcDeleteBtn.sapMBtn:hover .sapMBtnInner {
+    background: #ffcdd2 !important;
+}
+
+.awcEditBtn.sapMBtn .sapMBtnInner {
+    color: #0a6ed1 !important;
+    border-radius: 8px !important;
+    border: 1px solid #bbdefb !important;
+    background: #f0f7ff !important;
+    min-width: 2.25rem !important;
+    padding: 0 0.4rem !important;
+}
+
+.awcEditBtn.sapMBtn:hover .sapMBtnInner {
+    background: #bbdefb !important;
+}
+
+/* ── Communication Channel Card ───────────────────────────── */
+.awcCommCard {
+    background: linear-gradient(135deg, #f9fdf9, #f0faf0) !important;
+    border-color: #c8e6c9 !important;
+}
+
+.awcCommCardHeader {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #c8e6c9;
+}
+
+.awcCommIcon {
+    background: rgba(46, 125, 50, 0.1);
+    border-radius: 8px;
+    padding: 0.35rem;
+}
+
+.awcCommBody {
+    padding: 1.25rem 1.5rem;
+    gap: 1rem;
+}
+
+.awcCommRow {
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+}
+
+.awcCommRowIcon {
+    flex-shrink: 0;
+}
+
+.awcCommLabel.sapMLbl {
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-weight: 500 !important;
+    min-width: 11rem;
+}
+
+.awcCommValue.sapMText {
+    font-weight: 600 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.awcActiveChip {
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 20px;
+    padding: 0.15rem 0.6rem;
+    gap: 0.25rem;
+}
+
+.awcActiveText.sapMText {
+    color: #2e7d32 !important;
+    font-weight: 600 !important;
+    font-size: 0.8125rem !important;
+}
+
+/* ============================================================
+   End Approval Workflow Configuration Page
+   ============================================================ */
+
+/* ============================================================
+   Approval Inbox Page
+   ============================================================ */
+
+.approvalInboxPage {
+    background-color: var(--sapBackgroundColor, #f5f6f8) !important;
+}
+
+.aibOuterPadding {
+    padding: 2rem 2.5rem;
+    height: 100%;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.aibPageHeader {
+    padding-bottom: 0.25rem;
+}
+
+.aibHeaderIcon {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 50%;
+    padding: 0.6rem;
+}
+
+.aibPageTitle .sapMTitle {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.aibPageSubtitle .sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.aibRefreshBtn.sapMBtn .sapMBtnInner {
+    border: 1.5px solid #0a6ed1 !important;
+    color: #0a6ed1 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+/* ── Custom Tab Buttons ───────────────────────────────────── */
+.aibTabRow {
+    gap: 0.5rem;
+}
+
+.aibTab.sapMBtn .sapMBtnInner {
+    border-radius: 20px !important;
+    border: 1.5px solid #e0e0e0 !important;
+    background: #ffffff !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-weight: 500 !important;
+    padding: 0 1rem !important;
+    min-width: 120px !important;
+    transition: all 0.2s ease !important;
+}
+
+.aibTab.sapMBtn:hover .sapMBtnInner {
+    border-color: #0a6ed1 !important;
+    color: #0a6ed1 !important;
+    background: #e3f2fd !important;
+}
+
+/* Pending — orange/amber active */
+.aibTabPending.aibTabActive.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2) !important;
+    border-color: #f57c00 !important;
+    color: #e65100 !important;
+    font-weight: 700 !important;
+}
+
+/* Approved — green active */
+.aibTabApproved.aibTabActive.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9) !important;
+    border-color: #2e7d32 !important;
+    color: #1b5e20 !important;
+    font-weight: 700 !important;
+}
+
+/* Rejected — red active */
+.aibTabRejected.aibTabActive.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2) !important;
+    border-color: #c62828 !important;
+    color: #b71c1c !important;
+    font-weight: 700 !important;
+}
+
+/* ── Main Content Layout ─────────────────────────────────── */
+.aibContent {
+    align-items: flex-start;
+    gap: 1.25rem;
+    min-height: 520px;
+}
+
+/* ── Master Panel ─────────────────────────────────────────── */
+.aibMasterPanel {
+    width: 300px;
+    min-width: 280px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.aibMasterToolbar {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 0.5rem;
+}
+
+.aibSearchField.sapMSF {
+    border-radius: 8px !important;
+}
+
+.aibSortBtn.sapMBtn .sapMBtnInner {
+    border-radius: 8px !important;
+    border: 1px solid #e0e0e0 !important;
+    color: #6a6d70 !important;
+}
+
+.aibMasterList.sapMList {
+    background: transparent !important;
+}
+
+.aibListItem.sapMLIB {
+    border-bottom: 1px solid #f5f5f5 !important;
+    padding: 0 !important;
+}
+
+.aibListItem.sapMLIB.sapMLIBSelected,
+.aibListItem.sapMLIB:focus {
+    background: linear-gradient(135deg, #e3f2fd, #e8eaf6) !important;
+    border-left: 3px solid #0a6ed1 !important;
+}
+
+.aibListItemInner {
+    padding: 0.75rem 1rem;
+    gap: 0.3rem;
+}
+
+.aibListItemIcon {
+    background: #e3f2fd;
+    border-radius: 6px;
+    padding: 0.2rem;
+    margin-right: 0.4rem;
+}
+
+.aibListItemName.sapMText {
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.aibListItemSub.sapMText {
+    font-size: 0.75rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    margin-top: 0.15rem !important;
+}
+
+.aibListItemBadge.sapMObjStatus {
+    font-size: 0.7rem !important;
+}
+
+/* ── Detail Panel ─────────────────────────────────────────── */
+.aibDetailPanel {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.aibDetailHeader {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #f8faff, #eef2fb);
+    border-bottom: 1px solid #e8ecf4;
+}
+
+.aibDetailHeaderIcon {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 10px;
+    padding: 0.5rem;
+}
+
+.aibDetailName .sapMTitle {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.aibDetailRef.sapMText {
+    font-size: 0.8rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.aibApproveBtn.sapMBtn .sapMBtnInner {
+    background: #e8f5e9 !important;
+    border-radius: 8px !important;
+    border: 1px solid #a5d6a7 !important;
+    font-weight: 600 !important;
+    color: #1b5e20 !important;
+}
+
+.aibApproveBtn.sapMBtn .sapMBtnContent,
+.aibApproveBtn.sapMBtn .sapMBtnIconFirst,
+.aibApproveBtn.sapMBtn .sapUiIcon {
+    color: #1b5e20 !important;
+}
+
+.aibApproveBtn.sapMBtn:hover .sapMBtnInner {
+    background: #c8e6c9 !important;
+    border-color: #66bb6a !important;
+}
+
+.aibRejectBtn.sapMBtn .sapMBtnInner {
+    background: #ffebee !important;
+    border-radius: 8px !important;
+    border: 1px solid #ef9a9a !important;
+    font-weight: 600 !important;
+    color: #b71c1c !important;
+}
+
+.aibRejectBtn.sapMBtn .sapMBtnContent,
+.aibRejectBtn.sapMBtn .sapMBtnIconFirst,
+.aibRejectBtn.sapMBtn .sapUiIcon {
+    color: #b71c1c !important;
+}
+
+.aibRejectBtn.sapMBtn:hover .sapMBtnInner {
+    background: #ffcdd2 !important;
+    border-color: #ef5350 !important;
+}
+
+/* ── Info Cards Row ──────────────────────────────────────── */
+.aibInfoCardRow {
+    padding: 1rem 1.5rem 0.5rem 1.5rem;
+    gap: 1rem;
+}
+
+.aibInfoCard {
+    flex: 1;
+    min-width: 200px;
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
+    overflow: hidden;
+}
+
+.aibCardGeneral {
+    background: linear-gradient(135deg, #f0f7ff, #e8eaf6);
+    border-color: #c5cae9;
+}
+
+.aibCardContact {
+    background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
+    border-color: #c8e6c9;
+}
+
+.aibCardAddress {
+    background: linear-gradient(135deg, #fff8e1, #fff3e0);
+    border-color: #ffe0b2;
+}
+
+.aibInfoCardHeader {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.aibInfoCardTitle.sapMTitle {
+    font-size: 0.8125rem !important;
+    font-weight: 700 !important;
+}
+
+.aibInfoCardBody {
+    padding: 0.6rem 0.9rem 0.75rem 0.9rem;
+    gap: 0.35rem;
+}
+
+.aibInfoRow {
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.1rem 0;
+}
+
+.aibInfoLabel.sapMLbl {
+    min-width: 90px !important;
+    font-size: 0.75rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-weight: 500 !important;
+    flex-shrink: 0;
+}
+
+.aibInfoValue.sapMText {
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+    word-break: break-word;
+}
+
+/* ── Workflow Progress ────────────────────────────────────── */
+.aibProgressCard {
+    margin: 0 1.5rem 1.5rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
+    overflow: hidden;
+    background: #fafafa;
+}
+
+.aibProgressHeader {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #ede7f6, #e8eaf6);
+    border-bottom: 1px solid #e0e0e0;
+    gap: 0.5rem;
+}
+
+.aibProgressTable.sapMList {
+    background: transparent !important;
+}
+
+.aibProgressTable .sapMListTblHeaderCell {
+    background: #f5f5f5 !important;
+    font-weight: 600 !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-size: 0.8125rem !important;
+    padding: 0.6rem 1rem !important;
+}
+
+.aibProgressTable .sapMListTblCell {
+    padding: 0.6rem 1rem !important;
+    vertical-align: middle !important;
+}
+
+.aibStepBadge.sapMText {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 1.6rem !important;
+    height: 1.6rem !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #ede7f6, #d1c4e9) !important;
+    color: #5c3d9e !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    flex-shrink: 0;
+}
+
+.aibApproverEmail.sapMText {
+    font-size: 0.8125rem !important;
+    color: #0a6ed1 !important;
+}
+
+/* ── Empty State ──────────────────────────────────────────── */
+.aibEmptyState {
+    flex: 1;
+    min-height: 380px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px dashed #d0d8e0;
+    gap: 0;
+}
+
+.aibEmptyTitle .sapMTitle {
+    color: #9aa5b0 !important;
+    font-size: 1rem !important;
+}
+
+.aibEmptyText.sapMText {
+    color: #b0bec5 !important;
+    font-size: 0.8125rem !important;
+    text-align: center !important;
+    max-width: 240px;
+    margin-top: 0.4rem !important;
+}
+
+/* ============================================================
+   End Approval Inbox Page
+   ============================================================ */
+
+/* ============================================================
+   Approval Data Page
+   ============================================================ */
+
+.approvalDataPage {
+    background-color: var(--sapBackgroundColor, #f5f6f8) !important;
+}
+
+.adOuterPadding {
+    padding: 2rem 2.5rem;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.adPageHeader {
+    padding-bottom: 0.25rem;
+}
+
+.adHeaderIcon {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border-radius: 50%;
+    padding: 0.6rem;
+}
+
+.adPageTitle .sapMTitle {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.adPageSubtitle .sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.adRefreshBtn.sapMBtn .sapMBtnInner {
+    border: 1.5px solid #2e7d32 !important;
+    color: #2e7d32 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+/* ── KPI Cards ────────────────────────────────────────────── */
+.adKpiRow {
+    gap: 1rem;
+}
+
+.adKpiCard {
+    flex: 1 1 0;
+    min-width: 140px;
+    padding: 1.25rem 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    gap: 0.4rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+}
+
+.adKpiCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+}
+
+/* Individual card backgrounds */
+.adKpiTotal {
+    background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
+    border-color: #a5d6a7;
+}
+
+.adKpiPushed {
+    background: linear-gradient(135deg, #e3f2fd, #e8eaf6);
+    border-color: #90caf9;
+}
+
+.adKpiPending {
+    background: linear-gradient(135deg, #fff8e1, #fff3e0);
+    border-color: #ffcc80;
+}
+
+.adKpiFailed {
+    background: linear-gradient(135deg, #ffebee, #fce4ec);
+    border-color: #ef9a9a;
+}
+
+/* Icon circles — FlexBox renders as a real div so width/height work */
+.adKpiIconCircle {
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 50%;
+    margin-bottom: 0.6rem;
+    flex-shrink: 0;
+}
+
+.adKpiIconTotal {
+    background: rgba(46, 125, 50, 0.15);
+}
+
+.adKpiIconPushed {
+    background: rgba(21, 101, 192, 0.15);
+}
+
+.adKpiIconPending {
+    background: rgba(230, 81, 0, 0.15);
+}
+
+.adKpiIconFailed {
+    background: rgba(198, 40, 40, 0.15);
+}
+
+.adKpiNumber.sapMText {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    line-height: 1.1 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.adKpiLabel.sapMText {
+    font-size: 0.75rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    text-align: center !important;
+}
+
+/* ── Table Card ───────────────────────────────────────────── */
+.adTableCard {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.adTableHeader {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.adTableHeaderIcon {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border-radius: 8px;
+    padding: 0.35rem;
+}
+
+.adSearchField.sapMSF {
+    border-radius: 8px !important;
+}
+
+/* Table internals */
+.adTable.sapMList {
+    background: transparent !important;
+}
+
+.adTable .sapMListTblHeaderCell {
+    background: #fafafa !important;
+    font-weight: 600 !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-size: 0.8125rem !important;
+    border-bottom: 1px solid #eeeeee !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.adTable .sapMListTblCell {
+    padding: 0.65rem 1rem !important;
+    vertical-align: middle !important;
+}
+
+.adTableRow.sapMLIB:hover {
+    background-color: #f5f9ff !important;
+}
+
+/* Ref badge */
+.adRefBadge.sapMObjStatus {
+    font-size: 0.8rem !important;
+}
+
+/* SAP BP No. badge — light green pill matching Ref Number's light blue */
+.adSapBpBadge.sapMText {
+    display: inline-block !important;
+    background-color: #e8f5e9 !important;
+    color: #1b5e20 !important;
+    border: 1px solid #a5d6a7 !important;
+    border-radius: 12px !important;
+    padding: 2px 10px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+}
+
+/* SAP BP Number */
+.adSapBPNum.sapMText {
+    font-weight: 600 !important;
+    color: #1565c0 !important;
+    font-size: 0.875rem !important;
+}
+
+.adEmptyCell.sapMText {
+    color: #bdbdbd !important;
+    font-size: 0.875rem !important;
+}
+
+/* Name + Email cell */
+.adNameCell {
+    gap: 0.15rem;
+}
+
+.adBPName.sapMText {
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.adBPEmail.sapMText {
+    font-size: 0.75rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+/* Grouping badge */
+.adGroupingBadge.sapMObjStatus {
+    font-size: 0.75rem !important;
+}
+
+/* Status cell */
+.adStatusCell {
+    gap: 0.35rem;
+}
+
+.adStatusIcon {
+    flex-shrink: 0;
+}
+
+.adLogsBtn.sapMBtn .sapMBtnInner {
+    color: #6a6d70 !important;
+    min-width: auto !important;
+    padding: 0 0.25rem !important;
+}
+
+/* Push to SAP buttons */
+.adPushBtn.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #1565c0, #0d47a1) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+}
+
+.adPushBtn.sapMBtn .sapMBtnContent,
+.adPushBtn.sapMBtn .sapMBtnIconFirst,
+.adPushBtn.sapMBtn .sapUiIcon {
+    color: #ffffff !important;
+}
+
+.adPushBtnFailed.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #e65100, #bf360c) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+}
+
+.adPushBtnFailed.sapMBtn .sapMBtnContent,
+.adPushBtnFailed.sapMBtn .sapMBtnIconFirst,
+.adPushBtnFailed.sapMBtn .sapUiIcon {
+    color: #ffffff !important;
+}
+
+@media (max-width: 768px) {
+    .adKpiCard {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: 0;
+    }
+
+    .adKpiNumber.sapMText {
+        font-size: 1.6rem !important;
+    }
+
+    .adOuterPadding {
+        padding: 1rem;
+    }
+}
+
+/* ============================================================
+   End Approval Data Page
+   ============================================================ */
+
+/* ============================================================
+   User Management Page
+   ============================================================ */
+
+.userMgmtPage {
+    background-color: var(--sapBackgroundColor, #f5f6f8) !important;
+}
+
+.umOuterPadding {
+    padding: 2rem 2.5rem;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.umPageHeader {
+    padding-bottom: 0.25rem;
+}
+
+.umHeaderIcon {
+    background: linear-gradient(135deg, #ede7f6, #d1c4e9);
+    border-radius: 50%;
+    padding: 0.6rem;
+}
+
+.umPageTitle .sapMTitle {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.umPageSubtitle .sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.umNavBtn.sapMBtn .sapMBtnInner {
+    border: 1.5px solid #7B5EA7 !important;
+    color: #7B5EA7 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    font-weight: 500 !important;
+}
+
+.umRefreshBtn.sapMBtn .sapMBtnInner {
+    border: 1.5px solid #0a6ed1 !important;
+    color: #0a6ed1 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+.umCard {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.umCardHeader {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.umCardHeaderUsers {
+    background: linear-gradient(135deg, #f0f7ff, #e3f2fd);
+}
+
+.umCardHeaderPending {
+    background: linear-gradient(135deg, #fff8e1, #fff3e0);
+}
+
+.umCardHeaderHistory {
+    background: linear-gradient(135deg, #ede7f6, #e8eaf6);
+}
+
+.umCardIconCircle {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.umIconUsers {
+    background: rgba(21, 101, 192, 0.15);
+}
+
+.umIconPending {
+    background: rgba(230, 81, 0, 0.15);
+}
+
+.umIconHistory {
+    background: rgba(92, 61, 158, 0.15);
+}
+
+/* ── Header Buttons ───────────────────────────────────────── */
+.umDeleteBtn.sapMBtn .sapMBtnInner {
+    color: #c62828 !important;
+    border: 1px solid #ffcdd2 !important;
+    border-radius: 8px !important;
+    background: #fff5f5 !important;
+    font-weight: 500 !important;
+}
+
+.umDeleteBtn.sapMBtn:hover .sapMBtnInner {
+    background: #ffcdd2 !important;
+}
+
+/* ── Tables ───────────────────────────────────────────────── */
+.umTable.sapMList {
+    background: transparent !important;
+}
+
+.umTable .sapMListTblHeaderCell {
+    background: #fafafa !important;
+    font-weight: 600 !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-size: 0.8125rem !important;
+    padding: 0.7rem 1rem !important;
+    border-bottom: 1px solid #eeeeee !important;
+}
+
+.umTable .sapMListTblCell {
+    padding: 0.65rem 1rem !important;
+    vertical-align: middle !important;
+}
+
+.umTableRow.sapMLIB:hover {
+    background-color: #fafafa !important;
+}
+
+/* ── User avatar circle ───────────────────────────────────── */
+.umAvatar {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7B5EA7, #5c3d9e);
+    flex-shrink: 0;
+}
+
+.umAvatarText.sapMText {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 0.875rem !important;
+}
+
+/* ── Cell text styles ─────────────────────────────────────── */
+.umUserName.sapMText {
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.umEmailText.sapMText {
+    font-size: 0.8125rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.umReasonText.sapMText {
+    font-size: 0.8125rem !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.umDateText.sapMText {
+    font-size: 0.8125rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+/* ── Role select ──────────────────────────────────────────── */
+.umRoleSelect.sapMSlt {
+    border-radius: 8px !important;
+    border: 1px solid #d0d8e0 !important;
+    min-width: 110px !important;
+}
+
+/* ── Status pills ─────────────────────────────────────────── */
+.umStatusActive.sapMText,
+.umStatusInactive.sapMText,
+.umStatusApproved.sapMText,
+.umStatusRejected.sapMText {
+    display: inline-block !important;
+    padding: 2px 10px !important;
+    border-radius: 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    text-transform: capitalize !important;
+}
+
+.umStatusActive.sapMText,
+.umStatusApproved.sapMText {
+    background-color: #e8f5e9 !important;
+    color: #1b5e20 !important;
+    border: 1px solid #a5d6a7 !important;
+}
+
+.umStatusInactive.sapMText {
+    background-color: #f5f5f5 !important;
+    color: #616161 !important;
+    border: 1px solid #bdbdbd !important;
+}
+
+.umStatusRejected.sapMText {
+    background-color: #ffebee !important;
+    color: #b71c1c !important;
+    border: 1px solid #ef9a9a !important;
+}
+
+/* ── Role badges ──────────────────────────────────────────── */
+.umRoleBadgeAdmin.sapMText,
+.umRoleBadgeViewer.sapMText {
+    display: inline-block !important;
+    padding: 2px 10px !important;
+    border-radius: 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    text-transform: capitalize !important;
+}
+
+.umRoleBadgeAdmin.sapMText {
+    background-color: #ede7f6 !important;
+    color: #4527a0 !important;
+    border: 1px solid #b39ddb !important;
+}
+
+.umRoleBadgeViewer.sapMText {
+    background-color: #e3f2fd !important;
+    color: #0d47a1 !important;
+    border: 1px solid #90caf9 !important;
+}
+
+/* ── Approve / Reject buttons ─────────────────────────────── */
+.umApproveBtn.sapMBtn .sapMBtnInner {
+    background: #e8f5e9 !important;
+    border-radius: 8px !important;
+    border: 1px solid #a5d6a7 !important;
+    color: #1b5e20 !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+}
+
+.umApproveBtn.sapMBtn .sapMBtnContent,
+.umApproveBtn.sapMBtn .sapMBtnIconFirst,
+.umApproveBtn.sapMBtn .sapUiIcon {
+    color: #1b5e20 !important;
+}
+
+.umApproveBtn.sapMBtn:hover .sapMBtnInner {
+    background: #c8e6c9 !important;
+    border-color: #66bb6a !important;
+}
+
+.umRejectBtn.sapMBtn .sapMBtnInner {
+    background: #ffebee !important;
+    border-radius: 8px !important;
+    border: 1px solid #ef9a9a !important;
+    color: #b71c1c !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+}
+
+.umRejectBtn.sapMBtn .sapMBtnContent,
+.umRejectBtn.sapMBtn .sapMBtnIconFirst,
+.umRejectBtn.sapMBtn .sapUiIcon {
+    color: #b71c1c !important;
+}
+
+.umRejectBtn.sapMBtn:hover .sapMBtnInner {
+    background: #ffcdd2 !important;
+    border-color: #ef5350 !important;
+}
+
+/* ============================================================
+   End User Management Page
+   ============================================================ */
+
+/* ============================================================
+   Activation Queue Page
+   ============================================================ */
+
+.activationQueuePage {
+    background-color: var(--sapBackgroundColor, #f5f6f8) !important;
+}
+
+.aqOuterPadding {
+    padding: 2rem 2.5rem;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.aqPageHeader {
+    padding-bottom: 0.25rem;
+}
+
+.aqHeaderIcon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ede7f6, #d1c4e9);
+    flex-shrink: 0;
+}
+
+.aqPageTitle .sapMTitle {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.aqPageSubtitle .sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.aqRefreshBtn.sapMBtn .sapMBtnInner {
+    border: 1.5px solid #7B5EA7 !important;
+    color: #7B5EA7 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+/* ── Wizard Container Card ────────────────────────────────── */
+.aqWizardCard {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    padding: 1rem 1rem 0 1rem;
+}
+
+.aqWizard {
+    background: transparent !important;
+}
+
+.aqStepBody {
+    padding: 1rem 0.5rem 1.5rem 0.5rem;
+}
+
+/* ── Master Data Cards (per VH table) ─────────────────────── */
+.aqMasterCard {
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.aqMasterCardBlue {
+    border-color: #bbdefb;
+}
+
+.aqMasterCardGreen {
+    border-color: #c8e6c9;
+}
+
+.aqMasterCardOrange {
+    border-color: #ffe0b2;
+}
+
+.aqMasterCardPurple {
+    border-color: #d1c4e9;
+}
+
+.aqMasterCardTeal {
+    border-color: #b2dfdb;
+}
+
+.aqMasterCardPink {
+    border-color: #f8bbd0;
+}
+
+.aqMasterCardRed {
+    border-color: #ffcdd2;
+}
+
+.aqMasterHeader {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.aqMasterCardBlue .aqMasterHeader {
+    background: linear-gradient(135deg, #f0f7ff, #e3f2fd);
+}
+
+.aqMasterCardGreen .aqMasterHeader {
+    background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
+}
+
+.aqMasterCardOrange .aqMasterHeader {
+    background: linear-gradient(135deg, #fff8e1, #fff3e0);
+}
+
+.aqMasterCardPurple .aqMasterHeader {
+    background: linear-gradient(135deg, #ede7f6, #e8eaf6);
+}
+
+.aqMasterCardTeal .aqMasterHeader {
+    background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
+}
+
+.aqMasterCardPink .aqMasterHeader {
+    background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+}
+
+.aqMasterCardRed .aqMasterHeader {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+}
+
+.aqMasterIcon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.aqIconBlue {
+    background: rgba(21, 101, 192, 0.15);
+}
+
+.aqIconGreen {
+    background: rgba(46, 125, 50, 0.15);
+}
+
+.aqIconOrange {
+    background: rgba(230, 81, 0, 0.15);
+}
+
+.aqIconPurple {
+    background: rgba(92, 61, 158, 0.15);
+}
+
+.aqIconTeal {
+    background: rgba(0, 131, 143, 0.15);
+}
+
+.aqIconPink {
+    background: rgba(194, 24, 91, 0.15);
+}
+
+.aqIconRed {
+    background: rgba(198, 40, 40, 0.15);
+}
+
+.aqMasterTitle .sapMTitle {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+/* ── Add Button ───────────────────────────────────────────── */
+.aqAddBtn.sapMBtn .sapMBtnInner {
+    background: #ffffff !important;
+    border: 1px solid #d0d8e0 !important;
+    border-radius: 8px !important;
+    color: #1565c0 !important;
+    font-weight: 500 !important;
+    font-size: 0.8rem !important;
+}
+
+.aqAddBtn.sapMBtn:hover .sapMBtnInner {
+    background: #e3f2fd !important;
+    border-color: #1565c0 !important;
+}
+
+/* ── Tables ───────────────────────────────────────────────── */
+.aqTable.sapMList {
+    background: transparent !important;
+}
+
+.aqTable .sapMListTblHeaderCell {
+    background: #fafafa !important;
+    font-weight: 600 !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-size: 0.8125rem !important;
+    padding: 0.65rem 1rem !important;
+    border-bottom: 1px solid #eeeeee !important;
+}
+
+.aqTable .sapMListTblCell {
+    padding: 0.55rem 1rem !important;
+    vertical-align: middle !important;
+}
+
+.aqTableRow.sapMLIB:hover {
+    background-color: #fafafa !important;
+}
+
+/* ── Cell Text ────────────────────────────────────────────── */
+.aqCodeText.sapMText {
+    font-weight: 700 !important;
+    font-size: 0.875rem !important;
+    color: #1565c0 !important;
+    font-family: Consolas, Monaco, "Andale Mono", monospace !important;
+}
+
+.aqNameText.sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+/* ── Edit / Delete Action Buttons ─────────────────────────── */
+.aqEditBtn.sapMBtn .sapMBtnInner {
+    color: #0a6ed1 !important;
+    border-radius: 8px !important;
+    border: 1px solid #bbdefb !important;
+    background: #f0f7ff !important;
+    min-width: 2.25rem !important;
+    padding: 0 0.4rem !important;
+}
+
+.aqEditBtn.sapMBtn:hover .sapMBtnInner {
+    background: #bbdefb !important;
+}
+
+.aqDeleteBtn.sapMBtn .sapMBtnInner {
+    color: #c62828 !important;
+    border-radius: 8px !important;
+    border: 1px solid #ffcdd2 !important;
+    background: #fff5f5 !important;
+    min-width: 2.25rem !important;
+    padding: 0 0.4rem !important;
+}
+
+.aqDeleteBtn.sapMBtn:hover .sapMBtnInner {
+    background: #ffcdd2 !important;
+}
+
+/* ── Wizard Progress Navigator polish ─────────────────────── */
+.aqWizard .sapMWizardProgressNavigator {
+    background: linear-gradient(135deg, #fafafa, #ffffff) !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================================
+   End Activation Queue Page
+   ============================================================ */
+
+/* ============================================================
+   Create Business Partner Page
+   ============================================================ */
+
+.createBpPage {
+    background-color: var(--sapBackgroundColor, #f5f6f8) !important;
+}
+
+.cbpOuterPadding {
+    padding: 2rem 2.5rem;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.cbpPageHeader {
+    padding-bottom: 0.25rem;
+}
+
+.cbpHeaderIcon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    flex-shrink: 0;
+}
+
+.cbpPageTitle .sapMTitle {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.cbpPageSubtitle .sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.cbpBackBtn.sapMBtn .sapMBtnInner {
+    border: 1.5px solid #6a6d70 !important;
+    color: #6a6d70 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+.cbpDraftBtn.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #0a6ed1, #0854a0) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+.cbpDraftBtn.sapMBtn .sapMBtnContent,
+.cbpDraftBtn.sapMBtn .sapMBtnIconFirst,
+.cbpDraftBtn.sapMBtn .sapUiIcon {
+    color: #ffffff !important;
+}
+
+/* ── Progress Card ────────────────────────────────────────── */
+.cbpProgressCard {
+    background: linear-gradient(135deg, #ffffff, #f0f7ff);
+    border-radius: 12px;
+    border: 1px solid #d0e4ff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.cbpProgressInner {
+    padding: 1.25rem 1.75rem;
+}
+
+.cbpProgressTitle .sapMTitle {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.cbpProgressText.sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+/* ── Radial chart — vivid colours + glow ──────────────────── */
+#__xmlview0--progressChart,
+[id$="--progressChart"] {
+    filter: drop-shadow(0 2px 6px rgba(10, 110, 209, 0.25));
+}
+
+/* Background ring — soft grey */
+.cbpProgressCard .sapSuiteUiMicroChartRadialChart .sapSuiteRMCBg {
+    stroke: #e8eef7 !important;
+}
+
+/* Foreground ring (the filled progress arc) */
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartGood .sapSuiteRMCFg,
+.cbpProgressCard .sapSuiteUiMicroChartRadialChart[data-sap-ui-color="Good"] .sapSuiteRMCFg {
+    stroke: #00c853 !important;
+    filter: drop-shadow(0 0 6px rgba(0, 200, 83, 0.55));
+}
+
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartCritical .sapSuiteRMCFg,
+.cbpProgressCard .sapSuiteUiMicroChartRadialChart[data-sap-ui-color="Critical"] .sapSuiteRMCFg {
+    stroke: #ff9100 !important;
+    filter: drop-shadow(0 0 6px rgba(255, 145, 0, 0.55));
+}
+
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartError .sapSuiteRMCFg,
+.cbpProgressCard .sapSuiteUiMicroChartRadialChart[data-sap-ui-color="Error"] .sapSuiteRMCFg {
+    stroke: #ff1744 !important;
+    filter: drop-shadow(0 0 6px rgba(255, 23, 68, 0.55));
+}
+
+/* Centre percentage text */
+.cbpProgressCard .sapSuiteUiMicroChartRadialChart text,
+.cbpProgressCard .sapSuiteUiMicroChartRadialChart .sapSuiteRMCValue {
+    font-size: 1.4rem !important;
+    font-weight: 800 !important;
+    fill: #0a6ed1 !important;
+}
+
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartGood text,
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartGood .sapSuiteRMCValue {
+    fill: #00c853 !important;
+}
+
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartCritical text,
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartCritical .sapSuiteRMCValue {
+    fill: #ff9100 !important;
+}
+
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartError text,
+.cbpProgressCard .sapSuiteUiMicroChartRadialChartError .sapSuiteRMCValue {
+    fill: #ff1744 !important;
+}
+
+/* ── Wizard Container Card ────────────────────────────────── */
+.cbpWizardCard {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    padding: 1rem 1rem 1rem 1rem;
+}
+
+.cbpWizard {
+    background: transparent !important;
+}
+
+/* ── Polish wizard step content ───────────────────────────── */
+.cbpWizard .sapMWizardStep {
+    padding: 1.5rem 1.5rem 2rem 1.5rem !important;
+    background: transparent !important;
+}
+
+/* ── Polish wizard progress navigator (top step indicators) ── */
+.cbpWizard .sapMWizardProgressNavigator {
+    background: linear-gradient(135deg, #fafbfc, #f5f8fc) !important;
+    border-radius: 10px !important;
+    border: 1px solid #e5e8ed !important;
+    margin: 0 0.5rem 0.5rem 0.5rem;
+    padding: 0.4rem 0.5rem;
+}
+
+/* ── Polish form sections inside steps ────────────────────── */
+.cbpWizard .sapUiFormTitle {
+    color: #0854a0 !important;
+    font-weight: 700 !important;
+    font-size: 0.9375rem !important;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #d0e4ff;
+    margin-bottom: 0.5rem !important;
+}
+
+/* ── Polish field labels ──────────────────────────────────── */
+.cbpWizard .sapUiSimpleForm .sapUiFormElementLbl,
+.cbpWizard .sapMLbl {
+    font-weight: 600 !important;
+    color: #32363a !important;
+}
+
+/* ── Polish inputs / selects ─────────────────────────────── */
+.cbpWizard .sapMInputBase,
+.cbpWizard .sapMSlt,
+.cbpWizard .sapMDP {
+    border-radius: 6px !important;
+    border-color: #d0d8e0 !important;
+}
+
+.cbpWizard .sapMInputBase:focus-within,
+.cbpWizard .sapMSlt:focus-within {
+    border-color: #0a6ed1 !important;
+    box-shadow: 0 0 0 2px rgba(10, 110, 209, 0.12) !important;
+}
+
+/* ── Polish step navigation buttons (Step 2 / Previous etc.) ── */
+.cbpWizard .sapMBtn[data-sap-ui*="bpWizard"] .sapMBtnEmphasized .sapMBtnInner,
+.cbpWizard .sapMBtn .sapMBtnEmphasized {
+    border-radius: 8px !important;
+}
+
+/* ── Tables inside wizard steps ───────────────────────────── */
+.cbpWizard .sapMList .sapMListTblHeaderCell {
+    background: #fafafa !important;
+    font-weight: 600 !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-size: 0.8125rem !important;
+}
+
+/* ── IconTabBar (Sales Org, Company Code tabs) inside wizard ── */
+.cbpWizard .sapMITB {
+    background: transparent !important;
+}
+
+.cbpWizard .sapMITB .sapMITBHead {
+    background: linear-gradient(135deg, #f5f8fc, #e8eef7) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #d0e4ff !important;
+}
+
+.cbpWizard .sapMITB .sapMITBContainerContent {
+    background: transparent !important;
+}
+
+/* ============================================================
+   End Create Business Partner Page
+   ============================================================ */
+
+/* ============================================================
+   Home / BP Directory Page
+   ============================================================ */
+
+.homePage {
+    background-color: var(--sapBackgroundColor, #f5f6f8) !important;
+}
+
+.hpOuterPadding {
+    padding: 2rem 2.5rem;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.hpPageHeader {
+    padding-bottom: 0.25rem;
+}
+
+.hpHeaderIcon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a5d6a7, #66bb6a);
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(102, 187, 106, 0.35);
+}
+
+.hpHeaderInitial.sapMText {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.2rem !important;
+    text-shadow: 0 1px 2px rgba(27, 94, 32, 0.3);
+}
+
+.hpGreetingPrefix .sapMTitle {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.hpGreetingName .sapMTitle {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #0a6ed1, #7B5EA7) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+}
+
+.hpPageTitle .sapMTitle {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.hpPageSubtitle .sapMText {
+    font-size: 0.875rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+.hpCreateBtn.sapMBtn .sapMBtnInner {
+    background: #e8f5e9 !important;
+    border-radius: 8px !important;
+    border: 1px solid #a5d6a7 !important;
+    color: #1b5e20 !important;
+    font-weight: 600 !important;
+}
+
+.hpCreateBtn.sapMBtn .sapMBtnContent,
+.hpCreateBtn.sapMBtn .sapMBtnIconFirst,
+.hpCreateBtn.sapMBtn .sapUiIcon {
+    color: #1b5e20 !important;
+}
+
+.hpCreateBtn.sapMBtn:hover .sapMBtnInner {
+    background: #c8e6c9 !important;
+    border-color: #66bb6a !important;
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+.hpCard {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.hpCardHeader {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.hpCardTitle .sapMTitle {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.hpCardIcon {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.hpIconBlue {
+    background: rgba(21, 101, 192, 0.15);
+}
+
+.hpIconGreen {
+    background: rgba(46, 125, 50, 0.15);
+}
+
+.hpFilterCard .hpCardHeader {
+    background: linear-gradient(135deg, #f0f7ff, #e3f2fd);
+}
+
+.hpFilterBody {
+    padding: 0.5rem 0.75rem 0.5rem 0.75rem;
+}
+
+/* Toolbar buttons */
+.hpToolbarBtn.sapMBtn .sapMBtnInner {
+    color: #6a6d70 !important;
+    border-radius: 8px !important;
+    border: 1px solid #e0e0e0 !important;
+    background: #fff !important;
+}
+
+.hpToolbarBtn.sapMBtn:hover .sapMBtnInner {
+    background: #f5f5f5 !important;
+}
+
+.hpDeleteBtn.sapMBtn .sapMBtnInner {
+    color: #c62828 !important;
+    border: 1px solid #ffcdd2 !important;
+    background: #fff5f5 !important;
+    border-radius: 8px !important;
+}
+
+.hpDeleteBtn.sapMBtn:hover .sapMBtnInner {
+    background: #ffcdd2 !important;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+.hpTable.sapMList {
+    background: transparent !important;
+}
+
+.hpTable .sapMListTblHeaderCell {
+    background: #fafafa !important;
+    font-weight: 600 !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-size: 0.8125rem !important;
+    padding: 0.7rem 1rem !important;
+    border-bottom: 1px solid #eeeeee !important;
+}
+
+.hpTable .sapMListTblCell {
+    padding: 0.65rem 1rem !important;
+    vertical-align: middle !important;
+}
+
+.hpTableRow.sapMLIB:hover {
+    background-color: #f5f9ff !important;
+}
+
+/* ── BP Avatar ────────────────────────────────────────────── */
+.hpAvatar {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #90caf9, #64b5f6);
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(100, 181, 246, 0.3);
+}
+
+.hpAvatarText.sapMText {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    text-shadow: 0 1px 2px rgba(13, 71, 161, 0.25);
+}
+
+/* ── BP cell text ─────────────────────────────────────────── */
+.hpBpName.sapMText {
+    font-weight: 700 !important;
+    font-size: 0.875rem !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.hpBpId.sapMText {
+    font-size: 0.75rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-family: Consolas, Monaco, "Andale Mono", monospace !important;
+}
+
+/* ── Type badge ───────────────────────────────────────────── */
+.hpTypeBadge.sapMText {
+    display: inline-block !important;
+    padding: 2px 10px !important;
+    border-radius: 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    background-color: #e8f5e9 !important;
+    color: #1b5e20 !important;
+    border: 1px solid #a5d6a7 !important;
+}
+
+/* ── Grouping pills ───────────────────────────────────────── */
+.hpGroupingPrimary.sapMText,
+.hpGroupingSecondary.sapMText {
+    display: inline-block !important;
+    padding: 2px 10px !important;
+    border-radius: 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    font-family: Consolas, Monaco, monospace !important;
+}
+
+.hpGroupingPrimary.sapMText {
+    background-color: #ede7f6 !important;
+    color: #4527a0 !important;
+    border: 1px solid #b39ddb !important;
+}
+
+.hpGroupingSecondary.sapMText {
+    background-color: #fff8e1 !important;
+    color: #e65100 !important;
+    border: 1px solid #ffcc80 !important;
+}
+
+/* ── Status pills ─────────────────────────────────────────── */
+.hpStatusActive.sapMText,
+.hpStatusDraft.sapMText,
+.hpStatusPending.sapMText,
+.hpStatusPushed.sapMText {
+    display: inline-block !important;
+    padding: 3px 12px !important;
+    border-radius: 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+}
+
+.hpStatusActive.sapMText {
+    background-color: #e8f5e9 !important;
+    color: #1b5e20 !important;
+    border: 1px solid #a5d6a7 !important;
+}
+
+.hpStatusDraft.sapMText {
+    background-color: #fff8e1 !important;
+    color: #e65100 !important;
+    border: 1px solid #ffcc80 !important;
+}
+
+.hpStatusPending.sapMText {
+    background-color: #e3f2fd !important;
+    color: #0d47a1 !important;
+    border: 1px solid #90caf9 !important;
+}
+
+.hpStatusPushed.sapMText {
+    background-color: #c8e6c9 !important;
+    color: #1b5e20 !important;
+    border: 1px solid #66bb6a !important;
+}
+
+/* ── Date cell ────────────────────────────────────────────── */
+.hpDateText.sapMText {
+    font-size: 0.8125rem !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+/* ── Roles cell ───────────────────────────────────────────── */
+.hpRolesCell {
+    gap: 0.3rem;
+}
+
+.hpRoleBadge.sapMText {
+    display: inline-block !important;
+    padding: 2px 8px !important;
+    border-radius: 8px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    font-family: Consolas, Monaco, monospace !important;
+}
+
+.hpRoleSales {
+    background-color: #e8f5e9 !important;
+    color: #1b5e20 !important;
+    border: 1px solid #a5d6a7 !important;
+}
+
+.hpRoleCompany {
+    background-color: #fff8e1 !important;
+    color: #e65100 !important;
+    border: 1px solid #ffcc80 !important;
+}
+
+.hpRoleCredit {
+    background-color: #e3f2fd !important;
+    color: #0d47a1 !important;
+    border: 1px solid #90caf9 !important;
+}
+
+/* ── Guest Restricted Card ────────────────────────────────── */
+.hpGuestCard {
+    margin: 4rem auto;
+    max-width: 480px;
+    padding: 3rem 2rem;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.hpGuestIcon {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ede7f6, #d1c4e9);
+}
+
+.hpGuestTitle .sapMTitle {
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.hpGuestText.sapMText {
+    text-align: center !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    font-size: 0.9rem !important;
+    max-width: 380px;
+}
+
+.hpRequestBtn.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #7B5EA7, #5c3d9e) !important;
+    border-radius: 8px !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+.hpRequestBtn.sapMBtn .sapMBtnContent,
+.hpRequestBtn.sapMBtn .sapMBtnIconFirst,
+.hpRequestBtn.sapMBtn .sapUiIcon {
+    color: #ffffff !important;
+}
+
+/* ============================================================
+   End Home / BP Directory Page
+   ============================================================ */
+
+/* ============================================================
+   Admin Dashboard Page
+   ============================================================ */
+
+.adminDashPage {
+    background-color: var(--sapBackgroundColor, #f5f6f8) !important;
+}
+
+/* ── Section Cards ────────────────────────────────────────── */
+.dashSectionCard {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--sapGroup_TitleBorderColor, #e5e5e5);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.dashSectionHeader {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dashSectionHeaderBlue   { background: linear-gradient(135deg, #f0f7ff, #e3f2fd); }
+.dashSectionHeaderPurple { background: linear-gradient(135deg, #ede7f6, #e8eaf6); }
+.dashSectionHeaderTeal   { background: linear-gradient(135deg, #e0f2f1, #b2dfdb); }
+.dashSectionHeaderGold   { background: linear-gradient(135deg, #fffde7, #fff9c4); }
+
+.dashSectionIcon {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.dashIconBlue   { background: rgba(21,101,192,0.15); }
+.dashIconPurple { background: rgba(92,61,158,0.15); }
+.dashIconTeal   { background: rgba(0,131,143,0.15); }
+.dashIconGold   { background: rgba(176,140,0,0.15); }
+
+.dashSectionTitle .sapMTitle {
+    font-size: 1.0625rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+/* ── Tiles Row ────────────────────────────────────────────── */
+.dashTilesRow {
+    padding: 1rem;
+    gap: 1rem;
+}
+
+/* ── KPI Tile ─────────────────────────────────────────────── */
+.dashTile {
+    flex: 1 1 200px;
+    min-width: 200px;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    gap: 0.4rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashTile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.dashTileGreen  { background: linear-gradient(135deg, #f1f8e9, #e8f5e9); border-color: #a5d6a7; }
+.dashTileAmber  { background: linear-gradient(135deg, #fff8e1, #fff3e0); border-color: #ffcc80; }
+.dashTilePurple { background: linear-gradient(135deg, #ede7f6, #e8eaf6); border-color: #b39ddb; }
+.dashTileBlue   { background: linear-gradient(135deg, #e3f2fd, #e8eaf6); border-color: #90caf9; }
+.dashTileRed    { background: linear-gradient(135deg, #ffebee, #fce4ec); border-color: #ef9a9a; }
+
+/* ── Tile Icon Circle ─────────────────────────────────────── */
+.dashTileIcon {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.dashTileIconGreen  { background: rgba(46,125,50,0.18); }
+.dashTileIconAmber  { background: rgba(230,81,0,0.18); }
+.dashTileIconPurple { background: rgba(92,61,158,0.18); }
+.dashTileIconBlue   { background: rgba(21,101,192,0.18); }
+.dashTileIconRed    { background: rgba(198,40,40,0.18); }
+
+/* ── Tile Trend Pill ──────────────────────────────────────── */
+.dashTileTrend.sapMText {
+    display: inline-block !important;
+    padding: 2px 10px !important;
+    border-radius: 12px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.4px !important;
+}
+.dashTrendGreen  { background-color: #c8e6c9 !important; color: #1b5e20 !important; }
+.dashTrendAmber  { background-color: #ffe0b2 !important; color: #bf360c !important; }
+.dashTrendPurple { background-color: #d1c4e9 !important; color: #4527a0 !important; }
+.dashTrendBlue   { background-color: #bbdefb !important; color: #0d47a1 !important; }
+.dashTrendRed    { background-color: #ffcdd2 !important; color: #b71c1c !important; }
+
+/* ── Tile Number / Labels ─────────────────────────────────── */
+.dashTileNumber.sapMText {
+    font-size: 2.25rem !important;
+    font-weight: 800 !important;
+    line-height: 1.05 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+    margin-top: 0.4rem !important;
+}
+
+.dashTileLabel.sapMText {
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    color: var(--sapTextColor, #1d2d3e) !important;
+}
+
+.dashTileSub.sapMText {
+    font-size: 0.75rem !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+}
+
+/* ── Chart Tile ───────────────────────────────────────────── */
+.dashChartTile {
+    flex: 1 1 240px;
+    min-width: 240px;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px dashed #d0d8e0;
+    background: #fafbfc;
+    gap: 0.5rem;
+}
+
+.dashChartTitle.sapMText {
+    font-size: 0.8125rem !important;
+    font-weight: 700 !important;
+    color: var(--sapContent_LabelColor, #6a6d70) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.dashCompChart {
+    margin-top: 0.5rem;
+}
+
+/* ── Quick Actions ────────────────────────────────────────── */
+.dashQuickRow {
+    padding: 1rem;
+    gap: 0.75rem;
+}
+
+.dashQuickBtn.sapMBtn {
+    flex: 1 1 200px;
+    min-width: 200px;
+}
+
+.dashQuickBtn.sapMBtn .sapMBtnInner {
+    border-radius: 10px !important;
+    border: 1.5px solid transparent !important;
+    height: 3rem !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    justify-content: flex-start !important;
+}
+
+.dashQuickPurple.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #ede7f6, #d1c4e9) !important;
+    border-color: #b39ddb !important;
+    color: #4527a0 !important;
+}
+.dashQuickPurple.sapMBtn .sapMBtnContent,
+.dashQuickPurple.sapMBtn .sapMBtnIconFirst,
+.dashQuickPurple.sapMBtn .sapUiIcon { color: #4527a0 !important; }
+
+.dashQuickAmber.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #fff8e1, #ffe0b2) !important;
+    border-color: #ffcc80 !important;
+    color: #bf360c !important;
+}
+.dashQuickAmber.sapMBtn .sapMBtnContent,
+.dashQuickAmber.sapMBtn .sapMBtnIconFirst,
+.dashQuickAmber.sapMBtn .sapUiIcon { color: #bf360c !important; }
+
+.dashQuickBlue.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb) !important;
+    border-color: #90caf9 !important;
+    color: #0d47a1 !important;
+}
+.dashQuickBlue.sapMBtn .sapMBtnContent,
+.dashQuickBlue.sapMBtn .sapMBtnIconFirst,
+.dashQuickBlue.sapMBtn .sapUiIcon { color: #0d47a1 !important; }
+
+.dashQuickGreen.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #f1f8e9, #c8e6c9) !important;
+    border-color: #a5d6a7 !important;
+    color: #1b5e20 !important;
+}
+.dashQuickGreen.sapMBtn .sapMBtnContent,
+.dashQuickGreen.sapMBtn .sapMBtnIconFirst,
+.dashQuickGreen.sapMBtn .sapUiIcon { color: #1b5e20 !important; }
+
+.dashQuickBtn.sapMBtn:hover .sapMBtnInner {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ============================================================
+   End Admin Dashboard Page
+   ============================================================ */
+
+/* ============================================================
+   App Shell — Top ToolHeader + Side Navigation
+   ============================================================ */
+
+/* ── Top ToolHeader ──────────────────────────────────────── */
+.appToolHeader.sapTntToolHeader {
+    background: linear-gradient(90deg, #ffffff 0%, #f8faff 100%) !important;
+    border-bottom: 1px solid #e3e8f0 !important;
+    box-shadow: 0 2px 8px rgba(10, 110, 209, 0.06) !important;
+    padding: 0 1rem !important;
+}
+
+.appBrandTitle .sapMTitle {
+    color: #1d2d3e !important;
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;
+    background: linear-gradient(135deg, #0a6ed1, #7B5EA7) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+.appMenuBtn.sapMBtn .sapMBtnInner {
+    border-radius: 8px !important;
+    color: #6a6d70 !important;
+}
+.appMenuBtn.sapMBtn:hover .sapMBtnInner {
+    background: rgba(10, 110, 209, 0.08) !important;
+    color: #0a6ed1 !important;
+}
+
+.appBellBtn.sapMBtn .sapMBtnInner {
+    border-radius: 50% !important;
+    color: #6a6d70 !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    min-width: 2.25rem !important;
+}
+.appBellBtn.sapMBtn:hover .sapMBtnInner {
+    background: #fff8e1 !important;
+    color: #e65100 !important;
+}
+
+.appAvatar.sapFAvatar {
+    /* default SAP styling — no overrides */
+}
+
+/* ── Side Navigation ──────────────────────────────────────── */
+.appSideNav.sapTntSideNavigation {
+    background: linear-gradient(180deg, #fafbfd 0%, #f0f4fa 100%) !important;
+    border-right: 1px solid #e3e8f0 !important;
+    padding: 0.5rem 0.5rem !important;
+}
+
+/* Navigation List — spacing */
+.appSideNav .sapTntNavLI {
+    background: transparent !important;
+    padding: 0.25rem 0 !important;
+}
+
+/* ── Navigation List Items (rest state) ──────────────────── */
+.appSideNav .sapTntNavLIItem {
+    margin: 0.2rem 0.4rem !important;
+    border-radius: 10px !important;
+    transition: all 0.2s ease !important;
+    color: #4a4f57 !important;
+}
+
+.appSideNav .sapTntNavLIItem:hover {
+    background: linear-gradient(135deg, #e3f2fd, #ede7f6) !important;
+    color: #0854a0 !important;
+    transform: translateX(2px);
+}
+
+/* Inner item content padding */
+.appSideNav .sapTntNavLIItem .sapTntNavLIItemPaddingLeft {
+    padding-left: 0.75rem !important;
+}
+
+/* Item icon styling */
+.appSideNav .sapTntNavLIItem .sapUiIcon {
+    color: #5a6577 !important;
+    font-size: 1.05rem !important;
+    background: rgba(10, 110, 209, 0.08);
+    padding: 0.45rem;
+    border-radius: 8px;
+    width: 2rem !important;
+    height: 2rem !important;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.appSideNav .sapTntNavLIItem:hover .sapUiIcon {
+    background: rgba(10, 110, 209, 0.18);
+    color: #0a6ed1 !important;
+}
+
+/* Item text */
+.appSideNav .sapTntNavLIItem .sapTntNavLIText,
+.appSideNav .sapTntNavLIItem .sapMText {
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    margin-left: 0.6rem !important;
+}
+
+/* ── Selected Item ────────────────────────────────────────── */
+.appSideNav .sapTntNavLIItemSelected,
+.appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected {
+    background: linear-gradient(135deg, #0a6ed1, #5c3d9e) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(10, 110, 209, 0.3) !important;
+    transform: translateX(2px);
+}
+
+.appSideNav .sapTntNavLIItemSelected .sapUiIcon,
+.appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected .sapUiIcon {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+.appSideNav .sapTntNavLIItemSelected .sapTntNavLIText,
+.appSideNav .sapTntNavLIItemSelected .sapMText,
+.appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected .sapTntNavLIText,
+.appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected .sapMText {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+.appSideNav .sapTntNavLIItemSelected:hover {
+    background: linear-gradient(135deg, #0a6ed1, #4527a0) !important;
+}
+
+/* Collapsed sidebar — keep icons centered & styled */
+.appSideNav.sapTntSideNavigationCollapsed .sapTntNavLIItem {
+    margin: 0.25rem !important;
+    padding: 0.35rem !important;
+}
+
+.appSideNav.sapTntSideNavigationCollapsed .sapTntNavLIItem .sapUiIcon {
+    margin: 0 auto !important;
+}
+
+/* ============================================================
+   End App Shell
+   ============================================================ */

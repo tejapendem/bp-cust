@@ -1,54 +1,115 @@
 <mvc:View controllerName="bp.cust.ui.controller.ApprovalLevels"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:f="sap.f"
     xmlns:core="sap.ui.core"
-    xmlns:layout="sap.ui.layout"
-    xmlns:form="sap.ui.layout.form">
-    <Page title="Approval Workflow Configuration" showNavButton="true" navButtonPress=".onNavBack" backgroundDesign="List">
-        <headerContent>
-            <Button icon="sap-icon://refresh" text="Refresh" type="Transparent" press=".onRefresh" />
-            <Button icon="sap-icon://add" text="Add New Level" type="Accept" press=".onAddLevel" />
-        </headerContent>
+    xmlns:layout="sap.ui.layout">
+
+    <Page showHeader="false" backgroundDesign="List" class="approvalWorkflowPage">
         <content>
-            <VBox class="sapUiSmallMargin">
-                
-                <VBox class="destinationDetailContainer shadowBox">
-                    <Toolbar>
-                        <Title text="Backend Approval Table Management" level="H3" />
-                        <ToolbarSpacer />
-                        <Button text="Save Changes" type="Emphasized" press=".onSave" icon="sap-icon://save" />
-                    </Toolbar>
-                    
-                    <Table id="approvalTable" items="{ path: '/ApprovalLevels', sorter: { path: 'level' } }" mode="Delete" delete=".onDeleteLevel" class="sapUiNoContentPadding">
+            <VBox class="awcOuterPadding">
+
+                <!-- ── Page Header ─────────────────────────────────── -->
+                <HBox alignItems="Center" justifyContent="SpaceBetween" class="awcPageHeader">
+                    <HBox alignItems="Center">
+                        <core:Icon src="sap-icon://workflow-tasks" size="2.5rem" color="#7B5EA7" class="awcHeaderIcon" />
+                        <VBox class="sapUiSmallMarginBegin">
+                            <Title text="Approval Workflow Configuration" level="H2" class="awcPageTitle" />
+                            <Text text="Configure and manage approval workflows and notifications" class="awcPageSubtitle" />
+                        </VBox>
+                    </HBox>
+                    <HBox>
+                        <Button icon="sap-icon://refresh" text="Refresh" type="Transparent" press=".onRefresh" class="awcRefreshBtn sapUiSmallMarginEnd" />
+                        <Button icon="sap-icon://add" text="Add New Level" type="Emphasized" press=".onAddLevel" class="awcAddBtn" />
+                    </HBox>
+                </HBox>
+
+                <!-- ── Backend Approval Table Management ───────────── -->
+                <VBox class="awcCard sapUiMediumMarginTop">
+                    <HBox alignItems="Center" justifyContent="SpaceBetween" class="awcCardHeader">
+                        <HBox alignItems="Center">
+                            <core:Icon src="sap-icon://org-chart" size="1.6rem" color="#7B5EA7" class="awcCardHeaderIcon" />
+                            <Title text="Backend Approval Table Management" level="H3" class="sapUiSmallMarginBegin" />
+                        </HBox>
+                        <Button icon="sap-icon://save" text="Save Changes" type="Emphasized" press=".onSave" class="awcSaveBtn" />
+                    </HBox>
+
+                    <Table id="approvalTable"
+                        items="{ path: '/ApprovalLevels', sorter: { path: 'level' } }"
+                        showSeparators="Inner"
+                        class="awcTable">
                         <columns>
-                            <Column width="80px"><Text text="Level" /></Column>
-                            <Column width="250px"><Text text="Workflow Step Name" /></Column>
-                            <Column><Text text="Approver Name" /></Column>
-                            <Column><Text text="Notification Email" /></Column>
+                            <Column width="80px" hAlign="Center">
+                                <Text text="Level" />
+                            </Column>
+                            <Column width="28%">
+                                <Text text="Workflow Step Name" />
+                            </Column>
+                            <Column width="28%">
+                                <Text text="Approver Name" />
+                            </Column>
+                            <Column>
+                                <Text text="Notification Email" />
+                            </Column>
+                            <Column width="100px" hAlign="Center">
+                                <Text text="Actions" />
+                            </Column>
                         </columns>
                         <items>
                             <ColumnListItem>
                                 <cells>
-                                    <ObjectStatus text="{level}" state="Information" inverted="true" />
-                                    <Input value="{levelName}" placeholder="e.g. Finance Team Approval" />
-                                    <Input value="{username}" placeholder="Enter name" />
-                                    <Input value="{email}" type="Email" placeholder="user@gmail.com" />
+                                    <!-- Level Badge -->
+                                    <HBox justifyContent="Center">
+                                        <Text text="{level}" class="awcLevelBadge" />
+                                    </HBox>
+                                    <!-- Workflow Step Name -->
+                                    <Input value="{levelName}" placeholder="e.g. Finance Team Approval" class="awcTableInput" />
+                                    <!-- Approver Name -->
+                                    <Input value="{username}" placeholder="Enter name" class="awcTableInput" />
+                                    <!-- Email -->
+                                    <Input value="{email}" type="Email" placeholder="user@example.com" class="awcTableInput" />
+                                    <!-- Actions -->
+                                    <HBox justifyContent="Center" alignItems="Center">
+                                        <Button icon="sap-icon://delete" type="Transparent" press=".onDeleteRowItem" class="awcDeleteBtn" tooltip="Delete" />
+                                        <Button icon="sap-icon://edit" type="Transparent" press=".onEditRowItem" class="awcEditBtn" tooltip="Edit" />
+                                    </HBox>
                                 </cells>
                             </ColumnListItem>
                         </items>
                     </Table>
                 </VBox>
 
-                <VBox class="sapUiMediumMarginTop destinationDetailContainer shadowBox">
-                    <form:SimpleForm editable="false" layout="ResponsiveGridLayout" title="Communication Channel: SAP Process Automation Mail">
-                        <Label text="SMTP Status" />
-                        <ObjectStatus text="Active" state="Success" icon="sap-icon://sys-enter-2" />
-                        <Label text="System Email" />
-                        <Text text="IT.ADMIN@ROOFINGSGROUP.COM" />
-                        <Label text="Notification Service" />
-                        <Text text="BTP Destination (sap_process_automation_mail)" />
-                    </form:SimpleForm>
+                <!-- ── Communication Channel Card ──────────────────── -->
+                <VBox class="awcCard awcCommCard sapUiMediumMarginTop sapUiMediumMarginBottom">
+                    <HBox alignItems="Center" class="awcCommCardHeader">
+                        <core:Icon src="sap-icon://email" size="1.4rem" color="#2E7D32" class="awcCommIcon" />
+                        <Title text="Communication Channel: SAP Process Automation Mail" level="H3" class="sapUiSmallMarginBegin" />
+                    </HBox>
+
+                    <VBox class="awcCommBody">
+                        <!-- SMTP Status -->
+                        <HBox alignItems="Center" class="awcCommRow">
+                            <core:Icon src="sap-icon://status-completed" size="1.1rem" color="#2E7D32" class="awcCommRowIcon" />
+                            <Label text="SMTP Status:" class="awcCommLabel" />
+                            <HBox alignItems="Center" class="awcActiveChip">
+                                <Text text="Active" class="awcActiveText" />
+                                <core:Icon src="sap-icon://sys-enter-2" size="0.75rem" color="#2E7D32" class="sapUiTinyMarginBegin" />
+                            </HBox>
+                        </HBox>
+
+                        <!-- System Email -->
+                        <HBox alignItems="Center" class="awcCommRow">
+                            <core:Icon src="sap-icon://email" size="1.1rem" color="#6A6D70" class="awcCommRowIcon" />
+                            <Label text="System Email:" class="awcCommLabel" />
+                            <Text text="IT.ADMIN@ROOFINGSGROUP.COM" class="awcCommValue" />
+                        </HBox>
+
+                        <!-- Notification Service -->
+                        <HBox alignItems="Center" class="awcCommRow">
+                            <core:Icon src="sap-icon://paper-plane" size="1.1rem" color="#6A6D70" class="awcCommRowIcon" />
+                            <Label text="Notification Service:" class="awcCommLabel" />
+                            <Text text="BTP Destination (sap_process_automation_mail)" class="awcCommValue" />
+                        </HBox>
+                    </VBox>
                 </VBox>
 
             </VBox>

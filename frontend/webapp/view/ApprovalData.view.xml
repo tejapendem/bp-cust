@@ -1,109 +1,176 @@
 <mvc:View controllerName="bp.cust.ui.controller.ApprovalData"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:core="sap.ui.core"
-    xmlns:f="sap.f">
-    <f:DynamicPage id="approvalDataPage" headerExpanded="true" showFooter="true">
-        <f:title>
-            <f:DynamicPageTitle>
-                <f:heading>
-                    <Title text="Approval Data"/>
-                </f:heading>
-                <f:actions>
-                    <Button text="Refresh" type="Transparent" icon="sap-icon://refresh" press=".onRefresh"/>
-                </f:actions>
-            </f:DynamicPageTitle>
-        </f:title>
+    xmlns:core="sap.ui.core">
 
-        <f:content>
-            <VBox class="sapUiSmallMargin">
-                <HBox id="kpiContainer" class="kpiGlassRow" justifyContent="SpaceBetween" wrap="Wrap">
-                    <VBox class="kpiGlassBox kpiApproved" alignItems="Center" justifyContent="Center">
-                        <core:Icon src="sap-icon://business-partner-group" size="1.4rem" color="#2e7d32" class="kpiGlassIcon"/>
-                        <Text text="{kpiModel>/total}" class="kpiGlassNumber" wrapping="false"/>
-                        <Text text="Total Approved" class="kpiGlassLabel" wrapping="false"/>
-                    </VBox>
-                    <VBox class="kpiGlassBox kpiPushed" alignItems="Center" justifyContent="Center">
-                        <core:Icon src="sap-icon://cloud-upload" size="1.4rem" color="#1565c0" class="kpiGlassIcon"/>
-                        <Text text="{kpiModel>/pushed}" class="kpiGlassNumber" wrapping="false"/>
-                        <Text text="Pushed to SAP" class="kpiGlassLabel" wrapping="false"/>
-                    </VBox>
-                    <VBox class="kpiGlassBox kpiPending" alignItems="Center" justifyContent="Center">
-                        <core:Icon src="sap-icon://pending" size="1.4rem" color="#e65100" class="kpiGlassIcon"/>
-                        <Text text="{kpiModel>/pending}" class="kpiGlassNumber" wrapping="false"/>
-                        <Text text="Pending Push" class="kpiGlassLabel" wrapping="false"/>
-                    </VBox>
-                    <VBox class="kpiGlassBox kpiFailed" alignItems="Center" justifyContent="Center">
-                        <core:Icon src="sap-icon://message-error" size="1.2rem" color="#c62828" class="kpiGlassIcon"/>
-                        <Text text="{kpiModel>/failed}" class="kpiGlassNumber" wrapping="false"/>
-                        <Text text="Push Failed" class="kpiGlassLabel" wrapping="false"/>
-                    </VBox>
+    <Page showHeader="false" backgroundDesign="List" class="approvalDataPage">
+        <content>
+            <VBox class="adOuterPadding">
+
+                <!-- ── Page Header ──────────────────────────────────── -->
+                <HBox alignItems="Center" justifyContent="SpaceBetween" class="adPageHeader">
+                    <HBox alignItems="Center">
+                        <core:Icon src="sap-icon://accept" size="2.5rem" color="#2e7d32" class="adHeaderIcon" />
+                        <VBox class="sapUiSmallMarginBegin">
+                            <Title text="Approval Data" level="H2" class="adPageTitle" />
+                            <Text text="Approved business partners and their SAP push status" class="adPageSubtitle" />
+                        </VBox>
+                    </HBox>
+                    <Button icon="sap-icon://refresh" text="Refresh" type="Transparent" press=".onRefresh" class="adRefreshBtn" />
                 </HBox>
-                <Table id="approvedBPTable"
-                    items="{approvedList>/}"
-                    sticky="HeaderToolbar,ColumnHeaders"
-                    autoPopinMode="true"
-                    class="sapUiResponsiveMargin"
-                    growing="true"
-                    growingThreshold="25">
 
-                    <headerToolbar>
-                        <OverflowToolbar>
-                            <Title text="Approved Business Partners" level="H2"/>
-                            <ToolbarSpacer />
-                            <SearchField width="30%" search=".onSearch" placeholder="Search by name or ID..."/>
-                        </OverflowToolbar>
-                    </headerToolbar>
+                <!-- ── KPI Cards ─────────────────────────────────────── -->
+                <HBox id="kpiContainer" class="adKpiRow sapUiSmallMarginTop" wrap="Wrap">
 
-                    <columns>
-                        <Column width="10%"><Text text="Ref Number" /></Column>
-                        <Column width="10%"><Text text="SAP BP Number" /></Column>
-                        <Column width="22%"><Text text="Name" /></Column>
-                        <Column width="10%"><Text text="Grouping" /></Column>
-                        <Column width="15%"><Text text="SAP Push Status" /></Column>
-                        <Column width="15%" hAlign="Center"><Text text="Actions" /></Column>
-                    </columns>
+                    <VBox class="adKpiCard adKpiTotal" alignItems="Center" justifyContent="Center">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="adKpiIconCircle adKpiIconTotal">
+                            <core:Icon src="sap-icon://group" size="1.4rem" color="#2e7d32" />
+                        </FlexBox>
+                        <Text text="{kpiModel>/total}" class="adKpiNumber" wrapping="false" />
+                        <Text text="Total Approved" class="adKpiLabel" wrapping="false" />
+                    </VBox>
 
-                    <items>
-                        <ColumnListItem press=".onItemPress">
-                            <cells>
-                                <ObjectStatus text="{approvedList>BusinessPartnerNumber}" state="Information" inverted="true" />
-                                <Text text="{approvedList>SAPBPNumber}"
-                                    visible="{= ${approvedList>SAPPushStatus} === 'Pushed' }" />
-                                <VBox>
-                                    <Text text="{approvedList>Name}" wrapping="false" />
-                                    <Label text="{approvedList>Email}" wrapping="false" />
-                                </VBox>
-                                <ObjectStatus text="{approvedList>Grouping}"
-                                    state="{= ${approvedList>Grouping} === 'ZP01' ? 'Success' : (${approvedList>Grouping} === 'ZP05' ? 'Warning' : 'None') }"
-                                    inverted="true" />
-                                <HBox alignItems="Center">
-                                    <core:Icon src="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'sap-icon://cloud-upload' : (${approvedList>SAPPushStatus} === 'Failed' ? 'sap-icon://message-error' : 'sap-icon://cloud') }"
-                                        size="1.2rem"
-                                        color="{= ${approvedList>SAPPushStatus} === 'Pushed' ? '#188918' : (${approvedList>SAPPushStatus} === 'Failed' ? '#bb0000' : '#c0a000') }"
-                                        class="sapUiTinyMarginEnd" />
-                                    <ObjectStatus text="{approvedList>SAPPushStatus}"
-                                        state="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'Success' : (${approvedList>SAPPushStatus} === 'Failed' ? 'Error' : 'Warning') }"
-                                        inverted="false" />
-                                    <Button icon="sap-icon://hint"
-                                        visible="{= ${approvedList>SAPPushStatus} === 'Failed' || ${approvedList>SAPPushStatus} === 'Pushed' }"
-                                        press=".onShowPushLogs"
-                                        tooltip="View push logs"
-                                        type="Transparent" />
-                                </HBox>
-                                <HBox justifyContent="Center" alignItems="Center">
-                                    <Button icon="sap-icon://upload-to-cloud"
-                                        type="{= ${approvedList>SAPPushStatus} === 'Failed' ? 'Attention' : 'Emphasized' }"
-                                        tooltip="Push to SAP"
-                                        width="100%"
-                                        visible="{= ${approvedList>SAPPushStatus} !== 'Pushed' }"
-                                        press=".onPushToSAP" />
-                                </HBox>
-                            </cells>
-                        </ColumnListItem>
-                    </items>
-                </Table>
+                    <VBox class="adKpiCard adKpiPushed" alignItems="Center" justifyContent="Center">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="adKpiIconCircle adKpiIconPushed">
+                            <core:Icon src="sap-icon://upload" size="1.4rem" color="#1565c0" />
+                        </FlexBox>
+                        <Text text="{kpiModel>/pushed}" class="adKpiNumber" wrapping="false" />
+                        <Text text="Pushed to SAP" class="adKpiLabel" wrapping="false" />
+                    </VBox>
+
+                    <VBox class="adKpiCard adKpiPending" alignItems="Center" justifyContent="Center">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="adKpiIconCircle adKpiIconPending">
+                            <core:Icon src="sap-icon://pending" size="1.4rem" color="#e65100" />
+                        </FlexBox>
+                        <Text text="{kpiModel>/pending}" class="adKpiNumber" wrapping="false" />
+                        <Text text="Pending Push" class="adKpiLabel" wrapping="false" />
+                    </VBox>
+
+                    <VBox class="adKpiCard adKpiFailed" alignItems="Center" justifyContent="Center">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="adKpiIconCircle adKpiIconFailed">
+                            <core:Icon src="sap-icon://message-error" size="1.4rem" color="#c62828" />
+                        </FlexBox>
+                        <Text text="{kpiModel>/failed}" class="adKpiNumber" wrapping="false" />
+                        <Text text="Push Failed" class="adKpiLabel" wrapping="false" />
+                    </VBox>
+
+                </HBox>
+
+                <!-- ── Table Card ────────────────────────────────────── -->
+                <VBox class="adTableCard sapUiSmallMarginTop">
+
+                    <!-- Table Header -->
+                    <HBox alignItems="Center" justifyContent="SpaceBetween" class="adTableHeader">
+                        <HBox alignItems="Center">
+                            <core:Icon src="sap-icon://table-view" size="1.2rem" color="#2e7d32" class="adTableHeaderIcon" />
+                            <Title text="Approved Business Partners" level="H3" class="sapUiTinyMarginBegin" />
+                        </HBox>
+                        <SearchField width="280px" search=".onSearch" placeholder="Search by name or ID…" class="adSearchField" />
+                    </HBox>
+
+                    <!-- Table -->
+                    <Table id="approvedBPTable"
+                        items="{approvedList>/}"
+                        sticky="ColumnHeaders"
+                        growing="true"
+                        growingThreshold="25"
+                        showSeparators="Inner"
+                        class="adTable">
+
+                        <columns>
+                            <Column width="110px">
+                                <Text text="Ref Number" />
+                            </Column>
+                            <Column width="110px">
+                                <Text text="SAP BP No." />
+                            </Column>
+                            <Column>
+                                <Text text="Name / Email" />
+                            </Column>
+                            <Column width="100px" hAlign="Center">
+                                <Text text="Grouping" />
+                            </Column>
+                            <Column width="160px">
+                                <Text text="SAP Push Status" />
+                            </Column>
+                            <Column width="130px" hAlign="Center">
+                                <Text text="Actions" />
+                            </Column>
+                        </columns>
+
+                        <items>
+                            <ColumnListItem press=".onItemPress" type="Navigation" class="adTableRow">
+                                <cells>
+
+                                    <!-- Ref Number -->
+                                    <ObjectStatus
+                                        text="{approvedList>BusinessPartnerNumber}"
+                                        state="Information"
+                                        inverted="true"
+                                        class="adRefBadge" />
+
+                                    <!-- SAP BP Number -->
+                                    <HBox>
+                                        <Text
+                                            text="{approvedList>SAPBPNumber}"
+                                            visible="{= ${approvedList>SAPPushStatus} === 'Pushed' }"
+                                            class="adSapBpBadge" />
+                                        <Text text="—"
+                                            visible="{= ${approvedList>SAPPushStatus} !== 'Pushed' }"
+                                            class="adEmptyCell" />
+                                    </HBox>
+
+                                    <!-- Name + Email -->
+                                    <VBox class="adNameCell">
+                                        <Text text="{approvedList>Name}" wrapping="false" class="adBPName" />
+                                        <Text text="{approvedList>Email}" wrapping="false" class="adBPEmail" />
+                                    </VBox>
+
+                                    <!-- Grouping -->
+                                    <HBox justifyContent="Center">
+                                        <ObjectStatus
+                                            text="{approvedList>Grouping}"
+                                            state="{= ${approvedList>Grouping} === 'ZP01' ? 'Success' : (${approvedList>Grouping} === 'ZP05' ? 'Warning' : 'None') }"
+                                            inverted="true"
+                                            class="adGroupingBadge" />
+                                    </HBox>
+
+                                    <!-- SAP Push Status -->
+                                    <HBox alignItems="Center" class="adStatusCell">
+                                        <core:Icon
+                                            src="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'sap-icon://sys-enter-2' : (${approvedList>SAPPushStatus} === 'Failed' ? 'sap-icon://message-error' : 'sap-icon://sys-minus') }"
+                                            size="1rem"
+                                            color="{= ${approvedList>SAPPushStatus} === 'Pushed' ? '#2e7d32' : (${approvedList>SAPPushStatus} === 'Failed' ? '#c62828' : '#e65100') }"
+                                            class="adStatusIcon" />
+                                        <ObjectStatus
+                                            text="{approvedList>SAPPushStatus}"
+                                            state="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'Success' : (${approvedList>SAPPushStatus} === 'Failed' ? 'Error' : 'Warning') }" />
+                                        <Button icon="sap-icon://hint"
+                                            visible="{= ${approvedList>SAPPushStatus} === 'Failed' || ${approvedList>SAPPushStatus} === 'Pushed' }"
+                                            press=".onShowPushLogs"
+                                            tooltip="View push logs"
+                                            type="Transparent"
+                                            class="adLogsBtn" />
+                                    </HBox>
+
+                                    <!-- Push to SAP action -->
+                                    <HBox justifyContent="Center" alignItems="Center">
+                                        <Button
+                                            text="Push to SAP"
+                                            icon="sap-icon://upload-to-cloud"
+                                            visible="{= ${approvedList>SAPPushStatus} !== 'Pushed' }"
+                                            press=".onPushToSAP"
+                                            class="{= ${approvedList>SAPPushStatus} === 'Failed' ? 'adPushBtnFailed' : 'adPushBtn' }" />
+                                    </HBox>
+
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+
+                    </Table>
+                </VBox>
+
             </VBox>
-        </f:content>
-    </f:DynamicPage>
+        </content>
+    </Page>
 </mvc:View>

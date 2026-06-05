@@ -9,33 +9,33 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend("bp.cust.ui.controller.ApprovalInbox", {
+
         onInit: function () {
-            // Access control - only admins can access this page
             var oUserModel = this.getOwnerComponent().getModel("userModel");
-            if (oUserModel) {
-                var bIsAdmin = oUserModel.getProperty("/isAdmin");
-                if (!bIsAdmin) {
-                    sap.m.MessageBox.warning("You don't have permission to access this page.", {
-                        onClose: function () {
-                            this.getOwnerComponent().getRouter().navTo("Main");
-                        }.bind(this)
-                    });
-                }
+            if (oUserModel && !oUserModel.getProperty("/isAdmin")) {
+                MessageBox.warning("You don't have permission to access this page.", {
+                    onClose: function () {
+                        this.getOwnerComponent().getRouter().navTo("Main");
+                    }.bind(this)
+                });
             }
 
-            this._oBusyDialog = new BusyDialog({ title: "Processing", text: "Approving Business Partner..." });
+            this._oBusyDialog = new BusyDialog({ title: "Processing", text: "Please wait…" });
             this.getView().addDependent(this._oBusyDialog);
 
             this.getView().setModel(new JSONModel({}), "selectedBP");
             this.getView().setModel(new JSONModel({}), "userInfo");
             this.getView().setModel(new JSONModel({}), "workflowData");
             this.getView().setModel(new JSONModel([]), "approvalList");
+            this.getView().setModel(new JSONModel([]), "progressData");
+
+            this._sActiveTab = "pending";  // track current tab
             this._bSortDescending = true;
 
-            // Reload data every time the route is matched (entering this page)
-            this.getOwnerComponent().getRouter().getRoute("ApprovalInbox").attachPatternMatched(this._onPatternMatched, this);
+            this.getOwnerComponent().getRouter()
+                .getRoute("ApprovalInbox")
+                .attachPatternMatched(this._onPatternMatched, this);
 
-            // Get current user info and load their inbox
             this._loadUserInfo();
         },
 
@@ -43,30 +43,51 @@ sap.ui.define([
             this._loadUserInfo();
         },
 
+        // ── Tab switching ────────────────────────────────────────────────
+        onTabPress: function (oEvent) {
+            var oBtn = oEvent.getSource();
+            // Read the tab key directly from a custom data attribute set on each button
+            var sTab = oBtn.data("tabKey");
+            if (!sTab) return;
+
+            this._setActiveTab(sTab);
+            this._sActiveTab = sTab;
+
+            this.getView().byId("detailContainer").setVisible(false);
+            this.getView().byId("emptyState").setVisible(true);
+            this.byId("approvalSearch").setValue("");
+
+            var oUserInfo = this.getView().getModel("userInfo").getData();
+            if (oUserInfo && oUserInfo.email) {
+                this._loadApprovalItems(oUserInfo.email, oUserInfo.role);
+            }
+        },
+
+        _setActiveTab: function (sTab) {
+            var oView = this.getView();
+            ["tabPending", "tabApproved", "tabRejected"].forEach(function (sId) {
+                var oBtn = oView.byId(sId);
+                if (oBtn) oBtn.removeStyleClass("aibTabActive");
+            });
+            var sActiveId = "tab" + sTab.charAt(0).toUpperCase() + sTab.slice(1);
+            var oActive = oView.byId(sActiveId);
+            if (oActive) oActive.addStyleClass("aibTabActive");
+        },
+
+        // ── Data loading ─────────────────────────────────────────────────
         _loadUserInfo: function () {
             var oModel = this.getOwnerComponent().getModel();
             var that = this;
-
-            // Use OData V4 deferred binding for function imports
             var oCtx = oModel.bindContext("/getUserInfo(...)");
-
             oCtx.execute().then(function () {
                 var oData = oCtx.getBoundContext().getObject();
                 that.getView().getModel("userInfo").setData(oData);
-                console.log("Current user:", oData.email, "Role:", oData.role);
-
-                // Load workflow items based on user role
                 that._loadApprovalItems(oData.email, oData.role);
-            }).catch(function (oError) {
-                console.error("Failed to get user info:", oError);
-                // Fallback: use default user info from App controller
+            }).catch(function () {
                 var oUserModel = that.getView().getModel("userModel");
                 if (oUserModel) {
                     var oData = oUserModel.getData();
-                    that.getView().getModel("userInfo").setData({
-                        email: oData.email,
-                        role: oData.role
-                    });
+                    that.getView().getModel("userInfo").setData({ email: oData.email, role: oData.role });
                     that._loadApprovalItems(oData.email, oData.role);
                 }
             });
@@ -75,12 +96,9 @@ sap.ui.define([
         _loadApprovalItems: function (sUserEmail, sRole) {
             var that = this;
             var oModel = this.getOwnerComponent().getModel();
-            var sStatus = this.getView().byId("approvalTabBar").getSelectedKey() || "pending";
-
-            console.log("Loading items for:", sUserEmail, "role:", sRole, "status:", sStatus);
-
-            // Fetch ApprovalWorkflows with businessPartner and logs expanded
+            var sStatus = this._sActiveTab || "pending";
             var sOrder = this._bSortDescending ? "createdAt desc" : "createdAt asc";
+
             var oListBinding = oModel.bindList("/ApprovalWorkflows", null, null, [
                 new Filter("status", "EQ", sStatus)
             ], {
@@ -89,249 +107,202 @@ sap.ui.define([
             });
 
             oListBinding.requestContexts().then(function (aContexts) {
-                var aItems = aContexts.map(function (oContext) {
-                    return oContext.getObject();
-                });
-                console.log("Approval workflows found:", aItems.length);
-                that._loadBPDetails(aItems);
-            }).catch(function (oError) {
-                console.error("Error loading workflows:", oError);
-                MessageBox.error("Failed to load approval items");
+                var aItems = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                that._buildList(aItems, sUserEmail, sRole, sStatus);
+            }).catch(function (oErr) {
+                console.error("Error loading workflows:", oErr);
+                MessageBox.error("Failed to load approval items.");
             });
         },
 
-        onFilterSelect: function () {
-            var oUserInfo = this.getView().getModel("userInfo").getData();
-            if (oUserInfo && oUserInfo.email) {
-                this._loadApprovalItems(oUserInfo.email, oUserInfo.role);
+        _buildList: function (aWorkflows, sUserEmail, sRole, sStatus) {
+            var aResults = aWorkflows.reduce(function (acc, wf) {
+                var bp = wf.businessPartner;
+                if (bp) {
+                    acc.push({
+                        ID: wf.ID,
+                        currentLevel: wf.currentLevel,
+                        status: wf.status,
+                        approverEmail: wf.approverEmail,
+                        levelEmails: wf.levelEmails,
+                        businessPartner_ID: wf.businessPartner_ID,
+                        bpName: bp.Name,
+                        bpNumber: bp.BusinessPartnerNumber,
+                        bpCategory: bp.BusinessPartnerCategory,
+                        bpGrouping: bp.Grouping,
+                        bpEmail: bp.Email,
+                        bpMobile: bp.MobileNumber,
+                        bpCountry: bp.Country,
+                        bpStreet: bp.StreetAddress,
+                        bpHouseNumber: bp.HouseNumber,
+                        bpTaxCategory: bp.TaxCategory,
+                        bpTaxNumber: bp.TaxNumber,
+                        logs: wf.logs || []
+                    });
+                }
+                return acc;
+            }, []);
+
+            // Non-admins only see their own pending items
+            if (sRole !== "admin" && sStatus === "pending") {
+                aResults = aResults.filter(function (item) {
+                    return item.approverEmail === sUserEmail;
+                });
             }
-            this.getView().byId("detailContainer").setVisible(false);
-            this.byId("approvalSearch").setValue("");
+
+            this.getView().getModel("approvalList").setData(aResults);
+            this._aAllApprovalItems = aResults;
+        },
+
+        onSearch: function (oEvent) {
+            var sQuery = (oEvent.getParameter("query") || oEvent.getParameter("value") || "").toLowerCase();
+            var aAll = this._aAllApprovalItems || [];
+            var aFiltered = sQuery
+                ? aAll.filter(function (item) {
+                    return (item.bpName || "").toLowerCase().includes(sQuery) ||
+                           (item.bpNumber || "").toLowerCase().includes(sQuery);
+                })
+                : aAll;
+            this.getView().getModel("approvalList").setData(aFiltered);
         },
 
         onToggleSort: function () {
             this._bSortDescending = !this._bSortDescending;
             var oBtn = this.byId("sortBtn");
             oBtn.setIcon(this._bSortDescending ? "sap-icon://sort-descending" : "sap-icon://sort-ascending");
-            oBtn.setTooltip(this._bSortDescending ? "Sort newest first" : "Sort oldest first");
+            oBtn.setTooltip(this._bSortDescending ? "Newest first" : "Oldest first");
             var oUserInfo = this.getView().getModel("userInfo").getData();
             if (oUserInfo && oUserInfo.email) {
                 this._loadApprovalItems(oUserInfo.email, oUserInfo.role);
             }
         },
 
-        onSearch: function (oEvent) {
-            var sQuery = oEvent.getParameter("query") || oEvent.getParameter("value") || "";
-            var aItems = this._aAllApprovalItems || [];
-            var oModel = this.getView().getModel("approvalList");
-
-            if (!sQuery) {
-                oModel.setData(aItems);
-                return;
-            }
-
-            var sLower = sQuery.toLowerCase();
-            var aFiltered = aItems.filter(function (oItem) {
-                var sName = (oItem.bpName || "").toLowerCase();
-                var sNumber = (oItem.bpNumber || "").toLowerCase();
-                return sName.indexOf(sLower) > -1 || sNumber.indexOf(sLower) > -1;
-            });
-            oModel.setData(aFiltered);
-        },
-
-        _loadBPDetails: function (aWorkflows) {
-            var oUserInfo = this.getView().getModel("userInfo").getData();
-            var aResults = [];
-
-            aWorkflows.forEach(function (oWorkflow) {
-                var oBP = oWorkflow.businessPartner;
-                if (oBP) {
-                    aResults.push({
-                        ID: oWorkflow.ID,
-                        currentLevel: oWorkflow.currentLevel,
-                        status: oWorkflow.status,
-                        approverEmail: oWorkflow.approverEmail,
-                        levelEmails: oWorkflow.levelEmails,
-                        businessPartner_ID: oWorkflow.businessPartner_ID,
-                        bpName: oBP.Name,
-                        bpNumber: oBP.BusinessPartnerNumber,
-                        bpType: oBP.BPType,
-                        bpEmail: oBP.Email,
-                        bpCategory: oBP.BusinessPartnerCategory,
-                        bpGrouping: oBP.Grouping,
-                        bpMobile: oBP.MobileNumber,
-                        bpCountry: oBP.Country,
-                        bpStreet: oBP.StreetAddress,
-                        bpHouseNumber: oBP.HouseNumber,
-                        bpTaxCategory: oBP.TaxCategory,
-                        bpTaxNumber: oBP.TaxNumber,
-                        logs: oWorkflow.logs || []
-                    });
-                }
-            });
-
-            // Filter by approver if not admin and status is pending
-            var sStatus = this.getView().byId("approvalTabBar").getSelectedKey() || "pending";
-            if (oUserInfo.role !== 'admin' && sStatus === 'pending') {
-                aResults = aResults.filter(function (item) {
-                    return item.approverEmail === oUserInfo.email;
-                });
-            }
-
-            this.getView().getModel("approvalList").setData(aResults);
-            this._aAllApprovalItems = aResults;
-            console.log("Final approval list:", aResults.length);
-        },
-
+        // ── Item selection ───────────────────────────────────────────────
         onBPSelect: function (oEvent) {
-            var oSelectedItem = oEvent.getParameter("listItem");
-            if (!oSelectedItem) return;
-
-            var oCtx = oSelectedItem.getBindingContext("approvalList");
+            var oItem = oEvent.getParameter("listItem");
+            if (!oItem) return;
+            var oCtx = oItem.getBindingContext("approvalList");
             if (!oCtx) return;
-
             var oData = oCtx.getObject();
 
-            this.getView().getModel("workflowData").setData(oData);
+            // Replace the whole model so all bindings (including visible=) re-evaluate
+            this.getView().setModel(new JSONModel(oData), "workflowData");
 
-            var oBPData = {
+            this.getView().getModel("selectedBP").setData({
                 Name: oData.bpName,
                 BusinessPartnerNumber: oData.bpNumber,
                 BusinessPartnerCategory: oData.bpCategory || "",
                 Grouping: oData.bpGrouping || "",
-                Email: oData.bpEmail,
+                Email: oData.bpEmail || "",
                 MobileNumber: oData.bpMobile || "",
                 Country: oData.bpCountry || "",
                 StreetAddress: oData.bpStreet || "",
                 HouseNumber: oData.bpHouseNumber || "",
                 TaxCategory: oData.bpTaxCategory || "",
                 TaxNumber: oData.bpTaxNumber || ""
-            };
+            });
 
-            this.getView().getModel("selectedBP").setData(oBPData);
             this.getView().byId("detailContainer").setVisible(true);
-
+            this.getView().byId("emptyState").setVisible(false);
             this._updateWorkflowProgress(oData);
         },
 
         _updateWorkflowProgress: function (oWorkflowData) {
             var oModel = this.getOwnerComponent().getModel();
             var that = this;
-
-            // Parse frozen levelEmails snapshot from workflow (captured at submission time)
             var oLevelEmails = {};
-            try {
-                oLevelEmails = JSON.parse(oWorkflowData.levelEmails || '{}');
-            } catch (_) {}
+            try { oLevelEmails = JSON.parse(oWorkflowData.levelEmails || "{}"); } catch (_) {}
 
-            // 1. Get all Approval Levels
-            var oLevelsBinding = oModel.bindList("/ApprovalLevels", null, null, null, { $orderby: "level" });
-            oLevelsBinding.requestContexts().then(function (aLevelContexts) {
-                var aLevels = aLevelContexts.map(c => c.getObject());
+            oModel.bindList("/ApprovalLevels", null, null, null, { $orderby: "level" })
+                .requestContexts()
+                .then(function (aCtxs) {
+                    var aLevels = aCtxs.map(function (c) { return c.getObject(); });
+                    var aLogs = oWorkflowData.logs || [];
 
-                // 2. Get Logs from the workflow data
-                var aLogs = oWorkflowData.logs || [];
+                    var aSteps = aLevels.map(function (lvl) {
+                        var oLog = aLogs.find(function (l) { return l.level === lvl.level; });
+                        var sStatus = "Pending";
+                        if (oWorkflowData.status === "approved") {
+                            sStatus = "Approved";
+                        } else if (oWorkflowData.status === "rejected" && oLog && oLog.action === "rejected") {
+                            sStatus = "Rejected";
+                        } else if (oLog && oLog.action === "approved") {
+                            sStatus = "Approved";
+                        } else if (oWorkflowData.status === "pending" && oWorkflowData.currentLevel === lvl.level) {
+                            sStatus = "Awaiting";
+                        } else if (oWorkflowData.status === "pending" && lvl.level < oWorkflowData.currentLevel) {
+                            sStatus = "Approved";
+                        }
+                        return {
+                            level: lvl.level,
+                            levelName: lvl.levelName,
+                            email: oLevelEmails[lvl.level] || lvl.email,
+                            status: sStatus
+                        };
+                    });
 
-                // 3. Map status for each level
-                var aSteps = aLevels.map(function (oLevel) {
-                    var oLog = aLogs.find(l => l.level === oLevel.level);
-                    var sStatus = "Pending";
-
-                    if (oWorkflowData.status === 'approved') {
-                        sStatus = "Approved";
-                    } else if (oWorkflowData.status === 'rejected' && oLog && (oLog.action === 'reject' || oLog.action === 'rejected')) {
-                        sStatus = "Rejected";
-                    } else if (oLog && (oLog.action === 'approve' || oLog.action === 'approved')) {
-                        sStatus = "Approved";
-                    } else if (oWorkflowData.status === 'pending' && oWorkflowData.currentLevel === oLevel.level) {
-                        sStatus = "Awaiting";
-                    } else if (oWorkflowData.status === 'pending' && oLevel.level < oWorkflowData.currentLevel) {
-                        sStatus = "Approved";
-                    }
-
-                    // Use frozen email from levelEmails snapshot if available, otherwise fall back to live ApprovalLevels
-                    var sEmail = oLevelEmails[oLevel.level] || oLevel.email;
-
-                    return {
-                        level: oLevel.level,
-                        levelName: oLevel.levelName,
-                        email: sEmail,
-                        status: sStatus
-                    };
+                    that.getView().setModel(new JSONModel(aSteps), "progressData");
                 });
-
-                that.getView().setModel(new JSONModel(aSteps), "progressData");
-            });
         },
 
-
+        // ── Actions ──────────────────────────────────────────────────────
         onRefresh: function () {
             var oUserInfo = this.getView().getModel("userInfo").getData();
             if (oUserInfo && oUserInfo.email) {
                 this._loadApprovalItems(oUserInfo.email, oUserInfo.role);
             }
             this.getView().byId("detailContainer").setVisible(false);
+            this.getView().byId("emptyState").setVisible(true);
         },
 
         onApprove: function () {
-            var oWorkflowData = this.getView().getModel("workflowData").getData();
-            var oUserInfo = this.getView().getModel("userInfo").getData();
+            var oWF = this.getView().getModel("workflowData").getData();
+            var oUser = this.getView().getModel("userInfo").getData();
+            if (!oWF || !oWF.ID) { MessageBox.error("Please select a request first."); return; }
+            if (oWF.status !== "pending") { MessageBox.warning("This request is no longer pending."); return; }
             var that = this;
-
-            if (!oWorkflowData || !oWorkflowData.ID) {
-                MessageBox.error("Please select a request first");
-                return;
-            }
-
             MessageBox.confirm("Are you sure you want to approve this Business Partner?", {
                 onClose: function (sAction) {
                     if (sAction === MessageBox.Action.OK) {
-                        that._processApproval(oWorkflowData.ID, oWorkflowData.businessPartner_ID, 'approve', oUserInfo.email);
+                        that._processApproval(oWF.ID, "approve", oUser.email);
                     }
                 }
             });
         },
 
         onReject: function () {
-            var oWorkflowData = this.getView().getModel("workflowData").getData();
-            var oUserInfo = this.getView().getModel("userInfo").getData();
+            var oWF = this.getView().getModel("workflowData").getData();
+            var oUser = this.getView().getModel("userInfo").getData();
+            if (!oWF || !oWF.ID) { MessageBox.error("Please select a request first."); return; }
+            if (oWF.status !== "pending") { MessageBox.warning("This request is no longer pending."); return; }
             var that = this;
-
-            if (!oWorkflowData || !oWorkflowData.ID) {
-                MessageBox.error("Please select a request first");
-                return;
-            }
-
             MessageBox.confirm("Are you sure you want to reject this request?", {
                 onClose: function (sAction) {
                     if (sAction === MessageBox.Action.OK) {
-                        that._processApproval(oWorkflowData.ID, oWorkflowData.businessPartner_ID, 'reject', oUserInfo.email);
+                        that._processApproval(oWF.ID, "reject", oUser.email);
                     }
                 }
             });
         },
 
-        _processApproval: function (sWorkflowID, sBPID, sAction, sApproverEmail) {
+        _processApproval: function (sWorkflowID, sAction, sApproverEmail) {
             var oModel = this.getOwnerComponent().getModel();
             var that = this;
-
-            this._oBusyDialog.setText(sAction === 'approve' ? "Approving Business Partner..." : "Rejecting request...");
+            this._oBusyDialog.setText(sAction === "approve" ? "Approving Business Partner…" : "Rejecting request…");
             this._oBusyDialog.open();
 
             var oCtx = oModel.bindContext("/processApproval(...)");
-
             oCtx.setParameter("workflowID", sWorkflowID);
             oCtx.setParameter("action", sAction);
             oCtx.setParameter("approverEmail", sApproverEmail);
 
             oCtx.execute().then(function () {
                 that._oBusyDialog.close();
-                var sMsg = sAction === 'approve' ? "Approved successfully!" : "Request rejected";
-                MessageToast.show(sMsg);
+                MessageToast.show(sAction === "approve" ? "Approved successfully!" : "Request rejected.");
                 that.onRefresh();
-            }).catch(function (oError) {
+            }).catch(function (oErr) {
                 that._oBusyDialog.close();
-                MessageBox.error("Action failed: " + oError.message);
+                MessageBox.error("Action failed: " + oErr.message);
             });
         }
     });

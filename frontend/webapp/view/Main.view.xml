@@ -1,214 +1,214 @@
-<!-- <mvc:View controllerName="bp.cust.ui.controller.Main"
-    xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout">
-    <Page title="Business Partner Directory">
-        <headerContent>
-            <Button text="Create Business Partner" press="onCreatepress" type="Emphasized" icon="sap-icon://add" />
-        </headerContent>
-        <content>
-            <Table id="bpTable" items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
-                <headerToolbar>
-                    <OverflowToolbar>
-                        <Title text="Available Partners" />
-                        <ToolbarSpacer />
-                        <SearchField width="30%" search="onSearch" />
-                    </OverflowToolbar>
-                </headerToolbar>
-                <columns>
-                    <Column><Text text="BP Number" /></Column>
-                    <Column><Text text="Name" /></Column>
-                    <Column><Text text="Country" /></Column>
-                    <Column><Text text="Type" /></Column>
-                    <Column><Text text="Created At" /></Column>
-                </columns>
-                <items>
-                    <ColumnListItem type="Navigation" press="onItemPress">
-                        <cells>
-                            <Text text="{BusinessPartnerNumber}" />
-                            <Text text="{Name}" />
-                            <Text text="{Country}" />
-                            <ObjectStatus text="{BPType}" state="Information" />
-                            <Text text="{createdAt}" />
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
-        </content>
-    </Page>
-</mvc:View> -->
-
-
-
 <mvc:View controllerName="bp.cust.ui.controller.Main"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:f="sap.f"
     xmlns:fb="sap.ui.comp.filterbar"
-    xmlns:core="sap.ui.core"
-    xmlns:layout="sap.ui.layout">
+    xmlns:core="sap.ui.core">
 
-    <f:DynamicPage id="dynamicPageId" headerExpanded="true" showFooter="false">
-        
-        <f:title>
-            <f:DynamicPageTitle visible="{= ${userModel>/role} !== 'guest' }">
-                <f:heading>
-                    <Title text="Business Partner Directory"/>
-                </f:heading>
-                <f:expandedContent>
-                    <Label text="Search and select a partner to initiate the data."/>
-                </f:expandedContent>
-                <f:actions>
-                    <Button text="Create Business Partner" type="Accept" press="onCreatepress"/>
-                </f:actions>
-            </f:DynamicPageTitle>
-        </f:title>
+    <Page showHeader="false" backgroundDesign="List" class="homePage">
+        <content>
+            <VBox class="hpOuterPadding">
 
-        <f:header>
-            <f:DynamicPageHeader pinnable="true" visible="{= ${userModel>/role} !== 'guest' }">
-                <fb:FilterBar id="filterbar" search="onSearch" clear="onClear" showClearOnFB="true" useToolbar="false"
-                    showAdaptFiltersButton="true">
-                    <fb:filterGroupItems>
-
-                        <fb:FilterGroupItem groupName="G1" name="LifecycleStatus" label="Status" visibleInFilterBar="true">
-                            <fb:control>
-                                <Select id="filterStatus" forceSelection="false">
-                                    <core:Item key="" text="All Statuses" />
-                                    <core:Item key="active" text="Active" />
-                                    <core:Item key="draft" text="Draft" />
-                                    <core:Item key="pending_approval" text="Pending Approval" />
-                                </Select>
-                            </fb:control>
-                        </fb:FilterGroupItem>
-
-                        <fb:FilterGroupItem groupName="G1" name="Grouping" label="Grouping" visibleInFilterBar="true">
-                            <fb:control>
-                                <Select id="filterGrouping" forceSelection="false">
-                                    <core:Item key="" text="All Groupings" />
-                                    <core:Item key="ZP01" text="ZP01" />
-                                    <core:Item key="ZP05" text="ZP05" />
-                                </Select>
-                            </fb:control>
-                        </fb:FilterGroupItem>
-
-                        <fb:FilterGroupItem groupName="G1" name="CompanyCode" label="Company Code" visibleInFilterBar="true">
-                            <fb:control>
-                                <Select id="filterCompanyCode" forceSelection="false">
-                                    <core:Item key="" text="All Company Codes" />
-                                </Select>
-                            </fb:control>
-                        </fb:FilterGroupItem>
-
-                        <fb:FilterGroupItem groupName="G1" name="SalesOrganization" label="Sales Organization" visibleInFilterBar="true">
-                            <fb:control>
-                                <Select id="filterSalesOrg" forceSelection="false">
-                                    <core:Item key="" text="All Sales Orgs" />
-                                </Select>
-                            </fb:control>
-                        </fb:FilterGroupItem>
-
-                        <fb:FilterGroupItem groupName="G1" name="BusinessPartnerNumber" label="Business Partner ID" visibleInFilterBar="false">
-                            <fb:control>
-                                <Input id="filterBPNumber" placeholder="Enter BP ID..." />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-
-                        <fb:FilterGroupItem groupName="G1" name="Name" label="Name" visibleInFilterBar="false">
-                            <fb:control>
-                                <Input id="filterName" placeholder="Search by name..." />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-
-                        <fb:FilterGroupItem groupName="G1" name="Category" label="Category" visibleInFilterBar="false">
-                            <fb:control>
-                                <Select id="filterCategory" forceSelection="false">
-                                    <core:Item key="" text="All Categories" />
-                                    <core:Item key="1" text="Person" />
-                                    <core:Item key="2" text="Organization" />
-                                </Select>
-                            </fb:control>
-                        </fb:FilterGroupItem>
-                    </fb:filterGroupItems>
-                </fb:FilterBar>
-            </f:DynamicPageHeader>
-        </f:header>
-
-        <f:content>
-            <VBox>
-                <!-- Restricted Access View -->
-                <VBox visible="{= ${userModel>/role} === 'guest' }" alignItems="Center" justifyContent="Center" class="sapUiLargeMargin">
-                    <core:Icon src="sap-icon://locked" size="5rem" color="#777777" class="sapUiLargeMarginBottom"/>
-                    <Title text="Access Restricted" level="H2" class="sapUiSmallMarginBottom"/>
-                    <Text text="You are currently signed in as a Guest. Access to the Business Partner Directory is restricted." class="sapUiSmallMarginBottom"/>
-                    <Button text="Request Access" type="Emphasized" press="onManageAccessPress" icon="sap-icon://key"/>
+                <!-- ========================================================
+                     Restricted Access (Guest)
+                     ======================================================== -->
+                <VBox visible="{= ${userModel>/role} === 'guest' }" alignItems="Center" justifyContent="Center" class="hpGuestCard">
+                    <FlexBox justifyContent="Center" alignItems="Center" class="hpGuestIcon">
+                        <core:Icon src="sap-icon://locked" size="2.5rem" color="#7B5EA7" />
+                    </FlexBox>
+                    <Title text="Access Restricted" level="H2" class="hpGuestTitle sapUiSmallMarginTop" />
+                    <Text text="You are currently signed in as a Guest. Access to the Business Partner Directory is restricted." class="hpGuestText sapUiSmallMarginTop sapUiMediumMarginBottom" />
+                    <Button text="Request Access" press="onManageAccessPress" icon="sap-icon://key" class="hpRequestBtn" />
                 </VBox>
 
-                <!-- Data Table View -->
-                <Table id="bpTable"
-                    visible="{= ${userModel>/role} !== 'guest' }"
-                    mode="MultiSelect"
-                    items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }"
-                    sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
-                    autoPopinMode="true">
-                    
-                    <headerToolbar>
-                        <OverflowToolbar>
-                            <Title text="Available Partners" level="H2"/>
-                            <ToolbarSpacer />
-                            <Button icon="sap-icon://refresh" type="Transparent" press="onRefresh" tooltip="Refresh Data"/>
-                            <Button id="mainSortBtn" icon="sap-icon://sort-descending" type="Transparent" press="onToggleSort" tooltip="Sort newest first"/>
-                            <Button icon="sap-icon://filter" type="Transparent"/>
-                            <Button icon="sap-icon://delete" type="Transparent" text="Delete"
-                                visible="{userModel>/isAdmin}"
-                                press="onDeleteSelected"
-                                tooltip="Delete selected BPs"/>
-                            <Button icon="sap-icon://action-settings" type="Transparent" visible="{userModel>/isAdmin}"/>
-                        </OverflowToolbar>
-                    </headerToolbar>
-                    
-                    <columns>
-                        <Column width="20%"><Text text="Business Partner Details" /></Column>
-                        <Column width="10%"><Text text="Category" /></Column>
-                        <Column width="10%"><Text text="Grouping" /></Column>
-                        <Column width="15%"><Text text="Status" /></Column>
-                        <Column width="15%"><Text text="Created At" /></Column>
-                        <Column width="15%"><Text text="Assigned Roles" /></Column>
-                    </columns>
-                    
-                    <items>
-                        <ColumnListItem type="Navigation" press="onItemPress">
-                            <cells>
-                                
-                                <VBox class="sapUiTinyMarginTopBottom">
-                                    <Title text="{Name}" titleStyle="H6" class="sapUiTinyMarginBottom" />
-                                    <Text text="ID: {BusinessPartnerNumber}" />
-                                </VBox>
-                                
-                                <ObjectStatus text="{BPType}" icon="sap-icon://company-view" state="Success" inverted="true" />
-                                
-                                <Text text="{Grouping}" />
-                                
-                                <HBox alignItems="Center" class="{= ${SAPPushStatus} === 'Pushed' ? 'statusPushed' : (${LifecycleStatus} === 'active' ? 'statusActive' : '') }">
-                                    <ObjectStatus text="{= ${SAPPushStatus} === 'Pushed' ? 'Pushed' : (${LifecycleStatus} === 'draft' ? 'Draft' : (${LifecycleStatus} === 'pending_approval' ? 'Pending Approval' : 'Active')) }"
-                                                  state="{= ${SAPPushStatus} === 'Pushed' ? 'Success' : (${LifecycleStatus} === 'draft' ? 'Warning' : (${LifecycleStatus} === 'pending_approval' ? 'Information' : 'Success')) }"
-                                                  inverted="true" />
-                                </HBox>
+                <!-- ========================================================
+                     Authenticated user content
+                     ======================================================== -->
+                <VBox visible="{= ${userModel>/role} !== 'guest' }">
 
-                                <HBox alignItems="Center">
-                                    <core:Icon src="sap-icon://calendar" class="sapUiTinyMarginEnd" color="#1873B6" />
-                                    <Text text="{createdAt}" /> 
+                    <!-- ── Page Header ──────────────────────────────────── -->
+                    <HBox alignItems="Center" justifyContent="SpaceBetween" class="hpPageHeader">
+                        <HBox alignItems="Center">
+                            <FlexBox justifyContent="Center" alignItems="Center" class="hpHeaderIcon">
+                                <Text text="{= ${userModel>/name} ? ${userModel>/name}.charAt(0).toUpperCase() : '?' }" class="hpHeaderInitial" />
+                            </FlexBox>
+                            <VBox class="sapUiSmallMarginBegin">
+                                <HBox alignItems="Baseline">
+                                    <Title text="Hello, " level="H2" class="hpGreetingPrefix" />
+                                    <Title text="{= ${userModel>/name} ? ${userModel>/name}.split(' ')[0] : 'there' }" level="H2" class="hpGreetingName" />
+                                    <Title text="!" level="H2" class="hpGreetingPrefix" />
                                 </HBox>
-                                
-                                <HBox wrap="Wrap">
-                                    <ObjectStatus text="FLCU01" state="Success" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                    <ObjectStatus text="FLCU00" state="Warning" inverted="true" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                    <ObjectStatus text="{= ${BPRole} === '000000' ? 'UKM000' : ${BPRole} }" state="Information" inverted="true" class="sapUiTinyMarginBottom"/>
-                                </HBox>
+                                <Text text="Welcome to the Business Partner Directory — search, filter and manage all partners" class="hpPageSubtitle" />
+                            </VBox>
+                        </HBox>
+                        <Button text="Create Business Partner" icon="sap-icon://add" press="onCreatepress" class="hpCreateBtn" />
+                    </HBox>
 
-                            </cells>
-                        </ColumnListItem>
-                    </items>
-                </Table>
+                    <!-- ── Filter Card ──────────────────────────────────── -->
+                    <VBox class="hpCard hpFilterCard sapUiSmallMarginTop">
+                        <HBox alignItems="Center" class="hpCardHeader">
+                            <FlexBox justifyContent="Center" alignItems="Center" class="hpCardIcon hpIconBlue">
+                                <core:Icon src="sap-icon://filter" size="1rem" color="#1565c0" />
+                            </FlexBox>
+                            <Title text="Filters" level="H4" class="sapUiSmallMarginBegin hpCardTitle" />
+                        </HBox>
+                        <VBox class="hpFilterBody">
+                            <fb:FilterBar id="filterbar" search="onSearch" clear="onClear" showClearOnFB="true" useToolbar="false" showAdaptFiltersButton="true">
+                                <fb:filterGroupItems>
+
+                                    <fb:FilterGroupItem groupName="G1" name="LifecycleStatus" label="Status" visibleInFilterBar="true">
+                                        <fb:control>
+                                            <Select id="filterStatus" forceSelection="false">
+                                                <core:Item key="" text="All Statuses" />
+                                                <core:Item key="active" text="Active" />
+                                                <core:Item key="draft" text="Draft" />
+                                                <core:Item key="pending_approval" text="Pending Approval" />
+                                            </Select>
+                                        </fb:control>
+                                    </fb:FilterGroupItem>
+
+                                    <fb:FilterGroupItem groupName="G1" name="Grouping" label="Grouping" visibleInFilterBar="true">
+                                        <fb:control>
+                                            <Select id="filterGrouping" forceSelection="false">
+                                                <core:Item key="" text="All Groupings" />
+                                                <core:Item key="ZP01" text="ZP01" />
+                                                <core:Item key="ZP05" text="ZP05" />
+                                            </Select>
+                                        </fb:control>
+                                    </fb:FilterGroupItem>
+
+                                    <fb:FilterGroupItem groupName="G1" name="CompanyCode" label="Company Code" visibleInFilterBar="true">
+                                        <fb:control>
+                                            <Select id="filterCompanyCode" forceSelection="false">
+                                                <core:Item key="" text="All Company Codes" />
+                                            </Select>
+                                        </fb:control>
+                                    </fb:FilterGroupItem>
+
+                                    <fb:FilterGroupItem groupName="G1" name="SalesOrganization" label="Sales Organization" visibleInFilterBar="true">
+                                        <fb:control>
+                                            <Select id="filterSalesOrg" forceSelection="false">
+                                                <core:Item key="" text="All Sales Orgs" />
+                                            </Select>
+                                        </fb:control>
+                                    </fb:FilterGroupItem>
+
+                                    <fb:FilterGroupItem groupName="G1" name="BusinessPartnerNumber" label="Business Partner ID" visibleInFilterBar="false">
+                                        <fb:control>
+                                            <Input id="filterBPNumber" placeholder="Enter BP ID..." />
+                                        </fb:control>
+                                    </fb:FilterGroupItem>
+
+                                    <fb:FilterGroupItem groupName="G1" name="Name" label="Name" visibleInFilterBar="false">
+                                        <fb:control>
+                                            <Input id="filterName" placeholder="Search by name..." />
+                                        </fb:control>
+                                    </fb:FilterGroupItem>
+
+                                    <fb:FilterGroupItem groupName="G1" name="Category" label="Category" visibleInFilterBar="false">
+                                        <fb:control>
+                                            <Select id="filterCategory" forceSelection="false">
+                                                <core:Item key="" text="All Categories" />
+                                                <core:Item key="1" text="Person" />
+                                                <core:Item key="2" text="Organization" />
+                                            </Select>
+                                        </fb:control>
+                                    </fb:FilterGroupItem>
+
+                                </fb:filterGroupItems>
+                            </fb:FilterBar>
+                        </VBox>
+                    </VBox>
+
+                    <!-- ── Table Card ───────────────────────────────────── -->
+                    <VBox class="hpCard sapUiSmallMarginTop sapUiMediumMarginBottom">
+                        <HBox alignItems="Center" justifyContent="SpaceBetween" class="hpCardHeader">
+                            <HBox alignItems="Center">
+                                <FlexBox justifyContent="Center" alignItems="Center" class="hpCardIcon hpIconGreen">
+                                    <core:Icon src="sap-icon://group" size="1rem" color="#2e7d32" />
+                                </FlexBox>
+                                <Title text="Available Partners" level="H4" class="sapUiSmallMarginBegin hpCardTitle" />
+                            </HBox>
+                            <HBox alignItems="Center">
+                                <Button icon="sap-icon://refresh" type="Transparent" press="onRefresh" tooltip="Refresh Data" class="hpToolbarBtn" />
+                                <Button id="mainSortBtn" icon="sap-icon://sort-descending" type="Transparent" press="onToggleSort" tooltip="Sort newest first" class="hpToolbarBtn" />
+                                <Button icon="sap-icon://delete" type="Transparent" text="Delete"
+                                    visible="{userModel>/isAdmin}"
+                                    press="onDeleteSelected"
+                                    tooltip="Delete selected BPs"
+                                    class="hpDeleteBtn sapUiTinyMarginBegin" />
+                            </HBox>
+                        </HBox>
+
+                        <Table id="bpTable"
+                            mode="MultiSelect"
+                            items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }"
+                            sticky="ColumnHeaders"
+                            autoPopinMode="true"
+                            showSeparators="Inner"
+                            class="hpTable">
+
+                            <columns>
+                                <Column width="22%"><Text text="Business Partner" /></Column>
+                                <Column width="110px" hAlign="Center"><Text text="Type" /></Column>
+                                <Column width="110px" hAlign="Center"><Text text="Grouping" /></Column>
+                                <Column width="160px"><Text text="Status" /></Column>
+                                <Column width="170px"><Text text="Created" /></Column>
+                                <Column><Text text="Assigned Roles" /></Column>
+                            </columns>
+
+                            <items>
+                                <ColumnListItem type="Navigation" press="onItemPress" class="hpTableRow">
+                                    <cells>
+
+                                        <!-- BP Details -->
+                                        <HBox alignItems="Center">
+                                            <FlexBox justifyContent="Center" alignItems="Center" class="hpAvatar">
+                                                <Text text="{= ${Name} ? ${Name}.charAt(0).toUpperCase() : '?' }" class="hpAvatarText" />
+                                            </FlexBox>
+                                            <VBox class="sapUiSmallMarginBegin">
+                                                <Text text="{Name}" class="hpBpName" />
+                                                <Text text="ID: {BusinessPartnerNumber}" class="hpBpId" />
+                                            </VBox>
+                                        </HBox>
+
+                                        <!-- Type -->
+                                        <HBox justifyContent="Center">
+                                            <Text text="{BPType}" class="hpTypeBadge" />
+                                        </HBox>
+
+                                        <!-- Grouping -->
+                                        <HBox justifyContent="Center">
+                                            <Text text="{Grouping}" class="{= ${Grouping} === 'ZP01' ? 'hpGroupingPrimary' : 'hpGroupingSecondary' }" />
+                                        </HBox>
+
+                                        <!-- Status -->
+                                        <HBox alignItems="Center">
+                                            <Text text="{= ${SAPPushStatus} === 'Pushed' ? 'Pushed' : (${LifecycleStatus} === 'draft' ? 'Draft' : (${LifecycleStatus} === 'pending_approval' ? 'Pending Approval' : 'Active')) }"
+                                                class="{= ${SAPPushStatus} === 'Pushed' ? 'hpStatusPushed' : (${LifecycleStatus} === 'draft' ? 'hpStatusDraft' : (${LifecycleStatus} === 'pending_approval' ? 'hpStatusPending' : 'hpStatusActive')) }" />
+                                        </HBox>
+
+                                        <!-- Created -->
+                                        <HBox alignItems="Center">
+                                            <core:Icon src="sap-icon://calendar" class="sapUiTinyMarginEnd hpDateIcon" color="#1565c0" />
+                                            <Text text="{path: 'createdAt', formatter: '.formatDate'}" class="hpDateText" />
+                                        </HBox>
+
+                                        <!-- Assigned Roles -->
+                                        <HBox wrap="Wrap" class="hpRolesCell">
+                                            <Text text="FLCU01" class="hpRoleBadge hpRoleSales" />
+                                            <Text text="FLCU00" class="hpRoleBadge hpRoleCompany" />
+                                            <Text text="{= ${BPRole} === '000000' ? 'UKM000' : ${BPRole} }" class="hpRoleBadge hpRoleCredit" />
+                                        </HBox>
+
+                                    </cells>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </VBox>
+
+                </VBox>
+
             </VBox>
-        </f:content>
-
-    </f:DynamicPage>
+        </content>
+    </Page>
 </mvc:View>

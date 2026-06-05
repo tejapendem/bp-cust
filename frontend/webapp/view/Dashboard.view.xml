@@ -1,121 +1,207 @@
 <mvc:View controllerName="bp.cust.ui.controller.Dashboard"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:f="sap.f"
     xmlns:core="sap.ui.core"
-    xmlns:layout="sap.ui.layout"
     xmlns:mc="sap.suite.ui.microchart"
     height="100%">
-    <Page title="Admin Dashboard" backgroundDesign="Transparent">
-        <headerContent>
-            <Button icon="sap-icon://refresh" type="Transparent" press="onRefresh" />
-        </headerContent>
+
+    <Page showHeader="false" backgroundDesign="List" class="adminDashPage">
         <content>
-            <VBox class="sapUiMediumMargin">
-                
-                <Title text="Business Partner Overview" level="H2" class="sapUiSmallMarginBottom" />
-                <f:GridContainer class="sapUiSmallMarginBottom">
-                    <f:layout>
-                        <f:GridContainerSettings rowSize="80px" columnSize="80px" gap="1rem" />
-                    </f:layout>
-                    
-                    <GenericTile header="Active Partners" subheader="Total Live" frameType="OneByOne" press="onNavToPartners">
-                        <TileContent>
-                            <NumericContent value="{stats>/activeBPs}" icon="sap-icon://customer" valueColor="Good" />
-                        </TileContent>
-                    </GenericTile>
+            <VBox class="adOuterPadding">
 
-                    <GenericTile header="Draft Partners" subheader="Pending Review" frameType="OneByOne" press="onNavToPartners">
-                        <TileContent>
-                            <NumericContent value="{stats>/draftBPs}" icon="sap-icon://edit" valueColor="Critical" />
-                        </TileContent>
-                    </GenericTile>
+                <!-- ── Page Header ──────────────────────────────────── -->
+                <HBox alignItems="Center" justifyContent="SpaceBetween" class="adPageHeader">
+                    <HBox alignItems="Center">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="adHeaderIcon">
+                            <core:Icon src="sap-icon://manager-insight" size="1.6rem" color="#0a6ed1" />
+                        </FlexBox>
+                        <VBox class="sapUiSmallMarginBegin">
+                            <Title text="Admin Dashboard" level="H2" class="adPageTitle" />
+                            <Text text="Real-time overview of business partners, approvals and users" class="adPageSubtitle" />
+                        </VBox>
+                    </HBox>
+                    <Button icon="sap-icon://refresh" text="Refresh" type="Transparent" press="onRefresh" class="adRefreshBtn" />
+                </HBox>
 
-                    <GenericTile header="Lifecycle" subheader="Distribution" frameType="TwoByOne">
-                        <TileContent>
-                            <mc:ComparisonMicroChart size="M" press="press">
+                <!-- ════════════════════════════════════════════════
+                     SECTION 1 — Business Partner Overview
+                     ════════════════════════════════════════════════ -->
+                <VBox class="dashSectionCard sapUiSmallMarginTop">
+                    <HBox alignItems="Center" class="dashSectionHeader dashSectionHeaderBlue">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="dashSectionIcon dashIconBlue">
+                            <core:Icon src="sap-icon://group" size="1.1rem" color="#1565c0" />
+                        </FlexBox>
+                        <Title text="Business Partner Overview" level="H3" class="sapUiSmallMarginBegin dashSectionTitle" />
+                    </HBox>
+
+                    <HBox wrap="Wrap" class="dashTilesRow">
+
+                        <VBox class="dashTile dashTileGreen">
+                            <HBox alignItems="Center" justifyContent="SpaceBetween">
+                                <FlexBox justifyContent="Center" alignItems="Center" class="dashTileIcon dashTileIconGreen">
+                                    <core:Icon src="sap-icon://customer" size="1.2rem" color="#2e7d32" />
+                                </FlexBox>
+                                <Text text="Live" class="dashTileTrend dashTrendGreen" />
+                            </HBox>
+                            <Text text="{stats>/activeBPs}" class="dashTileNumber" />
+                            <Text text="Active Partners" class="dashTileLabel" />
+                            <Text text="Total registered" class="dashTileSub" />
+                        </VBox>
+
+                        <VBox class="dashTile dashTileAmber">
+                            <HBox alignItems="Center" justifyContent="SpaceBetween">
+                                <FlexBox justifyContent="Center" alignItems="Center" class="dashTileIcon dashTileIconAmber">
+                                    <core:Icon src="sap-icon://edit" size="1.2rem" color="#e65100" />
+                                </FlexBox>
+                                <Text text="Pending" class="dashTileTrend dashTrendAmber" />
+                            </HBox>
+                            <Text text="{stats>/draftBPs}" class="dashTileNumber" />
+                            <Text text="Draft Partners" class="dashTileLabel" />
+                            <Text text="Awaiting review" class="dashTileSub" />
+                        </VBox>
+
+                        <VBox class="dashChartTile">
+                            <Text text="Lifecycle Distribution" class="dashChartTitle" />
+                            <mc:ComparisonMicroChart size="M" class="dashCompChart">
                                 <mc:data>
                                     <mc:ComparisonMicroChartData title="Active" value="{stats>/activeBPs}" color="Good" />
                                     <mc:ComparisonMicroChartData title="Draft" value="{stats>/draftBPs}" color="Critical" />
                                 </mc:data>
                             </mc:ComparisonMicroChart>
-                        </TileContent>
-                    </GenericTile>
-                </f:GridContainer>
+                        </VBox>
 
-                <Title text="Approval Workflow Overview" level="H2" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
-                <f:GridContainer class="sapUiSmallMarginBottom">
-                    <f:layout>
-                        <f:GridContainerSettings rowSize="80px" columnSize="80px" gap="1rem" />
-                    </f:layout>
+                    </HBox>
+                </VBox>
 
-                    <GenericTile header="Workflow Levels" subheader="Active Config" frameType="OneByOne" press="onNavToApprovalLevels">
-                        <TileContent>
-                            <NumericContent value="{stats>/approvalLevelsCount}" icon="sap-icon://action-settings" valueColor="Neutral" />
-                        </TileContent>
-                    </GenericTile>
+                <!-- ════════════════════════════════════════════════
+                     SECTION 2 — Approval Workflow Overview
+                     ════════════════════════════════════════════════ -->
+                <VBox class="dashSectionCard sapUiSmallMarginTop">
+                    <HBox alignItems="Center" class="dashSectionHeader dashSectionHeaderPurple">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="dashSectionIcon dashIconPurple">
+                            <core:Icon src="sap-icon://workflow-tasks" size="1.1rem" color="#5c3d9e" />
+                        </FlexBox>
+                        <Title text="Approval Workflow Overview" level="H3" class="sapUiSmallMarginBegin dashSectionTitle" />
+                    </HBox>
 
-                    <GenericTile header="Pending Approval" subheader="Action Required" frameType="OneByOne" press="onNavToApprovalInbox">
-                        <TileContent>
-                            <NumericContent value="{stats>/pendingWorkflows}" icon="sap-icon://pending" valueColor="Critical" />
-                        </TileContent>
-                    </GenericTile>
+                    <HBox wrap="Wrap" class="dashTilesRow">
 
-                    <GenericTile header="Approved / Rejected" subheader="Workflow History" frameType="TwoByOne">
-                        <TileContent>
-                            <mc:ComparisonMicroChart size="M">
+                        <VBox class="dashTile dashTilePurple">
+                            <HBox alignItems="Center" justifyContent="SpaceBetween">
+                                <FlexBox justifyContent="Center" alignItems="Center" class="dashTileIcon dashTileIconPurple">
+                                    <core:Icon src="sap-icon://action-settings" size="1.2rem" color="#5c3d9e" />
+                                </FlexBox>
+                                <Text text="Config" class="dashTileTrend dashTrendPurple" />
+                            </HBox>
+                            <Text text="{stats>/approvalLevelsCount}" class="dashTileNumber" />
+                            <Text text="Workflow Levels" class="dashTileLabel" />
+                            <Text text="Active configuration" class="dashTileSub" />
+                        </VBox>
+
+                        <VBox class="dashTile dashTileAmber">
+                            <HBox alignItems="Center" justifyContent="SpaceBetween">
+                                <FlexBox justifyContent="Center" alignItems="Center" class="dashTileIcon dashTileIconAmber">
+                                    <core:Icon src="sap-icon://pending" size="1.2rem" color="#e65100" />
+                                </FlexBox>
+                                <Text text="Action Req." class="dashTileTrend dashTrendAmber" />
+                            </HBox>
+                            <Text text="{stats>/pendingWorkflows}" class="dashTileNumber" />
+                            <Text text="Pending Approval" class="dashTileLabel" />
+                            <Text text="Awaiting decision" class="dashTileSub" />
+                        </VBox>
+
+                        <VBox class="dashChartTile">
+                            <Text text="Approved vs Rejected" class="dashChartTitle" />
+                            <mc:ComparisonMicroChart size="M" class="dashCompChart">
                                 <mc:data>
                                     <mc:ComparisonMicroChartData title="Approved" value="{stats>/approvedWorkflows}" color="Good" />
                                     <mc:ComparisonMicroChartData title="Rejected" value="{stats>/rejectedWorkflows}" color="Error" />
                                 </mc:data>
                             </mc:ComparisonMicroChart>
-                        </TileContent>
-                    </GenericTile>
-                </f:GridContainer>
+                        </VBox>
 
-                <Title text="User &amp; Access Management" level="H2" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
-                <f:GridContainer>
-                    <f:layout>
-                        <f:GridContainerSettings rowSize="80px" columnSize="80px" gap="1rem" />
-                    </f:layout>
+                    </HBox>
+                </VBox>
 
-                    <GenericTile header="Total Admins" subheader="System Config" frameType="OneByOne" press="onNavToUsers">
-                        <TileContent>
-                            <NumericContent value="{stats>/totalAdmins}" icon="sap-icon://manager" valueColor="Neutral" />
-                        </TileContent>
-                    </GenericTile>
+                <!-- ════════════════════════════════════════════════
+                     SECTION 3 — User & Access Management
+                     ════════════════════════════════════════════════ -->
+                <VBox class="dashSectionCard sapUiSmallMarginTop">
+                    <HBox alignItems="Center" class="dashSectionHeader dashSectionHeaderTeal">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="dashSectionIcon dashIconTeal">
+                            <core:Icon src="sap-icon://employee" size="1.1rem" color="#00838f" />
+                        </FlexBox>
+                        <Title text="User &amp; Access Management" level="H3" class="sapUiSmallMarginBegin dashSectionTitle" />
+                    </HBox>
 
-                    <GenericTile header="Total Viewers" subheader="App Users" frameType="OneByOne" press="onNavToUsers">
-                        <TileContent>
-                            <NumericContent value="{stats>/totalViewers}" icon="sap-icon://group" valueColor="Neutral" />
-                        </TileContent>
-                    </GenericTile>
+                    <HBox wrap="Wrap" class="dashTilesRow">
 
-                    <GenericTile header="Pending Requests" subheader="Waiting Approval" frameType="OneByOne" press="onNavToUsers">
-                        <TileContent>
-                            <NumericContent value="{stats>/pendingRequests}" icon="sap-icon://pushpull" valueColor="Error" indicator="{= ${stats>/pendingRequests} > 0 ? 'Up' : 'None'}" />
-                        </TileContent>
-                    </GenericTile>
+                        <VBox class="dashTile dashTilePurple">
+                            <HBox alignItems="Center" justifyContent="SpaceBetween">
+                                <FlexBox justifyContent="Center" alignItems="Center" class="dashTileIcon dashTileIconPurple">
+                                    <core:Icon src="sap-icon://manager" size="1.2rem" color="#5c3d9e" />
+                                </FlexBox>
+                                <Text text="Admin" class="dashTileTrend dashTrendPurple" />
+                            </HBox>
+                            <Text text="{stats>/totalAdmins}" class="dashTileNumber" />
+                            <Text text="Total Admins" class="dashTileLabel" />
+                            <Text text="System config" class="dashTileSub" />
+                        </VBox>
 
-                    <GenericTile header="User Split" subheader="Role Distribution" frameType="TwoByOne">
-                        <TileContent>
-                            <mc:ComparisonMicroChart size="M" press="press">
+                        <VBox class="dashTile dashTileBlue">
+                            <HBox alignItems="Center" justifyContent="SpaceBetween">
+                                <FlexBox justifyContent="Center" alignItems="Center" class="dashTileIcon dashTileIconBlue">
+                                    <core:Icon src="sap-icon://group" size="1.2rem" color="#1565c0" />
+                                </FlexBox>
+                                <Text text="Viewer" class="dashTileTrend dashTrendBlue" />
+                            </HBox>
+                            <Text text="{stats>/totalViewers}" class="dashTileNumber" />
+                            <Text text="Total Viewers" class="dashTileLabel" />
+                            <Text text="App users" class="dashTileSub" />
+                        </VBox>
+
+                        <VBox class="dashTile dashTileRed">
+                            <HBox alignItems="Center" justifyContent="SpaceBetween">
+                                <FlexBox justifyContent="Center" alignItems="Center" class="dashTileIcon dashTileIconRed">
+                                    <core:Icon src="sap-icon://pushpull" size="1.2rem" color="#c62828" />
+                                </FlexBox>
+                                <Text text="{= ${stats>/pendingRequests} > 0 ? 'Action Req.' : 'All clear' }"
+                                      class="{= ${stats>/pendingRequests} > 0 ? 'dashTileTrend dashTrendRed' : 'dashTileTrend dashTrendGreen' }" />
+                            </HBox>
+                            <Text text="{stats>/pendingRequests}" class="dashTileNumber" />
+                            <Text text="Pending Requests" class="dashTileLabel" />
+                            <Text text="Awaiting approval" class="dashTileSub" />
+                        </VBox>
+
+                        <VBox class="dashChartTile">
+                            <Text text="Role Distribution" class="dashChartTitle" />
+                            <mc:ComparisonMicroChart size="M" class="dashCompChart">
                                 <mc:data>
-                                    <mc:ComparisonMicroChartData title="Admin" value="{stats>/totalAdmins}" color="Neutral" />
-                                    <mc:ComparisonMicroChartData title="Viewer" value="{stats>/totalViewers}" color="Neutral" />
+                                    <mc:ComparisonMicroChartData title="Admin" value="{stats>/totalAdmins}" color="Critical" />
+                                    <mc:ComparisonMicroChartData title="Viewer" value="{stats>/totalViewers}" color="Good" />
                                 </mc:data>
                             </mc:ComparisonMicroChart>
-                        </TileContent>
-                    </GenericTile>
-                </f:GridContainer>
+                        </VBox>
 
-                <VBox class="sapUiMediumMarginTop dashboardWelcomeBox">
-                    <Title text="Quick Actions" level="H3" class="sapUiSmallMarginBottom" />
-                    <HBox wrap="Wrap">
-                        <Button text="Configure Workflow" icon="sap-icon://action-settings" press="onNavToApprovalLevels" type="Emphasized" class="sapUiSmallMarginEnd sapUiSmallMarginBottom" />
-                        <Button text="Approval Inbox" icon="sap-icon://pending" press="onNavToApprovalInbox" type="Emphasized" class="sapUiSmallMarginEnd sapUiSmallMarginBottom" />
-                        <Button text="Manage User Roles" icon="sap-icon://manager" press="onNavToUsers" type="Default" class="sapUiSmallMarginEnd sapUiSmallMarginBottom" />
-                        <Button text="View All Partners" icon="sap-icon://customer" press="onNavToPartners" type="Default" class="sapUiSmallMarginBottom" />
+                    </HBox>
+                </VBox>
+
+                <!-- ════════════════════════════════════════════════
+                     Quick Actions
+                     ════════════════════════════════════════════════ -->
+                <VBox class="dashSectionCard dashQuickCard sapUiSmallMarginTop sapUiMediumMarginBottom">
+                    <HBox alignItems="Center" class="dashSectionHeader dashSectionHeaderGold">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="dashSectionIcon dashIconGold">
+                            <core:Icon src="sap-icon://flash" size="1.1rem" color="#b08c00" />
+                        </FlexBox>
+                        <Title text="Quick Actions" level="H3" class="sapUiSmallMarginBegin dashSectionTitle" />
+                    </HBox>
+
+                    <HBox wrap="Wrap" class="dashQuickRow">
+                        <Button text="Configure Workflow" icon="sap-icon://action-settings" press="onNavToApprovalLevels" class="dashQuickBtn dashQuickPurple" />
+                        <Button text="Approval Inbox"     icon="sap-icon://inbox"           press="onNavToApprovalInbox"  class="dashQuickBtn dashQuickAmber"  />
+                        <Button text="Manage User Roles"  icon="sap-icon://manager"         press="onNavToUsers"          class="dashQuickBtn dashQuickBlue"   />
+                        <Button text="View All Partners"  icon="sap-icon://customer"        press="onNavToPartners"       class="dashQuickBtn dashQuickGreen"  />
                     </HBox>
                 </VBox>
 
