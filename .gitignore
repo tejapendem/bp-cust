@@ -10,6 +10,7 @@ yarn-error.log*
 *.sqlite-wal
 *.db
 *.db-journal
+!bp-cust-test.db
 
 # Logs
 logs/
