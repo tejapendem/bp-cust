@@ -10,7 +10,7 @@
                 <!-- ── Page Header ──────────────────────────────────── -->
                 <HBox alignItems="Center" justifyContent="SpaceBetween" class="adPageHeader">
                     <HBox alignItems="Center">
-                        <core:Icon src="sap-icon://accept" size="2.5rem" color="#2e7d32" class="adHeaderIcon" />
+                        <core:Icon src="sap-icon://sys-enter-2" size="2.5rem" color="#2e7d32" class="adHeaderIcon" />
                         <VBox class="sapUiSmallMarginBegin">
                             <Title text="Approval Data" level="H2" class="adPageTitle" />
                             <Text text="Approved business partners and their SAP push status" class="adPageSubtitle" />
@@ -75,6 +75,8 @@
                         growing="true"
                         growingThreshold="25"
                         showSeparators="Inner"
+                        busyIndicatorDelay="0"
+                        noDataText="No approved business partners yet."
                         class="adTable">
 
                         <columns>

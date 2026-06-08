@@ -39,6 +39,8 @@
                         items="{ path: '/Users' }"
                         growing="true"
                         growingThreshold="20"
+                        busyIndicatorDelay="0"
+                        noDataText="No users registered yet."
                         mode="MultiSelect"
                         showSeparators="Inner"
                         class="umTable">
@@ -87,6 +89,8 @@
                     <Table id="pendingRequestsTable"
                         items="{ path: '/AccessRequests', filters: [{ path: 'status', operator: 'EQ', value1: 'pending' }] }"
                         showSeparators="Inner"
+                        busyIndicatorDelay="0"
+                        noDataText="No pending access requests."
                         class="umTable">
                         <columns>
                             <Column width="25%"><Text text="User" /></Column>
@@ -135,6 +139,8 @@
                     <Table id="requestHistoryTable"
                         items="{ path: '/AccessRequests', filters: [{ path: 'status', operator: 'NE', value1: 'pending' }] }"
                         showSeparators="Inner"
+                        busyIndicatorDelay="0"
+                        noDataText="No request history."
                         class="umTable">
                         <columns>
                             <Column width="25%"><Text text="User" /></Column>

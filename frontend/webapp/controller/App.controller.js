@@ -1,6 +1,6 @@
 sap.ui.define(
     [
-        "sap/ui/core/mvc/Controller",
+        "bp/cust/ui/controller/BaseController",
         "sap/ui/model/json/JSONModel",
         "sap/ui/core/Fragment"
     ],
@@ -20,7 +20,9 @@ sap.ui.define(
                     isAdmin: bIsLocal,
                     initials: bIsLocal ? "RP" : "GU",
                     assignedRoles: bIsLocal ? "admin" : "",
-                    isRegistered: bIsLocal
+                    isRegistered: bIsLocal,
+                    pendingApprovals: 0,
+                    pendingRequests: 0
                 };
 
                 var oUserModel = new JSONModel(oUserData);
@@ -29,8 +31,21 @@ sap.ui.define(
                 // Always try to fetch the actual user info from the database
                 this._checkUserInfo();
 
+                // Refresh pending counts whenever the route changes (admin pages)
+                this.getRouter().attachRouteMatched(this._onAnyRouteMatched, this);
+
                 // Apply density class
                 this.getView().addStyleClass("sapUiSizeCompact");
+
+                // Restore saved theme
+                this._restoreTheme();
+            },
+
+            _onAnyRouteMatched: function () {
+                var oUserModel = this.getView().getModel("userModel");
+                if (oUserModel && oUserModel.getProperty("/isAdmin")) {
+                    this._loadPendingCounts();
+                }
             },
 
             _checkUserInfo: function () {
@@ -57,6 +72,11 @@ sap.ui.define(
                         // If user is not registered (new user), show request access dialog
                         if (oData.isRegistered === false) {
                             that._showRequestAccessDialog();
+                        }
+
+                        // Load pending counts for admin users
+                        if (oData.isAdmin) {
+                            that._loadPendingCounts();
                         }
                     } else {
                         // Guest user - show request access dialog automatically
@@ -87,6 +107,27 @@ sap.ui.define(
                 });
             },
 
+            // Fetch admin pending counts for sidebar badges
+            _loadPendingCounts: function () {
+                var oUserModel = this.getView().getModel("userModel");
+                var oODataModel = this.getOwnerComponent().getModel();
+                if (!oODataModel) return;
+
+                var oCtx = oODataModel.bindContext("/getAdminStats(...)");
+                oCtx.execute().then(function () {
+                    var oData = oCtx.getBoundContext().getObject();
+                    if (oData) {
+                        oUserModel.setProperty("/pendingApprovals", oData.pendingWorkflows || 0);
+                        oUserModel.setProperty("/pendingRequests", oData.pendingRequests || 0);
+                    }
+                }).catch(function () { /* silently ignore */ });
+            },
+
+            // Public — let other controllers refresh after they take an action
+            refreshPendingCounts: function () {
+                this._loadPendingCounts();
+            },
+
             onSideNavButtonPress: function () {
                 var oToolPage = this.byId("toolPage");
                 var bSideExpanded = oToolPage.getSideExpanded();
@@ -97,6 +138,23 @@ sap.ui.define(
                 var bState = oEvent.getParameter("state"); // true for Dark, false for Light
                 var sTheme = bState ? "sap_horizon_dark" : "sap_horizon";
                 sap.ui.getCore().applyTheme(sTheme);
+                // Toggle data-theme on body so our custom CSS can react too
+                document.body.setAttribute("data-theme", bState ? "dark" : "light");
+                // Persist preference
+                try { localStorage.setItem("bp-cust-theme", bState ? "dark" : "light"); } catch (e) {}
+            },
+
+            _restoreTheme: function () {
+                try {
+                    var sSaved = localStorage.getItem("bp-cust-theme");
+                    var bDark = sSaved === "dark";
+                    if (bDark) {
+                        sap.ui.getCore().applyTheme("sap_horizon_dark");
+                    }
+                    document.body.setAttribute("data-theme", bDark ? "dark" : "light");
+                    var oSwitch = this.byId("themeSwitch");
+                    if (oSwitch) oSwitch.setState(bDark);
+                } catch (e) { /* ignore */ }
             },
 
             onItemSelect: function (oEvent) {

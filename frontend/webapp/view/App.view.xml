@@ -12,7 +12,7 @@
                 <Image src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" height="1.5rem" />
                 <Title text="Business Partner" level="H1" class="appBrandTitle" />
                 <ToolbarSpacer />
-                <Switch state="false" customTextOn="Dark" customTextOff="Light" change=".onThemeSwitch" class="sapUiSmallMarginEnd appThemeSwitch" tooltip="Toggle Dark Mode" />
+                <Switch id="themeSwitch" state="false" customTextOn="Dark" customTextOff="Light" change=".onThemeSwitch" class="sapUiSmallMarginEnd appThemeSwitch" tooltip="Toggle Dark Mode" />
                 <Button icon="sap-icon://bell" type="Transparent" class="appBellBtn" />
                 <Avatar id="profileAvatar" displaySize="XS" initials="{userModel>/initials}" press=".onProfilePress" class="sapUiSmallMarginEnd appAvatar" />
             </tnt:ToolHeader>
@@ -24,9 +24,9 @@
                     <tnt:NavigationListItem text="Create Business Partner" icon="sap-icon://create" key="createBP" visible="{= ${userModel>/role} !== 'guest' &amp;&amp; ${userModel>/isRegistered} }" />
                     <tnt:NavigationListItem text="Admin Dashboard" icon="sap-icon://manager-insight" key="dashboard" visible="{userModel>/isAdmin}" />
                     <tnt:NavigationListItem text="Activation Queue" icon="sap-icon://activate" key="queue" visible="{userModel>/isAdmin}" />
-                    <tnt:NavigationListItem text="User Management" icon="sap-icon://group" key="admin" visible="{userModel>/isAdmin}" />
+                    <tnt:NavigationListItem text="User Management{= ${userModel>/pendingRequests} > 0 ? '  •  ' + ${userModel>/pendingRequests} : '' }" icon="sap-icon://group" key="admin" visible="{userModel>/isAdmin}" />
                     <tnt:NavigationListItem text="Approval Workflow" icon="sap-icon://action-settings" key="approvalLevels" visible="{userModel>/isAdmin}" />
-                    <tnt:NavigationListItem text="Approval Inbox" icon="sap-icon://inbox" key="approvalInbox" visible="{userModel>/isAdmin}" />
+                    <tnt:NavigationListItem text="Approval Inbox{= ${userModel>/pendingApprovals} > 0 ? '  •  ' + ${userModel>/pendingApprovals} : '' }" icon="sap-icon://inbox" key="approvalInbox" visible="{userModel>/isAdmin}" />
                     <tnt:NavigationListItem text="Approval Data" icon="sap-icon://accept" key="approvalData" visible="{userModel>/isAdmin}" />
                 </tnt:NavigationList>
             </tnt:SideNavigation>

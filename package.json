@@ -15,10 +15,12 @@
   },
   "devDependencies": {
     "@sap/cds-dk": "^8",
+    "cross-env": "^10.1.0",
     "sqlite3": "^6.0.1"
   },
   "cds": {
     "auto-deploy": false,
+    "livereload": false,
     "requires": {
       "db": {
         "kind": "postgres",
@@ -114,7 +116,7 @@
     }
   },
   "scripts": {
-    "start": "cds-serve",
+    "start": "cross-env CDS_LIVERELOAD=false cds-serve",
     "deploy": "cds deploy"
   }
 }

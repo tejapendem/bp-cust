@@ -36,6 +36,8 @@
                     <Table id="approvalTable"
                         items="{ path: '/ApprovalLevels', sorter: { path: 'level' } }"
                         showSeparators="Inner"
+                        busyIndicatorDelay="0"
+                        noDataText="No approval levels configured. Add one to start."
                         class="awcTable">
                         <columns>
                             <Column width="80px" hAlign="Center">

@@ -42,7 +42,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Grouping" press="onAddVH('VH_Grouping')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table id="groupingTable" items="{path: '/VH_Grouping'}" showSeparators="Inner" class="aqTable">
+                                    <Table id="groupingTable" items="{path: '/VH_Grouping'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -75,7 +75,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Category" press="onAddVH('VH_BusinessPartnerCategory')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_BusinessPartnerCategory'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_BusinessPartnerCategory'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -108,7 +108,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Type" press="onAddVH('VH_BPType')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_BPType'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_BPType'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -150,7 +150,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Title" press="onAddVH('VH_Title')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_Title'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_Title'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -183,7 +183,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Country" press="onAddVH('VH_Country')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_Country'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_Country'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -216,7 +216,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Language" press="onAddVH('VH_Language')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_Language'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_Language'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -249,7 +249,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Code" press="onAddVH('VH_MobileCountryCode')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_MobileCountryCode'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_MobileCountryCode'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -282,7 +282,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Region" press="onAddVH('VH_Region')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_Region'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_Region'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -324,7 +324,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Category" press="onAddVH('VH_TaxCategory')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_TaxCategory'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_TaxCategory'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -357,7 +357,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Status" press="onAddVH('VH_TaxStatus')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_TaxStatus'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_TaxStatus'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -399,7 +399,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Company" press="onAddVH('VH_CompanyCode')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_CompanyCode'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_CompanyCode'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -432,7 +432,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Account" press="onAddVH('VH_ReconciliationAccount')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_ReconciliationAccount'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_ReconciliationAccount'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -474,7 +474,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Org" press="onAddVH('VH_SalesOrganization')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_SalesOrganization'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_SalesOrganization'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -507,7 +507,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Channel" press="onAddVH('VH_DistributionChannel')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_DistributionChannel'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_DistributionChannel'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -540,7 +540,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Division" press="onAddVH('VH_Division')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_Division'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_Division'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -582,7 +582,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Group" press="onAddVH('VH_CustomerGroup')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_CustomerGroup'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_CustomerGroup'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -615,7 +615,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Assignment" press="onAddVH('VH_AccountAssignmentGroup')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_AccountAssignmentGroup'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_AccountAssignmentGroup'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -648,7 +648,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Tax Class" press="onAddVH('VH_TaxClassification')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_TaxClassification'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_TaxClassification'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -681,7 +681,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Data" press="onAddVH('VH_CustomerData2')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_CustomerData2'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_CustomerData2'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -714,7 +714,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Currency" press="onAddVH('VH_Currency')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_Currency'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_Currency'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -747,7 +747,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Rate Type" press="onAddVH('VH_ExchangeRateType')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_ExchangeRateType'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_ExchangeRateType'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -780,7 +780,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Procedure" press="onAddVH('VH_PricingProcedure')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_PricingProcedure'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_PricingProcedure'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -813,7 +813,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Group" press="onAddVH('VH_StatisticsGroup')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_StatisticsGroup'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_StatisticsGroup'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -846,7 +846,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Terms" press="onAddVH('VH_PaymentTerms')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_PaymentTerms'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_PaymentTerms'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -879,7 +879,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Incoterm" press="onAddVH('VH_Incoterms')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_Incoterms'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_Incoterms'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -912,7 +912,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Tax Category" press="onAddVH('VH_OutputTaxCategory')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_OutputTaxCategory'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_OutputTaxCategory'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -954,7 +954,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Risk Class" press="onAddVH('VH_RiskClass')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_RiskClass'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_RiskClass'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -987,7 +987,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Check Rule" press="onAddVH('VH_CheckRule')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_CheckRule'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_CheckRule'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -1020,7 +1020,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Credit Group" press="onAddVH('VH_CreditGroup')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_CreditGroup'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_CreditGroup'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -1053,7 +1053,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Credit Segment" press="onAddVH('VH_CreditSegment')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_CreditSegment'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_CreditSegment'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>
@@ -1086,7 +1086,7 @@
                                         </HBox>
                                         <Button icon="sap-icon://add" text="Add Limit Rule" press="onAddVH('VH_CreditLimitRule')" class="aqAddBtn" />
                                     </HBox>
-                                    <Table items="{path: '/VH_CreditLimitRule'}" showSeparators="Inner" class="aqTable">
+                                    <Table items="{path: '/VH_CreditLimitRule'}" showSeparators="Inner" busyIndicatorDelay="0" noDataText="No values configured." class="aqTable">
                                         <columns>
                                             <Column width="120px"><Text text="Code"/></Column>
                                             <Column><Text text="Name"/></Column>

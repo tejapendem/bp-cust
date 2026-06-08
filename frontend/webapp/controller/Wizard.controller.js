@@ -1,15 +1,15 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "bp/cust/ui/controller/BaseController",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "sap/m/BusyDialog"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageToast, MessageBox, BusyDialog) {
+], function (BaseController, JSONModel, Filter, FilterOperator, MessageToast, MessageBox, BusyDialog) {
     "use strict";
 
-    return Controller.extend("bp.cust.ui.controller.Wizard", {
+    return BaseController.extend("bp.cust.ui.controller.Wizard", {
 
         onInit: function () {
             // Access control - only registered users can access this page
@@ -900,7 +900,8 @@ sap.ui.define([
                 FirstName: oData.FirstName,
                 LastName: oData.LastName,
                 Name: oData.BusinessPartnerCategory === "1" ? (oData.FirstName + " " + oData.LastName).trim() : oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
-                StreetAddress: oData.StreetAddress, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
+                StreetAddress: oData.StreetAddress, HouseNumber: oData.HouseNumber, City: oData.City, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
+                Room: oData.Room, Floor: oData.Floor, CareOf: oData.CareOf, Street2: oData.Street2, Street3: oData.Street3, Street4: oData.Street4, Street5: oData.Street5, District: oData.District, TimeZone: oData.TimeZone,
                 TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus
             };
 

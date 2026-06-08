@@ -1,10 +1,10 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "bp/cust/ui/controller/BaseController",
     "sap/m/MessageToast"
-], function (Controller, MessageToast) {
+], function (BaseController, MessageToast) {
     "use strict";
 
-    return Controller.extend("bp.cust.ui.controller.Admin", {
+    return BaseController.extend("bp.cust.ui.controller.Admin", {
         onInit: function () {
             // Access control - only admins can access this page
             var oUserModel = this.getOwnerComponent().getModel("userModel");

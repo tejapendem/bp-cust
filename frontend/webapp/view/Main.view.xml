@@ -57,60 +57,106 @@
 
                                     <fb:FilterGroupItem groupName="G1" name="LifecycleStatus" label="Status" visibleInFilterBar="true">
                                         <fb:control>
-                                            <Select id="filterStatus" forceSelection="false">
-                                                <core:Item key="" text="All Statuses" />
-                                                <core:Item key="active" text="Active" />
-                                                <core:Item key="draft" text="Draft" />
-                                                <core:Item key="pending_approval" text="Pending Approval" />
-                                            </Select>
+                                            <MultiInput id="filterStatus"
+                                                placeholder="Select status..."
+                                                showValueHelp="true"
+                                                valueHelpRequest=".onOpenValueHelp"
+                                                submit=".onMultiInputSubmit"
+                                                showSuggestion="false">
+                                                <customData>
+                                                    <core:CustomData key="vhKey" value="status" writeToDom="false" />
+                                                </customData>
+                                            </MultiInput>
                                         </fb:control>
                                     </fb:FilterGroupItem>
 
                                     <fb:FilterGroupItem groupName="G1" name="Grouping" label="Grouping" visibleInFilterBar="true">
                                         <fb:control>
-                                            <Select id="filterGrouping" forceSelection="false">
-                                                <core:Item key="" text="All Groupings" />
-                                                <core:Item key="ZP01" text="ZP01" />
-                                                <core:Item key="ZP05" text="ZP05" />
-                                            </Select>
+                                            <MultiInput id="filterGrouping"
+                                                placeholder="Select grouping..."
+                                                showValueHelp="true"
+                                                valueHelpRequest=".onOpenValueHelp"
+                                                submit=".onMultiInputSubmit"
+                                                showSuggestion="false">
+                                                <customData>
+                                                    <core:CustomData key="vhKey" value="grouping" writeToDom="false" />
+                                                </customData>
+                                            </MultiInput>
                                         </fb:control>
                                     </fb:FilterGroupItem>
 
                                     <fb:FilterGroupItem groupName="G1" name="CompanyCode" label="Company Code" visibleInFilterBar="true">
                                         <fb:control>
-                                            <Select id="filterCompanyCode" forceSelection="false">
-                                                <core:Item key="" text="All Company Codes" />
-                                            </Select>
+                                            <MultiInput id="filterCompanyCode"
+                                                placeholder="Select company code..."
+                                                showValueHelp="true"
+                                                valueHelpRequest=".onOpenValueHelp"
+                                                submit=".onMultiInputSubmit"
+                                                showSuggestion="false">
+                                                <customData>
+                                                    <core:CustomData key="vhKey" value="companyCode" writeToDom="false" />
+                                                </customData>
+                                            </MultiInput>
                                         </fb:control>
                                     </fb:FilterGroupItem>
 
                                     <fb:FilterGroupItem groupName="G1" name="SalesOrganization" label="Sales Organization" visibleInFilterBar="true">
                                         <fb:control>
-                                            <Select id="filterSalesOrg" forceSelection="false">
-                                                <core:Item key="" text="All Sales Orgs" />
-                                            </Select>
+                                            <MultiInput id="filterSalesOrg"
+                                                placeholder="Select sales org..."
+                                                showValueHelp="true"
+                                                valueHelpRequest=".onOpenValueHelp"
+                                                submit=".onMultiInputSubmit"
+                                                showSuggestion="false">
+                                                <customData>
+                                                    <core:CustomData key="vhKey" value="salesOrg" writeToDom="false" />
+                                                </customData>
+                                            </MultiInput>
                                         </fb:control>
                                     </fb:FilterGroupItem>
 
                                     <fb:FilterGroupItem groupName="G1" name="BusinessPartnerNumber" label="Business Partner ID" visibleInFilterBar="false">
                                         <fb:control>
-                                            <Input id="filterBPNumber" placeholder="Enter BP ID..." />
+                                            <MultiInput id="filterBPNumber"
+                                                placeholder="Enter or select BP ID..."
+                                                showValueHelp="true"
+                                                valueHelpRequest=".onOpenValueHelp"
+                                                submit=".onMultiInputSubmit"
+                                                showSuggestion="false">
+                                                <customData>
+                                                    <core:CustomData key="vhKey" value="bpNumber" writeToDom="false" />
+                                                </customData>
+                                            </MultiInput>
                                         </fb:control>
                                     </fb:FilterGroupItem>
 
                                     <fb:FilterGroupItem groupName="G1" name="Name" label="Name" visibleInFilterBar="false">
                                         <fb:control>
-                                            <Input id="filterName" placeholder="Search by name..." />
+                                            <MultiInput id="filterName"
+                                                placeholder="Enter or select name..."
+                                                showValueHelp="true"
+                                                valueHelpRequest=".onOpenValueHelp"
+                                                submit=".onMultiInputSubmit"
+                                                showSuggestion="false">
+                                                <customData>
+                                                    <core:CustomData key="vhKey" value="name" writeToDom="false" />
+                                                </customData>
+                                            </MultiInput>
                                         </fb:control>
                                     </fb:FilterGroupItem>
 
                                     <fb:FilterGroupItem groupName="G1" name="Category" label="Category" visibleInFilterBar="false">
                                         <fb:control>
-                                            <Select id="filterCategory" forceSelection="false">
-                                                <core:Item key="" text="All Categories" />
-                                                <core:Item key="1" text="Person" />
-                                                <core:Item key="2" text="Organization" />
-                                            </Select>
+                                            <MultiInput id="filterCategory"
+                                                placeholder="Select category..."
+                                                showValueHelp="true"
+                                                valueHelpRequest=".onOpenValueHelp"
+                                                submit=".onMultiInputSubmit"
+                                                showSuggestion="false">
+                                                <customData>
+                                                    <core:CustomData key="vhKey" value="category" writeToDom="false" />
+                                                </customData>
+                                            </MultiInput>
                                         </fb:control>
                                     </fb:FilterGroupItem>
 
@@ -136,6 +182,7 @@
                                     press="onDeleteSelected"
                                     tooltip="Delete selected BPs"
                                     class="hpDeleteBtn sapUiTinyMarginBegin" />
+                                <Button icon="sap-icon://action-settings" type="Transparent" press="onColumnSettings" />
                             </HBox>
                         </HBox>
 
@@ -145,15 +192,18 @@
                             sticky="ColumnHeaders"
                             autoPopinMode="true"
                             showSeparators="Inner"
+                            busyIndicatorDelay="0"
+                            noDataText="No business partners found. Adjust your filters or create a new one."
                             class="hpTable">
 
                             <columns>
                                 <Column width="22%"><Text text="Business Partner" /></Column>
-                                <Column width="110px" hAlign="Center"><Text text="Type" /></Column>
-                                <Column width="110px" hAlign="Center"><Text text="Grouping" /></Column>
-                                <Column width="160px"><Text text="Status" /></Column>
-                                <Column width="170px"><Text text="Created" /></Column>
-                                <Column><Text text="Assigned Roles" /></Column>
+                                <Column width="15%" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Block"><Text text="SAP Number" /></Column>
+                                <Column width="110px" hAlign="Center" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Inline"><Text text="Type" /></Column>
+                                <Column width="110px" hAlign="Center" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Inline"><Text text="Grouping" /></Column>
+                                <Column width="160px" demandPopin="true" minScreenWidth="Phone" popinDisplay="Inline"><Text text="Status" /></Column>
+                                <Column width="170px" demandPopin="true" minScreenWidth="Desktop" popinDisplay="Block"><Text text="Created" /></Column>
+                                <Column demandPopin="true" minScreenWidth="Desktop" popinDisplay="Block"><Text text="Assigned Roles" /></Column>
                             </columns>
 
                             <items>
@@ -170,6 +220,9 @@
                                                 <Text text="ID: {BusinessPartnerNumber}" class="hpBpId" />
                                             </VBox>
                                         </HBox>
+
+                                        <!-- SAP Number -->
+                                        <Text text="{SAPBPNumber}" class="adSapBpBadge" />
 
                                         <!-- Type -->
                                         <HBox justifyContent="Center">

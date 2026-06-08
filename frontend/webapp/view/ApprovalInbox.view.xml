@@ -59,6 +59,8 @@
                             selectionChange=".onBPSelect"
                             items="{approvalList>/}"
                             showSeparators="None"
+                            busyIndicatorDelay="0"
+                            noDataText="No requests in this tab."
                             class="aibMasterList">
                             <CustomListItem type="Active" class="aibListItem">
                                 <VBox class="aibListItemInner">
@@ -70,11 +72,9 @@
                                                 class="aibListItemIcon" />
                                             <Text text="{approvalList>bpName}" class="aibListItemName" />
                                         </HBox>
-                                        <ObjectStatus
-                                            text="{approvalList>status}"
-                                            state="{= ${approvalList>status} === 'approved' ? 'Success' : (${approvalList>status} === 'rejected' ? 'Error' : 'Warning') }"
-                                            inverted="true"
-                                            class="aibListItemBadge" />
+                                        <HBox alignItems="Center" class="aibDotWrapper">
+                                            <core:HTML content="{= '&lt;span class=&quot;aibStatusDot aibDot-' + ${approvalList>status} + '&quot;&gt;&lt;/span&gt;' }" />
+                                        </HBox>
                                     </HBox>
                                     <Text text="ID: {approvalList>bpNumber}" class="aibListItemSub" />
                                 </VBox>

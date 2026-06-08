@@ -689,6 +689,54 @@
     font-size: 0.7rem !important;
 }
 
+/* ── Blinking status dot ───────────────────────────── */
+.aibDotWrapper {
+    flex-shrink: 0;
+}
+
+.aibStatusDot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: aibDotPulse 1.4s ease-in-out infinite;
+}
+
+.aibDot-pending {
+    background-color: #f97316;
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.5);
+}
+
+.aibDot-approved {
+    background-color: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+    animation: aibDotPulseGreen 1.4s ease-in-out infinite;
+}
+
+.aibDot-rejected {
+    background-color: #ef4444;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+    animation: aibDotPulseRed 1.4s ease-in-out infinite;
+}
+
+@keyframes aibDotPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.6); }
+    70%  { box-shadow: 0 0 0 7px rgba(249, 115, 22, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+}
+
+@keyframes aibDotPulseGreen {
+    0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+    70%  { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+@keyframes aibDotPulseRed {
+    0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+    70%  { box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
 /* ── Detail Panel ─────────────────────────────────────────── */
 .aibDetailPanel {
     flex: 1;
@@ -923,9 +971,34 @@
 }
 
 .adHeaderIcon {
-    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    background: linear-gradient(135deg, #43a047 0%, #2e7d32 50%, #1b5e20 100%);
     border-radius: 50%;
-    padding: 0.6rem;
+    padding: 0.7rem;
+    color: #ffffff !important;
+    box-shadow:
+        0 4px 12px rgba(46, 125, 50, 0.35),
+        0 0 0 4px rgba(46, 125, 50, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.adHeaderIcon.sapUiIcon {
+    color: #ffffff !important;
+}
+
+/* Admin Dashboard header icon — purple/blue gradient pill */
+.dashHeaderIcon {
+    background: linear-gradient(135deg, #7c4dff 0%, #0a6ed1 50%, #5c3d9e 100%);
+    border-radius: 50%;
+    padding: 0.7rem;
+    color: #ffffff !important;
+    box-shadow:
+        0 4px 12px rgba(124, 77, 255, 0.4),
+        0 0 0 4px rgba(124, 77, 255, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.dashHeaderIcon .sapUiIcon {
+    color: #ffffff !important;
 }
 
 .adPageTitle .sapMTitle {
@@ -2463,22 +2536,22 @@
 
 /* ── Quick Actions ────────────────────────────────────────── */
 .dashQuickRow {
-    padding: 1rem;
-    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
 }
 
 .dashQuickBtn.sapMBtn {
-    flex: 1 1 200px;
-    min-width: 200px;
+    flex: 0 1 auto;
+    min-width: 0;
 }
 
 .dashQuickBtn.sapMBtn .sapMBtnInner {
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     border: 1.5px solid transparent !important;
-    height: 3rem !important;
+    height: 2.25rem !important;
+    padding: 0 0.85rem !important;
     font-weight: 600 !important;
-    font-size: 0.875rem !important;
-    justify-content: flex-start !important;
+    font-size: 0.8rem !important;
 }
 
 .dashQuickPurple.sapMBtn .sapMBtnInner {
@@ -2575,52 +2648,141 @@
 
 /* ── Side Navigation ──────────────────────────────────────── */
 .appSideNav.sapTntSideNavigation {
-    background: linear-gradient(180deg, #fafbfd 0%, #f0f4fa 100%) !important;
-    border-right: 1px solid #e3e8f0 !important;
-    padding: 0.5rem 0.5rem !important;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(124, 77, 255, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 80% 30%, rgba(10, 110, 209, 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 30% 80%, rgba(255, 138, 101, 0.12) 0%, transparent 45%),
+        linear-gradient(180deg, #f4f1fb 0%, #eaf2ff 50%, #fdf6ee 100%) !important;
+    backdrop-filter: blur(18px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.6) !important;
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.4),
+                4px 0 24px rgba(124, 77, 255, 0.06) !important;
+    padding-top: 0.5rem !important;
+    position: relative;
+}
+
+.appSideNav.sapTntSideNavigation::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.appSideNav.sapTntSideNavigation > * {
+    position: relative;
+    z-index: 1;
 }
 
 /* Navigation List — spacing */
 .appSideNav .sapTntNavLI {
     background: transparent !important;
-    padding: 0.25rem 0 !important;
+    padding: 0.4rem 0.5rem !important;
 }
 
-/* ── Navigation List Items (rest state) ──────────────────── */
+/* ── Navigation List Items (rest state) — frosted glass card ─ */
 .appSideNav .sapTntNavLIItem {
-    margin: 0.2rem 0.4rem !important;
-    border-radius: 10px !important;
-    transition: all 0.2s ease !important;
-    color: #4a4f57 !important;
+    margin: 0.35rem 0.5rem !important;
+    border-radius: 14px !important;
+    background: transparent !important;
+    backdrop-filter: blur(6px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(6px) saturate(140%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: none !important;
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow: hidden;
+    position: relative;
 }
 
+/* Force-clear default SAP backgrounds inside the items */
+.appSideNav .sapTntNavLIItem,
+.appSideNav .sapTntNavLIItem *,
+.appSideNav .sapTntNavLI li,
+.appSideNav .sapTntNavLI li *,
+.appSideNav ul,
+.appSideNav ul li,
+.appSideNav ul li > div,
+.appSideNav ul li > a {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Re-apply selected gradient (the wildcard above would have wiped it) */
+.appSideNav .sapTntNavLIItemSelected,
+.appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected,
+.appSideNav li.sapTntNavLIItemSelected,
+.appSideNav li.sapTntNavLIItemSelected > div {
+    background: linear-gradient(135deg,
+        rgba(124, 77, 255, 0.95) 0%,
+        rgba(10, 110, 209, 0.95) 50%,
+        rgba(94, 53, 177, 0.95) 100%) !important;
+}
+
+/* Re-apply icon chip gradient */
+.appSideNav .sapTntNavLIItem .sapUiIcon {
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.12), rgba(10, 110, 209, 0.12)) !important;
+}
+.appSideNav .sapTntNavLIItem:hover .sapUiIcon {
+    background: linear-gradient(135deg, #7c4dff, #0a6ed1) !important;
+}
+.appSideNav .sapTntNavLIItemSelected .sapUiIcon,
+.appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected .sapUiIcon {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Subtle shimmer line on top of each card */
+.appSideNav .sapTntNavLIItem::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+    pointer-events: none;
+}
+
+/* Hover — lift with soft shadow */
 .appSideNav .sapTntNavLIItem:hover {
-    background: linear-gradient(135deg, #e3f2fd, #ede7f6) !important;
-    color: #0854a0 !important;
-    transform: translateX(2px);
+    background: rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-1px) translateX(2px);
+    box-shadow:
+        0 6px 16px rgba(124, 77, 255, 0.12),
+        0 2px 6px rgba(10, 110, 209, 0.08) !important;
+    border-color: rgba(124, 77, 255, 0.35) !important;
 }
 
 /* Inner item content padding */
 .appSideNav .sapTntNavLIItem .sapTntNavLIItemPaddingLeft {
-    padding-left: 0.75rem !important;
+    padding-left: 0.85rem !important;
 }
 
-/* Item icon styling */
+/* Item icon — circular pastel chip */
 .appSideNav .sapTntNavLIItem .sapUiIcon {
-    color: #5a6577 !important;
-    font-size: 1.05rem !important;
-    background: rgba(10, 110, 209, 0.08);
-    padding: 0.45rem;
-    border-radius: 8px;
-    width: 2rem !important;
-    height: 2rem !important;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
+    color: #5a4a8a !important;
+    font-size: 1rem !important;
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.12), rgba(10, 110, 209, 0.12));
+    border-radius: 10px;
+    padding: 0.4rem;
+    margin-right: 0.6rem;
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
 
 .appSideNav .sapTntNavLIItem:hover .sapUiIcon {
-    background: rgba(10, 110, 209, 0.18);
-    color: #0a6ed1 !important;
+    background: linear-gradient(135deg, #7c4dff, #0a6ed1) !important;
+    color: #ffffff !important;
+    transform: scale(1.08) rotate(-3deg);
+    box-shadow:
+        0 4px 10px rgba(124, 77, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Item text */
@@ -2628,22 +2790,52 @@
 .appSideNav .sapTntNavLIItem .sapMText {
     font-weight: 500 !important;
     font-size: 0.875rem !important;
-    margin-left: 0.6rem !important;
+    color: #2a2540 !important;
+    letter-spacing: 0.01em;
 }
 
-/* ── Selected Item ────────────────────────────────────────── */
+/* ── Selected Item — glowing glass ──────────────────────────── */
 .appSideNav .sapTntNavLIItemSelected,
 .appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected {
-    background: linear-gradient(135deg, #0a6ed1, #5c3d9e) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(10, 110, 209, 0.3) !important;
+    background: linear-gradient(135deg,
+        rgba(124, 77, 255, 0.95) 0%,
+        rgba(10, 110, 209, 0.95) 50%,
+        rgba(94, 53, 177, 0.95) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow:
+        0 0 0 2px rgba(124, 77, 255, 0.25),
+        0 8px 24px rgba(124, 77, 255, 0.4),
+        0 2px 8px rgba(10, 110, 209, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
     transform: translateX(2px);
+    animation: appNavGlow 2.4s ease-in-out infinite;
+}
+
+@keyframes appNavGlow {
+    0%, 100% {
+        box-shadow:
+            0 0 0 2px rgba(124, 77, 255, 0.25),
+            0 8px 24px rgba(124, 77, 255, 0.4),
+            0 2px 8px rgba(10, 110, 209, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow:
+            0 0 0 3px rgba(124, 77, 255, 0.4),
+            0 10px 28px rgba(124, 77, 255, 0.55),
+            0 4px 12px rgba(10, 110, 209, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
 }
 
 .appSideNav .sapTntNavLIItemSelected .sapUiIcon,
 .appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected .sapUiIcon {
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.25) !important;
     color: #ffffff !important;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
 }
 
 .appSideNav .sapTntNavLIItemSelected .sapTntNavLIText,
@@ -2652,20 +2844,881 @@
 .appSideNav .sapTntNavLIItem.sapTntNavLIItemSelected .sapMText {
     color: #ffffff !important;
     font-weight: 600 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .appSideNav .sapTntNavLIItemSelected:hover {
-    background: linear-gradient(135deg, #0a6ed1, #4527a0) !important;
+    transform: translateX(2px) translateY(-1px);
 }
 
 /* Collapsed sidebar — keep icons centered & styled */
 .appSideNav.sapTntSideNavigationCollapsed .sapTntNavLIItem {
-    margin: 0.25rem !important;
-    padding: 0.35rem !important;
+    margin: 0.3rem 0.4rem !important;
+    padding: 0.4rem !important;
+    border-radius: 12px !important;
 }
 
 .appSideNav.sapTntSideNavigationCollapsed .sapTntNavLIItem .sapUiIcon {
     margin: 0 auto !important;
+    padding: 0.45rem !important;
+}
+
+/* ============================================================
+   Column Settings Dialog
+   ============================================================ */
+.csDialog .sapMDialogScrollCont {
+    padding: 0 !important;
+}
+
+.csDialog.sapMDialog {
+    border-radius: 18px !important;
+    overflow: hidden !important;
+    box-shadow:
+        0 24px 60px rgba(31, 41, 55, 0.18),
+        0 8px 24px rgba(124, 77, 255, 0.12) !important;
+}
+
+.csDialog .sapMDialogSection {
+    background: linear-gradient(180deg, #fafbfd 0%, #f4f1fb 100%) !important;
+}
+
+.csContainer {
+    padding: 0 !important;
+}
+
+/* ── Header band ─────────────────────────────────────────── */
+.csHeader {
+    padding: 1.25rem 1.5rem !important;
+    background: linear-gradient(135deg, #7c4dff 0%, #0a6ed1 60%, #5c3d9e 100%) !important;
+    color: #ffffff !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.csHeader::before {
+    content: "";
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.csHeader::after {
+    content: "";
+    position: absolute;
+    bottom: -50%;
+    left: -5%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 138, 101, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.csHeaderIcon {
+    width: 2.6rem;
+    height: 2.6rem;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.csHeaderTitle.sapMTitle {
+    color: #ffffff !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    letter-spacing: 0.01em;
+}
+
+.csHeaderSubtitle.sapMText {
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-size: 0.78rem !important;
+    margin-top: 0.15rem;
+}
+
+/* ── List wrapper ────────────────────────────────────────── */
+.csListWrapper {
+    padding: 1.25rem 1.5rem !important;
+    background: transparent;
+}
+
+.csListHead {
+    padding: 0.5rem 0.75rem 0.6rem 0.75rem;
+    border-bottom: 2px solid rgba(124, 77, 255, 0.15);
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.csHeadCol.sapMText {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    color: #5a4a8a !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.csHeadColName    { flex: 1 1 auto; min-width: 0; padding-left: 0.25rem; }
+.csHeadColVisible { width: 90px; text-align: center; }
+.csHeadColSort    { width: 130px; text-align: center; padding-right: 0.25rem; }
+
+/* ── List itself ─────────────────────────────────────────── */
+.csList.sapMList {
+    background: transparent !important;
+    border: none !important;
+}
+
+.csList .sapMListUl {
+    background: transparent !important;
+    border: none !important;
+}
+
+.csListItem.sapMLIB,
+.csListItem.sapMCustomListItem {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.csListItem.sapMLIB:hover {
+    background: transparent !important;
+}
+
+.csRow {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    margin: 0.3rem 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(124, 77, 255, 0.1);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.csRow:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(124, 77, 255, 0.35);
+    transform: translateX(2px);
+    box-shadow:
+        0 4px 14px rgba(124, 77, 255, 0.12),
+        0 1px 3px rgba(10, 110, 209, 0.08);
+}
+
+/* Row sub-cells */
+.csRowName    { flex: 1 1 auto; min-width: 0; }
+.csRowVisible { width: 90px; flex-shrink: 0; }
+.csRowSort    { width: 130px; flex-shrink: 0; }
+
+.csRowIcon {
+    width: 1.85rem;
+    height: 1.85rem;
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.12), rgba(10, 110, 209, 0.12));
+    border-radius: 8px;
+    margin-right: 0.65rem;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+}
+
+.csRow:hover .csRowIcon {
+    background: linear-gradient(135deg, #7c4dff, #0a6ed1);
+}
+
+.csRow:hover .csRowIcon .sapUiIcon {
+    color: #ffffff !important;
+}
+
+.csRowLabel.sapMText {
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #2a2540 !important;
+}
+
+/* Switch — accept/reject */
+.csSwitch.sapMSwt {
+    transform: scale(0.9);
+}
+
+/* Segmented button — sort direction (unified pill) */
+.csSegmented.sapMSegB {
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #f3f0fb !important;
+    border: 1px solid rgba(124, 77, 255, 0.22) !important;
+    box-shadow:
+        inset 0 1px 2px rgba(124, 77, 255, 0.06),
+        0 1px 0 rgba(255, 255, 255, 0.6) !important;
+    display: inline-flex !important;
+    padding: 3px !important;
+    gap: 3px !important;
+    height: 36px !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+}
+
+/* Wipe ALL native segment chrome — nuclear approach */
+.csSegmented.sapMSegB > *,
+.csSegmented.sapMSegB .sapMSegBBtn,
+.csSegmented.sapMSegB .sapMSegBBtnSel,
+.csSegmented.sapMSegB button,
+.csSegmented.sapMSegB li {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-radius: 7px !important;
+    box-shadow: none !important;
+    color: #6a6d70 !important;
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transition: all 0.18s ease !important;
+    outline: none !important;
+    list-style: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    flex: 0 0 50px !important;
+}
+
+.csSegmented.sapMSegB .sapMSegBBtn:focus,
+.csSegmented.sapMSegB .sapMSegBBtnSel:focus,
+.csSegmented.sapMSegB button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.csSegmented.sapMSegB .sapMSegBBtnInner,
+.csSegmented.sapMSegB .sapMSegBBtn .sapMSegBBtnInner {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.csSegmented.sapMSegB .sapUiIcon,
+.csSegmented.sapMSegB .sapMBtnIcon {
+    color: #6a6d70 !important;
+    font-size: 0.95rem !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: inline-block !important;
+}
+
+/* Hover (non-selected) */
+.csSegmented.sapMSegB .sapMSegBBtn:not(.sapMSegBBtnSel):hover {
+    background: rgba(124, 77, 255, 0.08) !important;
+    background-color: rgba(124, 77, 255, 0.08) !important;
+}
+.csSegmented.sapMSegB .sapMSegBBtn:not(.sapMSegBBtnSel):hover .sapUiIcon {
+    color: #5c3d9e !important;
+}
+
+/* SELECTED segment — solid gradient pill */
+.csSegmented.sapMSegB .sapMSegBBtnSel,
+.csSegmented.sapMSegB .sapMSegBBtnSel:hover,
+.csSegmented.sapMSegB .sapMSegBBtnSel:focus,
+.csSegmented.sapMSegB .sapMSegBBtnSel:active {
+    background: linear-gradient(135deg, #7c4dff 0%, #0a6ed1 100%) !important;
+    background-color: #7c4dff !important;
+    background-image: linear-gradient(135deg, #7c4dff 0%, #0a6ed1 100%) !important;
+    color: #ffffff !important;
+    box-shadow:
+        0 2px 6px rgba(124, 77, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+.csSegmented.sapMSegB .sapMSegBBtnSel .sapUiIcon,
+.csSegmented.sapMSegB .sapMSegBBtnSel .sapMBtnIcon,
+.csSegmented.sapMSegB .sapMSegBBtnSel .sapMSegBBtnInner,
+.csSegmented.sapMSegB .sapMSegBBtnSel * {
+    color: #ffffff !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.csSegmented.sapMSegB .sapMSegBBtnSel .sapUiIcon::before,
+.csSegmented.sapMSegB .sapMSegBBtnSel .sapMBtnIcon::before {
+    color: #ffffff !important;
+}
+
+/* ── Footer buttons ──────────────────────────────────────── */
+.csDialog footer.sapMIBar,
+.csDialog .sapMDialogFooter {
+    background: linear-gradient(180deg, #fafbfd, #f0ecf9) !important;
+    border-top: 1px solid rgba(124, 77, 255, 0.12) !important;
+    padding: 0.65rem 1rem !important;
+}
+
+.csCancelBtn.sapMBtn .sapMBtnInner {
+    border-radius: 10px !important;
+    border: 1px solid rgba(124, 77, 255, 0.25) !important;
+    background: rgba(255, 255, 255, 0.7) !important;
+    color: #5a4a8a !important;
+    padding: 0 1.1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.csCancelBtn.sapMBtn:hover .sapMBtnInner {
+    background: #ffffff !important;
+    border-color: #7c4dff !important;
+    color: #5c3d9e !important;
+}
+
+.csApplyBtn.sapMBtn .sapMBtnInner {
+    border-radius: 10px !important;
+    border: none !important;
+    background: linear-gradient(135deg, #7c4dff 0%, #0a6ed1 100%) !important;
+    color: #ffffff !important;
+    padding: 0 1.4rem !important;
+    box-shadow:
+        0 4px 12px rgba(124, 77, 255, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    transition: all 0.25s ease !important;
+}
+
+.csApplyBtn.sapMBtn:hover .sapMBtnInner {
+    background: linear-gradient(135deg, #6a3dff 0%, #0856a8 100%) !important;
+    box-shadow:
+        0 6px 18px rgba(124, 77, 255, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-1px);
+}
+
+.csApplyBtn.sapMBtn .sapUiIcon,
+.csApplyBtn.sapMBtn .sapMBtnIcon {
+    color: #ffffff !important;
+}
+
+/* ============================================================
+   Mobile responsiveness (#19)
+   ============================================================ */
+@media (max-width: 768px) {
+    /* Reduce outer padding on phones */
+    .hpOuterPadding,
+    .aibOuterPadding,
+    .adOuterPadding {
+        padding: 0.5rem !important;
+    }
+
+    /* Page header — stack title and primary button vertically */
+    .hpPageHeader,
+    .adPageHeader,
+    .aibPageHeader {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+
+    .hpCreateBtn {
+        width: 100% !important;
+    }
+
+    /* Filter card — let inputs stack */
+    .hpFilterBody .sapUiCompFilterBarFLContainer,
+    .hpFilterBody .sapUiCompFilterBar {
+        flex-wrap: wrap !important;
+    }
+
+    .hpFilterBody .sapMSF,
+    .hpFilterBody .sapMMultiInput,
+    .hpFilterBody .sapMSlt {
+        min-width: 100% !important;
+    }
+
+    /* ApprovalInbox — collapse master/detail to single column */
+    .aibContent {
+        flex-direction: column !important;
+    }
+
+    .aibMasterPanel {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid #e3e8f0 !important;
+    }
+
+    .aibDetailPanel,
+    .aibEmptyState {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Detail header — wrap action buttons below the title */
+    .aibDetailHeader {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+
+    /* Info card row — single column */
+    .aibInfoCardRow {
+        flex-direction: column !important;
+    }
+
+    .aibInfoCard {
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Dashboard tiles — single column */
+    .dashTilesRow {
+        flex-direction: column !important;
+    }
+
+    .dashTile,
+    .dashChartTile {
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Quick action buttons — full width on phones */
+    .dashQuickBtn.sapMBtn {
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+
+    /* Wizard — single column form */
+    .sapUiFormContainerLeftPart,
+    .sapUiFormContainerRightPart {
+        width: 100% !important;
+        float: none !important;
+    }
+
+    /* Top header — hide brand title text on small screens (logo + avatar still visible) */
+    .appBrandTitle {
+        display: none !important;
+    }
+
+    /* Sidebar — let it collapse to icons only when very narrow */
+    .appSideNav.sapTntSideNavigation {
+        max-width: 240px;
+    }
+
+    /* Column Settings dialog — full width on small screens */
+    .csDialog.sapMDialog {
+        width: 96vw !important;
+        max-width: 96vw !important;
+    }
+
+    .csRowSort {
+        width: auto !important;
+        min-width: 130px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Page titles smaller on phones */
+    .hpPageTitle .sapMTitle,
+    .adPageTitle .sapMTitle,
+    .aibPageTitle .sapMTitle {
+        font-size: 1.1rem !important;
+    }
+
+    .hpPageSubtitle,
+    .adPageSubtitle,
+    .aibPageSubtitle {
+        font-size: 0.75rem !important;
+    }
+
+    /* Hide page subtitles on very narrow phones */
+    .hpPageHeader .hpPageSubtitle,
+    .adPageHeader .adPageSubtitle,
+    .aibPageHeader .aibPageSubtitle {
+        display: none !important;
+    }
+}
+
+/* ============================================================
+   Dark Mode (#18) — overrides all custom palettes
+   ============================================================ */
+body[data-theme="dark"] {
+    /* Page backgrounds */
+    background: #0f1117 !important;
+}
+
+body[data-theme="dark"] .sapMPage,
+body[data-theme="dark"] .sapMPageEnableScrolling,
+body[data-theme="dark"] .homePage,
+body[data-theme="dark"] .approvalInboxPage {
+    background: #0f1117 !important;
+}
+
+/* ── App shell ──────────────────────────────────────────── */
+body[data-theme="dark"] .appToolHeader.sapTntToolHeader {
+    background: linear-gradient(90deg, #1a1d27 0%, #161922 100%) !important;
+    border-bottom: 1px solid #2a2e3a !important;
+}
+
+body[data-theme="dark"] .appBrandTitle .sapMTitle {
+    color: #e5e7eb !important;
+}
+
+body[data-theme="dark"] .appMenuBtn.sapMBtn .sapMBtnInner,
+body[data-theme="dark"] .appBellBtn.sapMBtn .sapMBtnInner {
+    color: #c0c4cc !important;
+}
+
+body[data-theme="dark"] .appMenuBtn.sapMBtn:hover .sapMBtnInner {
+    background: rgba(124, 77, 255, 0.18) !important;
+    color: #c4a8ff !important;
+}
+
+body[data-theme="dark"] .appBellBtn.sapMBtn:hover .sapMBtnInner {
+    background: rgba(255, 138, 101, 0.15) !important;
+    color: #ffb74d !important;
+}
+
+/* ── Sidebar ────────────────────────────────────────────── */
+body[data-theme="dark"] .appSideNav.sapTntSideNavigation {
+    background:
+        radial-gradient(circle at 20% 0%, rgba(124, 77, 255, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 80% 30%, rgba(10, 110, 209, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 30% 80%, rgba(255, 138, 101, 0.12) 0%, transparent 45%),
+        linear-gradient(180deg, #161922 0%, #1a1d27 50%, #14161e 100%) !important;
+    border-right: 1px solid #2a2e3a !important;
+}
+
+body[data-theme="dark"] .appSideNav.sapTntSideNavigation::before {
+    background: rgba(15, 17, 23, 0.4) !important;
+}
+
+body[data-theme="dark"] .appSideNav .sapTntNavLIItem {
+    border: 1px solid rgba(124, 77, 255, 0.18) !important;
+}
+
+body[data-theme="dark"] .appSideNav .sapTntNavLIItem:hover {
+    background: rgba(124, 77, 255, 0.15) !important;
+}
+
+body[data-theme="dark"] .appSideNav .sapTntNavLIItem .sapTntNavLIText,
+body[data-theme="dark"] .appSideNav .sapTntNavLIItem .sapMText {
+    color: #d1d5db !important;
+}
+
+body[data-theme="dark"] .appSideNav .sapTntNavLIItem .sapUiIcon {
+    color: #c0c4cc !important;
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.2), rgba(10, 110, 209, 0.2)) !important;
+}
+
+/* ── Cards ──────────────────────────────────────────────── */
+body[data-theme="dark"] .hpCard,
+body[data-theme="dark"] .dashSectionCard,
+body[data-theme="dark"] .aibMasterPanel,
+body[data-theme="dark"] .aibDetailPanel,
+body[data-theme="dark"] .adTableCard,
+body[data-theme="dark"] .adKpiCard,
+body[data-theme="dark"] .aibInfoCard,
+body[data-theme="dark"] .aibProgressCard,
+body[data-theme="dark"] .umCard,
+body[data-theme="dark"] .awcCard,
+body[data-theme="dark"] .aqCard {
+    background: #1a1d27 !important;
+    border-color: #2a2e3a !important;
+    color: #d1d5db !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+body[data-theme="dark"] .hpCardHeader,
+body[data-theme="dark"] .adTableHeader,
+body[data-theme="dark"] .aibDetailHeader,
+body[data-theme="dark"] .dashSectionHeader,
+body[data-theme="dark"] .adPageHeader,
+body[data-theme="dark"] .aibPageHeader,
+body[data-theme="dark"] .hpPageHeader {
+    background: transparent !important;
+    border-bottom-color: #2a2e3a !important;
+}
+
+body[data-theme="dark"] .hpFilterCard .hpCardHeader {
+    background: linear-gradient(135deg, #1f2230, #1a1d27) !important;
+}
+
+/* ── Titles & text ──────────────────────────────────────── */
+body[data-theme="dark"] .sapMTitle,
+body[data-theme="dark"] .hpCardTitle .sapMTitle,
+body[data-theme="dark"] .hpPageTitle .sapMTitle,
+body[data-theme="dark"] .adPageTitle .sapMTitle,
+body[data-theme="dark"] .aibPageTitle .sapMTitle,
+body[data-theme="dark"] .dashSectionTitle .sapMTitle,
+body[data-theme="dark"] .hpBpName.sapMText,
+body[data-theme="dark"] .adBPName.sapMText {
+    color: #f3f4f6 !important;
+}
+
+body[data-theme="dark"] .sapMText,
+body[data-theme="dark"] .sapMLabel,
+body[data-theme="dark"] .hpPageSubtitle.sapMText,
+body[data-theme="dark"] .adPageSubtitle.sapMText,
+body[data-theme="dark"] .aibPageSubtitle.sapMText,
+body[data-theme="dark"] .hpBpId.sapMText,
+body[data-theme="dark"] .adBPEmail.sapMText {
+    color: #b0b6c0 !important;
+}
+
+/* ── Tables ─────────────────────────────────────────────── */
+body[data-theme="dark"] .sapMList,
+body[data-theme="dark"] .sapMListUl,
+body[data-theme="dark"] .hpTable,
+body[data-theme="dark"] .adTable,
+body[data-theme="dark"] .aqTable,
+body[data-theme="dark"] .umTable,
+body[data-theme="dark"] .awcTable {
+    background: transparent !important;
+}
+
+body[data-theme="dark"] .sapMListTblHeader,
+body[data-theme="dark"] .sapMListTblHeaderCell {
+    background: #14161e !important;
+    color: #d1d5db !important;
+    border-bottom-color: #2a2e3a !important;
+}
+
+body[data-theme="dark"] .sapMListTblRow,
+body[data-theme="dark"] .sapMListTblCell {
+    background: #1a1d27 !important;
+    border-bottom-color: #2a2e3a !important;
+    color: #d1d5db !important;
+}
+
+body[data-theme="dark"] .sapMListTblRow:hover,
+body[data-theme="dark"] .sapMLIB.sapMLIBHoverable:hover {
+    background: #232633 !important;
+}
+
+body[data-theme="dark"] .sapMLIB.sapMLIBSelected {
+    background: linear-gradient(135deg, rgba(124,77,255,0.25), rgba(10,110,209,0.25)) !important;
+}
+
+/* ── Inputs / Selects / MultiInput ──────────────────────── */
+body[data-theme="dark"] .sapMInputBaseContentWrapper,
+body[data-theme="dark"] .sapMSltHiddenSelect,
+body[data-theme="dark"] .sapMSF,
+body[data-theme="dark"] .sapMMultiInput {
+    background: #14161e !important;
+    border-color: #2a2e3a !important;
+    color: #e5e7eb !important;
+}
+
+body[data-theme="dark"] .sapMInputBaseInner,
+body[data-theme="dark"] .sapMInputInner {
+    background: transparent !important;
+    color: #e5e7eb !important;
+}
+
+body[data-theme="dark"] .sapMInputBaseInner::placeholder,
+body[data-theme="dark"] .sapMInputInner::placeholder {
+    color: #6b7280 !important;
+}
+
+body[data-theme="dark"] .sapMTokenizer .sapMToken {
+    background: rgba(124, 77, 255, 0.25) !important;
+    color: #e5e7eb !important;
+    border-color: rgba(124, 77, 255, 0.4) !important;
+}
+
+/* ── Buttons (transparent / default) ────────────────────── */
+body[data-theme="dark"] .sapMBtn:not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject) .sapMBtnInner {
+    color: #d1d5db !important;
+}
+
+body[data-theme="dark"] .hpToolbarBtn.sapMBtn:hover .sapMBtnInner,
+body[data-theme="dark"] .adRefreshBtn.sapMBtn:hover .sapMBtnInner,
+body[data-theme="dark"] .aibRefreshBtn.sapMBtn:hover .sapMBtnInner {
+    background: rgba(124, 77, 255, 0.15) !important;
+    color: #c4a8ff !important;
+}
+
+/* ── Tile colours — softer in dark ──────────────────────── */
+body[data-theme="dark"] .dashTileGreen   { background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(46, 125, 50, 0.1)) !important; border-color: #2e7d32 !important; }
+body[data-theme="dark"] .dashTileAmber   { background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(230, 81, 0, 0.1)) !important; border-color: #e65100 !important; }
+body[data-theme="dark"] .dashTilePurple  { background: linear-gradient(135deg, rgba(124, 77, 255, 0.15), rgba(92, 61, 158, 0.1)) !important; border-color: #5c3d9e !important; }
+body[data-theme="dark"] .dashTileBlue    { background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(13, 71, 161, 0.1)) !important; border-color: #1565c0 !important; }
+body[data-theme="dark"] .dashTileRed     { background: linear-gradient(135deg, rgba(244, 67, 54, 0.15), rgba(198, 40, 40, 0.1)) !important; border-color: #c62828 !important; }
+body[data-theme="dark"] .dashChartTile   { background: #1a1d27 !important; border-color: #2a2e3a !important; }
+
+body[data-theme="dark"] .dashTileNumber.sapMText { color: #f3f4f6 !important; }
+body[data-theme="dark"] .dashTileLabel.sapMText  { color: #d1d5db !important; }
+body[data-theme="dark"] .dashTileSub.sapMText    { color: #9ca3af !important; }
+
+/* ── Quick action buttons ───────────────────────────────── */
+body[data-theme="dark"] .dashQuickPurple.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.25), rgba(94, 53, 177, 0.18)) !important;
+    border-color: rgba(124, 77, 255, 0.5) !important;
+    color: #d6c9ff !important;
+}
+body[data-theme="dark"] .dashQuickAmber.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.22), rgba(230, 81, 0, 0.15)) !important;
+    border-color: rgba(255, 152, 0, 0.5) !important;
+    color: #ffd180 !important;
+}
+body[data-theme="dark"] .dashQuickBlue.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.22), rgba(13, 71, 161, 0.15)) !important;
+    border-color: rgba(33, 150, 243, 0.5) !important;
+    color: #90caf9 !important;
+}
+body[data-theme="dark"] .dashQuickGreen.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.22), rgba(46, 125, 50, 0.15)) !important;
+    border-color: rgba(76, 175, 80, 0.5) !important;
+    color: #a5d6a7 !important;
+}
+
+/* ── Approval Inbox specific ────────────────────────────── */
+body[data-theme="dark"] .aibTab.sapMBtn .sapMBtnInner {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: #2a2e3a !important;
+    color: #d1d5db !important;
+}
+
+body[data-theme="dark"] .aibTabActive.sapMBtn .sapMBtnInner {
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.25), rgba(10, 110, 209, 0.25)) !important;
+    border-color: rgba(124, 77, 255, 0.5) !important;
+    color: #ffffff !important;
+}
+
+body[data-theme="dark"] .aibListItem.sapMLIB {
+    border-bottom-color: #2a2e3a !important;
+}
+
+body[data-theme="dark"] .aibListItem.sapMLIB.sapMLIBSelected,
+body[data-theme="dark"] .aibListItem.sapMLIB:focus {
+    background: linear-gradient(135deg, rgba(124, 77, 255, 0.25), rgba(10, 110, 209, 0.2)) !important;
+    border-left-color: #7c4dff !important;
+}
+
+body[data-theme="dark"] .aibListItemName.sapMText { color: #f3f4f6 !important; }
+body[data-theme="dark"] .aibListItemSub.sapMText { color: #9ca3af !important; }
+
+/* ── Approval Data badges retain their hue but darker bg ── */
+body[data-theme="dark"] .adRefBadge.sapMObjStatus {
+    background: rgba(33, 150, 243, 0.2) !important;
+    color: #90caf9 !important;
+}
+
+body[data-theme="dark"] .adSapBpBadge.sapMText {
+    background: rgba(76, 175, 80, 0.2) !important;
+    color: #a5d6a7 !important;
+    border-color: rgba(76, 175, 80, 0.4) !important;
+}
+
+/* ── Dialogs ────────────────────────────────────────────── */
+body[data-theme="dark"] .sapMDialog {
+    background: #1a1d27 !important;
+    color: #d1d5db !important;
+}
+
+body[data-theme="dark"] .sapMDialogSection {
+    background: #1a1d27 !important;
+}
+
+body[data-theme="dark"] .sapMDialog .sapMDialogTitle {
+    color: #f3f4f6 !important;
+}
+
+body[data-theme="dark"] .csListWrapper {
+    background: transparent !important;
+}
+
+body[data-theme="dark"] .csRow {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(124, 77, 255, 0.25) !important;
+}
+
+body[data-theme="dark"] .csRow:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body[data-theme="dark"] .csRowLabel.sapMText {
+    color: #e5e7eb !important;
+}
+
+body[data-theme="dark"] .csHeadCol.sapMText {
+    color: #c4a8ff !important;
+}
+
+body[data-theme="dark"] .csListHead {
+    border-bottom-color: rgba(124, 77, 255, 0.3) !important;
+}
+
+body[data-theme="dark"] .csSegmented.sapMSegB {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(124, 77, 255, 0.3) !important;
+}
+
+body[data-theme="dark"] .csSegmented.sapMSegB .sapMSegBBtn .sapUiIcon {
+    color: #b0b6c0 !important;
+}
+
+body[data-theme="dark"] .csCancelBtn.sapMBtn .sapMBtnInner {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(124, 77, 255, 0.4) !important;
+    color: #d6c9ff !important;
+}
+
+body[data-theme="dark"] .csDialog footer.sapMIBar,
+body[data-theme="dark"] .csDialog .sapMDialogFooter {
+    background: linear-gradient(180deg, #1a1d27, #14161e) !important;
+    border-top-color: #2a2e3a !important;
+}
+
+/* ── Misc — KPIs, footer, status text ───────────────────── */
+body[data-theme="dark"] .adKpiNumber.sapMText {
+    color: #f3f4f6 !important;
+}
+
+body[data-theme="dark"] .adKpiLabel.sapMText {
+    color: #9ca3af !important;
+}
+
+body[data-theme="dark"] .hpStatusActive  { background: rgba(76, 175, 80, 0.25) !important; color: #a5d6a7 !important; }
+body[data-theme="dark"] .hpStatusDraft   { background: rgba(158, 158, 158, 0.25) !important; color: #d1d5db !important; }
+body[data-theme="dark"] .hpStatusPending { background: rgba(255, 152, 0, 0.25) !important; color: #ffd180 !important; }
+body[data-theme="dark"] .hpStatusPushed  { background: rgba(33, 150, 243, 0.25) !important; color: #90caf9 !important; }
+
+/* ── Wizard ────────────────────────────────────────────── */
+body[data-theme="dark"] .sapMWizardStep,
+body[data-theme="dark"] .sapMWizardProgressNav {
+    background: #1a1d27 !important;
+    color: #d1d5db !important;
+}
+
+/* ── Form labels ───────────────────────────────────────── */
+body[data-theme="dark"] .sapUiFormElement .sapMLabel,
+body[data-theme="dark"] .sapUiFormElement label {
+    color: #b0b6c0 !important;
 }
 
 /* ============================================================

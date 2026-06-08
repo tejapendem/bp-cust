@@ -1,63 +1,15 @@
-// sap.ui.define([
-//     "sap/ui/core/mvc/Controller",
-//     "sap/ui/model/Filter",
-//     "sap/ui/model/FilterOperator"
-// ], function (Controller, Filter, FilterOperator) {
-
-//     "use strict";
-//     return Controller.extend("bp.cust.ui.controller.Main", {
-//         onCreatepress: function () {
-//             this.getOwnerComponent().getRouter().navTo("Wizard");
-//         },
-//         onSearch: function (oEvent) {
-//             var sQuery = oEvent.getParameter("query");
-//             var oTable = this.byId("bpTable");
-//             var oBinding = oTable.getBinding("items");
-
-//             if (sQuery) {
-//                 var aFilters = [
-//                     new Filter("Name", FilterOperator.Contains, sQuery),
-//                     new Filter("BusinessPartnerNumber", FilterOperator.Contains, sQuery)
-//                 ];
-//                 oBinding.filter(new Filter({
-//                     filters: aFilters,
-//                     and: false
-//                 }));
-//             } else {
-//                 oBinding.filter([]);
-//             }
-//         },
-//         onClear: function () {
-//             this.byId("filterID").setValue("");
-//             this.byId("filterCategory").setValue("");
-//             this.byId("filterName").setValue("");
-//             this.byId("filterGrouping").setSelectedKey("");
-//             this.byId("filterGrouping").setValue("");
-//             var oBinding = this.byId("bpTable").getBinding("items");
-//             if (oBinding) {
-//                 oBinding.filter([]);
-//             }
-//         },
-//         onItemPress: function (oEvent) {
-//             // Optional: View details
-
-//         }
-//     });
-// });
-
-
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "bp/cust/ui/controller/BaseController",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/core/Fragment",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageBox",
     "sap/m/MessageToast"
-], function (Controller, Filter, FilterOperator, Fragment, JSONModel, MessageBox, MessageToast) {
+], function (BaseController, Filter, FilterOperator, Fragment, JSONModel, MessageBox, MessageToast) {
     "use strict";
 
-    return Controller.extend("bp.cust.ui.controller.Main", {
+    return BaseController.extend("bp.cust.ui.controller.Main", {
         onInit: function () {
             // Access control - only registered users can access this page
             var oUserModel = this.getOwnerComponent().getModel("userModel");
@@ -74,36 +26,14 @@ sap.ui.define([
 
             this.getOwnerComponent().getRouter().getRoute("Main").attachPatternMatched(this._onMainMatched, this);
             this._bSortDescending = true;
-
-            // Load company codes into dropdown
-            var oModel = this.getOwnerComponent().getModel();
-            if (oModel) {
-                var oCCBinding = oModel.bindList("/VH_CompanyCode");
-                oCCBinding.requestContexts().then(function (aContexts) {
-                    var oSelect = this.byId("filterCompanyCode");
-                    if (oSelect) {
-                        aContexts.forEach(function (oCtx) {
-                            var item = oCtx.getObject();
-                            oSelect.addItem(new sap.ui.core.Item({ key: item.code, text: item.code + " - " + item.name }));
-                        });
-                    }
-                }.bind(this)).catch(function () {});
-
-                var oSOBinding = oModel.bindList("/VH_SalesOrganization");
-                oSOBinding.requestContexts().then(function (aContexts) {
-                    var oSelect = this.byId("filterSalesOrg");
-                    if (oSelect) {
-                        aContexts.forEach(function (oCtx) {
-                            var item = oCtx.getObject();
-                            oSelect.addItem(new sap.ui.core.Item({ key: item.code, text: item.code + " - " + item.name }));
-                        });
-                    }
-                }.bind(this)).catch(function () {});
-            }
         },
 
         _onMainMatched: function () {
             this.onRefresh();
+            // Apply saved column visibility & sort settings
+            setTimeout(function (that) {
+                that._applyColumnSettings();
+            }, 500, this);
         },
 
         onCreatepress: function () {
@@ -113,73 +43,234 @@ sap.ui.define([
         // ─────────────────────────────────────────────
         // MULTI-FIELD FILTER LOGIC
         // ─────────────────────────────────────────────
+        _getTokenKeys: function (sFilterId) {
+            var oMI = this.byId(sFilterId);
+            if (!oMI || !oMI.getTokens) return [];
+            return oMI.getTokens().map(function (oTok) { return oTok.getKey(); });
+        },
+
+        _buildOrFilter: function (sPath, aValues, oOp) {
+            var op = oOp || FilterOperator.EQ;
+            var aF = aValues.map(function (v) { return new Filter(sPath, op, v); });
+            if (aF.length === 1) return aF[0];
+            return new Filter({ filters: aF, and: false });
+        },
+
         onSearch: function () {
-            var sStatus = this.byId("filterStatus").getSelectedKey();
-            var sGrouping = this.byId("filterGrouping").getSelectedKey();
-            var sCompanyCode = this.byId("filterCompanyCode").getSelectedKey();
-            var sSalesOrg = this.byId("filterSalesOrg").getSelectedKey();
-            var sBPNumber = this.byId("filterBPNumber").getValue();
-            var sName = this.byId("filterName").getValue();
-            var sCategory = this.byId("filterCategory").getSelectedKey();
+            var aStatus = this._getTokenKeys("filterStatus");
+            var aGrouping = this._getTokenKeys("filterGrouping");
+            var aCompanyCode = this._getTokenKeys("filterCompanyCode");
+            var aSalesOrg = this._getTokenKeys("filterSalesOrg");
+            var aBPNumber = this._getTokenKeys("filterBPNumber");
+            var aName = this._getTokenKeys("filterName");
+            var aCategory = this._getTokenKeys("filterCategory");
 
             var aFilters = [];
 
-            if (sStatus) {
-                aFilters.push(new Filter("LifecycleStatus", FilterOperator.EQ, sStatus));
+            if (aStatus.length) {
+                aFilters.push(this._buildOrFilter("LifecycleStatus", aStatus));
             }
-            if (sGrouping) {
-                aFilters.push(new Filter("Grouping", FilterOperator.EQ, sGrouping));
+            if (aGrouping.length) {
+                aFilters.push(this._buildOrFilter("Grouping", aGrouping));
             }
-            if (sCompanyCode) {
-                aFilters.push(new Filter({
-                    path: "CompanyCodes/any(d:d/CompanyCode eq '" + sCompanyCode + "')",
-                    operator: FilterOperator.EQ,
-                    value1: true
-                }));
+            if (aCompanyCode.length) {
+                var aCC = aCompanyCode.map(function (code) {
+                    return new Filter({
+                        path: "CompanyCodes/any(d:d/CompanyCode eq '" + code + "')",
+                        operator: FilterOperator.EQ,
+                        value1: true
+                    });
+                });
+                aFilters.push(aCC.length === 1 ? aCC[0] : new Filter({ filters: aCC, and: false }));
             }
-            if (sSalesOrg) {
-                aFilters.push(new Filter({
-                    path: "SalesAreas/any(d:d/SalesOrganization eq '" + sSalesOrg + "')",
-                    operator: FilterOperator.EQ,
-                    value1: true
-                }));
+            if (aSalesOrg.length) {
+                var aSO = aSalesOrg.map(function (code) {
+                    return new Filter({
+                        path: "SalesAreas/any(d:d/SalesOrganization eq '" + code + "')",
+                        operator: FilterOperator.EQ,
+                        value1: true
+                    });
+                });
+                aFilters.push(aSO.length === 1 ? aSO[0] : new Filter({ filters: aSO, and: false }));
             }
-            if (sBPNumber) {
-                aFilters.push(new Filter("BusinessPartnerNumber", FilterOperator.Contains, sBPNumber));
+            if (aBPNumber.length) {
+                aFilters.push(this._buildOrFilter("BusinessPartnerNumber", aBPNumber, FilterOperator.Contains));
             }
-            if (sName) {
-                aFilters.push(new Filter("Name", FilterOperator.Contains, sName));
+            if (aName.length) {
+                aFilters.push(this._buildOrFilter("Name", aName, FilterOperator.Contains));
             }
-            if (sCategory) {
-                aFilters.push(new Filter("BPType", FilterOperator.EQ, sCategory));
+            if (aCategory.length) {
+                aFilters.push(this._buildOrFilter("BPType", aCategory));
             }
 
             var oTable = this.byId("bpTable");
             var oBinding = oTable.getBinding("items");
 
             if (aFilters.length > 0) {
-                oBinding.filter(new Filter({
-                    filters: aFilters,
-                    and: true
-                }));
+                oBinding.filter(new Filter({ filters: aFilters, and: true }));
             } else {
                 oBinding.filter([]);
             }
         },
 
         onClear: function () {
-            this.byId("filterStatus").setSelectedKey("");
-            this.byId("filterGrouping").setSelectedKey("");
-            this.byId("filterCompanyCode").setSelectedKey("");
-            this.byId("filterSalesOrg").setSelectedKey("");
-            this.byId("filterBPNumber").setValue("");
-            this.byId("filterName").setValue("");
-            this.byId("filterCategory").setSelectedKey("");
+            ["filterStatus", "filterGrouping", "filterCompanyCode", "filterSalesOrg",
+                "filterBPNumber", "filterName", "filterCategory"].forEach(function (sId) {
+                var oMI = this.byId(sId);
+                if (oMI) {
+                    oMI.removeAllTokens();
+                    oMI.setValue("");
+                }
+            }.bind(this));
 
             var oBinding = this.byId("bpTable").getBinding("items");
             if (oBinding) {
                 oBinding.filter([]);
             }
+        },
+
+        // ─────────────────────────────────────────────
+        // VALUE HELP DIALOGS (multi-select)
+        // ─────────────────────────────────────────────
+        _vhConfig: {
+            status: {
+                title: "Select Status",
+                items: [
+                    { key: "active", text: "Active" },
+                    { key: "draft", text: "Draft" },
+                    { key: "pending_approval", text: "Pending Approval" }
+                ]
+            },
+            grouping: {
+                title: "Select Grouping",
+                items: [
+                    { key: "ZP01", text: "ZP01" },
+                    { key: "ZP05", text: "ZP05" }
+                ]
+            },
+            category: {
+                title: "Select Category",
+                items: [
+                    { key: "1", text: "Person" },
+                    { key: "2", text: "Organization" }
+                ]
+            },
+            companyCode: { title: "Select Company Code", entitySet: "/VH_CompanyCode" },
+            salesOrg:    { title: "Select Sales Organization", entitySet: "/VH_SalesOrganization" },
+            bpNumber:    { title: "Select Business Partner ID", entitySet: "/BusinessPartners", keyField: "BusinessPartnerNumber", textField: "Name" },
+            name:        { title: "Select Name", entitySet: "/BusinessPartners", keyField: "Name", textField: "BusinessPartnerNumber" }
+        },
+
+        onOpenValueHelp: function (oEvent) {
+            var oInput = oEvent.getSource();
+            var sVhKey = oInput.data("vhKey");
+            var oCfg = this._vhConfig[sVhKey];
+            if (!oCfg) return;
+
+            var that = this;
+            this._vhCurrentInput = oInput;
+
+            var oDialog = new sap.m.SelectDialog({
+                title: oCfg.title,
+                multiSelect: true,
+                rememberSelections: false,
+                search: function (oEv) {
+                    var sQ = oEv.getParameter("value");
+                    var aFilters = sQ ? [new Filter("text", FilterOperator.Contains, sQ)] : [];
+                    oEv.getSource().getBinding("items").filter(aFilters);
+                },
+                confirm: function (oEv) {
+                    var aSelected = oEv.getParameter("selectedItems") || [];
+                    that._applyVhSelection(oInput, aSelected);
+                    oDialog.destroy();
+                },
+                cancel: function () { oDialog.destroy(); }
+            });
+
+            // Build items
+            if (oCfg.items) {
+                // Static list
+                var oModel = new sap.ui.model.json.JSONModel({ items: oCfg.items });
+                oDialog.setModel(oModel);
+                oDialog.bindAggregation("items", {
+                    path: "/items",
+                    template: new sap.m.StandardListItem({
+                        title: "{text}",
+                        description: "{key}"
+                    })
+                });
+            } else if (oCfg.entitySet) {
+                // OData backed
+                var oODataModel = this.getOwnerComponent().getModel();
+                oDialog.setModel(oODataModel);
+                var sKey = oCfg.keyField || "code";
+                var sText = oCfg.textField || "name";
+                oDialog.bindAggregation("items", {
+                    path: oCfg.entitySet,
+                    parameters: oCfg.entitySet.indexOf("/VH_") === 0 ? { $filter: "isActive eq true" } : {},
+                    template: new sap.m.StandardListItem({
+                        title: "{" + sKey + "}",
+                        description: "{" + sText + "}"
+                    })
+                });
+            }
+
+            this.getView().addDependent(oDialog);
+            oDialog.open();
+        },
+
+        _applyVhSelection: function (oInput, aSelectedItems) {
+            // Replace tokens with the new selection
+            oInput.removeAllTokens();
+            aSelectedItems.forEach(function (oItem) {
+                oInput.addToken(new sap.m.Token({
+                    key: oItem.getTitle(),
+                    text: oItem.getTitle() + (oItem.getDescription() ? " (" + oItem.getDescription() + ")" : "")
+                }));
+            });
+        },
+
+        // ─────────────────────────────────────────────
+        // TYPE + ENTER → ADD TOKEN
+        // ─────────────────────────────────────────────
+        onMultiInputSubmit: function (oEvent) {
+            var oInput = oEvent.getSource();
+            var sValue = (oEvent.getParameter("value") || "").trim();
+            if (!sValue) return;
+
+            var sVhKey = oInput.data("vhKey");
+            var oCfg = this._vhConfig[sVhKey];
+
+            // For enum fields, try to match the typed text to a key (case-insensitive)
+            // by either exact key match or by display text match.
+            var sKey = sValue;
+            var sDisplay = sValue;
+
+            if (oCfg && oCfg.items) {
+                var sLower = sValue.toLowerCase();
+                var oMatch = oCfg.items.find(function (it) {
+                    return it.key.toLowerCase() === sLower ||
+                           it.text.toLowerCase() === sLower;
+                });
+                if (oMatch) {
+                    sKey = oMatch.key;
+                    sDisplay = oMatch.text;
+                } else {
+                    // No match for an enum field — show a brief warning and stop
+                    sap.m.MessageToast.show("'" + sValue + "' is not a valid " + (oCfg.title || "value"));
+                    oInput.setValue("");
+                    return;
+                }
+            }
+
+            // Avoid duplicate tokens
+            var bExists = oInput.getTokens().some(function (t) { return t.getKey() === sKey; });
+            if (!bExists) {
+                oInput.addToken(new sap.m.Token({ key: sKey, text: sDisplay }));
+            }
+
+            oInput.setValue("");
+            this.onSearch();
         },
 
         onItemPress: function (oEvent) {
@@ -366,6 +457,132 @@ sap.ui.define([
             if (this.byId("sapPushDialog")) {
                 this.byId("sapPushDialog").close();
             }
+        },
+
+        // ─────────────────────────────────────────────
+        // COLUMN SETTINGS DIALOG
+        // ─────────────────────────────────────────────
+        _getColumnConfigs: function () {
+            return [
+                { key: "Details", label: "Business Partner Details", path: "Name", visible: true, sort: "none" },
+                { key: "BPNumber", label: "BP Number", path: "BusinessPartnerNumber", visible: false, sort: "none" },
+                { key: "SAPNumber", label: "SAP Number", path: "SAPBPNumber", visible: true, sort: "none" },
+                { key: "Category", label: "Category", path: "BPType", visible: true, sort: "none" },
+                { key: "Grouping", label: "Grouping", path: "Grouping", visible: true, sort: "none" },
+                { key: "Status", label: "Status", path: "LifecycleStatus", visible: true, sort: "none" },
+                { key: "CreatedAt", label: "Created At", path: "createdAt", visible: true, sort: "desc" },
+                { key: "Country", label: "Country", path: "Country", visible: false, sort: "none" },
+                { key: "Email", label: "Email", path: "Email", visible: false, sort: "none" },
+                { key: "Roles", label: "Assigned Roles", path: "BPRole", visible: true, sort: "none" }
+            ];
+        },
+
+        _loadColumnSettings: function () {
+            var aDefaults = this._getColumnConfigs();
+            try {
+                var sSaved = localStorage.getItem("bp-cust-column-settings");
+                if (sSaved) {
+                    var aSaved = JSON.parse(sSaved);
+                    var oMap = {};
+                    aSaved.forEach(function (c) { oMap[c.key] = c; });
+                    aDefaults.forEach(function (c) {
+                        if (oMap[c.key]) {
+                            c.visible = oMap[c.key].visible;
+                            c.sort = oMap[c.key].sort;
+                        }
+                    });
+                }
+            } catch (e) {}
+            return aDefaults;
+        },
+
+        _saveColumnSettings: function (aCols) {
+            try {
+                localStorage.setItem("bp-cust-column-settings", JSON.stringify(aCols));
+            } catch (e) {}
+        },
+
+        _applyColumnSettings: function () {
+            var aCols = this._loadColumnSettings();
+            var oTable = this.byId("bpTable");
+            if (!oTable) return;
+
+            var aColKeys = ["Details", "SAPNumber", "Category", "Grouping", "Status", "CreatedAt", "Roles"];
+            var aColumns = oTable.getColumns();
+
+            aColKeys.forEach(function (sKey, i) {
+                var cfg = null;
+                aCols.forEach(function (c) { if (c.key === sKey) cfg = c; });
+                if (cfg && aColumns[i]) {
+                    aColumns[i].setVisible(cfg.visible !== false);
+                }
+            });
+
+            var oBinding = oTable.getBinding("items");
+            if (!oBinding) return;
+            var sSortKey = null;
+            var bDesc = false;
+            for (var i = 0; i < aCols.length; i++) {
+                if (aCols[i].sort && aCols[i].sort !== "none") {
+                    sSortKey = aCols[i].path;
+                    bDesc = aCols[i].sort === "desc";
+                    break;
+                }
+            }
+            if (sSortKey) {
+                oBinding.sort(new sap.ui.model.Sorter(sSortKey, bDesc));
+            }
+        },
+
+        onColumnSettings: function () {
+            var that = this;
+            var aCols = jQuery.extend(true, [], this._loadColumnSettings());
+
+            if (!this._oColDialog) {
+                Fragment.load({
+                    id: this.getView().getId(),
+                    name: "bp.cust.ui.view.fragments.ColumnSettings",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._oColDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    that._openColDialog(aCols);
+                });
+            } else {
+                this._openColDialog(aCols);
+            }
+        },
+
+        _openColDialog: function (aCols) {
+            var oModel = new sap.ui.model.json.JSONModel(aCols);
+            this.getView().setModel(oModel, "colSettings");
+            this._oColDialog.open();
+        },
+
+        onColSettingsOK: function () {
+            var oModel = this.getView().getModel("colSettings");
+            var aCols = oModel.getData();
+
+            // Ensure only ONE column is the active sort: keep the first non-"none"
+            // and reset the rest to "none".
+            var bSeen = false;
+            aCols.forEach(function (c) {
+                if (c.sort && c.sort !== "none") {
+                    if (bSeen) {
+                        c.sort = "none";
+                    } else {
+                        bSeen = true;
+                    }
+                }
+            });
+
+            this._saveColumnSettings(aCols);
+            this._applyColumnSettings();
+            this._oColDialog.close();
+        },
+
+        onColSettingsCancel: function () {
+            this._oColDialog.close();
         },
 
         formatDate: function (sValue) {

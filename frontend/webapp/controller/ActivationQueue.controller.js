@@ -1,12 +1,12 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "bp/cust/ui/controller/BaseController",
     "sap/m/MessageBox",
     "sap/m/MessageToast",
     "sap/ui/core/Fragment"
-], function (Controller, MessageBox, MessageToast, Fragment) {
+], function (BaseController, MessageBox, MessageToast, Fragment) {
     "use strict";
 
-    return Controller.extend("bp.cust.ui.controller.ActivationQueue", {
+    return BaseController.extend("bp.cust.ui.controller.ActivationQueue", {
 
         onInit: function () {
             // Access control - only admins can access this page

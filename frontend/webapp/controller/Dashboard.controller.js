@@ -1,11 +1,11 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "bp/cust/ui/controller/BaseController",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast"
-], function (Controller, JSONModel, MessageToast) {
+], function (BaseController, JSONModel, MessageToast) {
     "use strict";
 
-    return Controller.extend("bp.cust.ui.controller.Dashboard", {
+    return BaseController.extend("bp.cust.ui.controller.Dashboard", {
 
         onInit: function () {
             // Access control - only admins can access this page

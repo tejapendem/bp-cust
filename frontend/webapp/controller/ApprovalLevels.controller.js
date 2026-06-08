@@ -1,12 +1,12 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "bp/cust/ui/controller/BaseController",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "sap/ui/core/routing/History"
-], function (Controller, MessageToast, MessageBox, History) {
+], function (BaseController, MessageToast, MessageBox, History) {
     "use strict";
 
-    return Controller.extend("bp.cust.ui.controller.ApprovalLevels", {
+    return BaseController.extend("bp.cust.ui.controller.ApprovalLevels", {
         onInit: function () {
             var oUserModel = this.getOwnerComponent().getModel("userModel");
             if (oUserModel) {

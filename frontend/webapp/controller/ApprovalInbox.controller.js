@@ -1,14 +1,14 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
+    "bp/cust/ui/controller/BaseController",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "sap/m/BusyDialog",
     "sap/ui/model/Filter"
-], function (Controller, JSONModel, MessageToast, MessageBox, BusyDialog, Filter) {
+], function (BaseController, JSONModel, MessageToast, MessageBox, BusyDialog, Filter) {
     "use strict";
 
-    return Controller.extend("bp.cust.ui.controller.ApprovalInbox", {
+    return BaseController.extend("bp.cust.ui.controller.ApprovalInbox", {
 
         onInit: function () {
             var oUserModel = this.getOwnerComponent().getModel("userModel");
