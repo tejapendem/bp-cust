@@ -104,6 +104,10 @@ sap.ui.define([
 
         _onMainMatched: function () {
             this.onRefresh();
+            // Apply saved column visibility & sort settings
+            setTimeout(function (that) {
+                that._applyColumnSettings();
+            }, 500, this);
         },
 
         onCreatepress: function () {
@@ -366,6 +370,121 @@ sap.ui.define([
             if (this.byId("sapPushDialog")) {
                 this.byId("sapPushDialog").close();
             }
+        },
+
+        // ─────────────────────────────────────────────
+        // COLUMN SETTINGS DIALOG
+        // ─────────────────────────────────────────────
+        _getColumnConfigs: function () {
+            return [
+                { key: "Details", label: "Business Partner Details", path: "Name", visible: true, sort: "none" },
+                { key: "BPNumber", label: "BP Number", path: "BusinessPartnerNumber", visible: false, sort: "none" },
+                { key: "SAPNumber", label: "SAP Number", path: "SAPBPNumber", visible: true, sort: "none" },
+                { key: "Category", label: "Category", path: "BPType", visible: true, sort: "none" },
+                { key: "Grouping", label: "Grouping", path: "Grouping", visible: true, sort: "none" },
+                { key: "Status", label: "Status", path: "LifecycleStatus", visible: true, sort: "none" },
+                { key: "CreatedAt", label: "Created At", path: "createdAt", visible: true, sort: "desc" },
+                { key: "Country", label: "Country", path: "Country", visible: false, sort: "none" },
+                { key: "Email", label: "Email", path: "Email", visible: false, sort: "none" },
+                { key: "Roles", label: "Assigned Roles", path: "BPRole", visible: true, sort: "none" }
+            ];
+        },
+
+        _loadColumnSettings: function () {
+            var aDefaults = this._getColumnConfigs();
+            try {
+                var sSaved = localStorage.getItem("bp-cust-column-settings");
+                if (sSaved) {
+                    var aSaved = JSON.parse(sSaved);
+                    // Merge saved over defaults (in case new columns added)
+                    var oMap = {};
+                    aSaved.forEach(function (c) { oMap[c.key] = c; });
+                    aDefaults.forEach(function (c) {
+                        if (oMap[c.key]) {
+                            c.visible = oMap[c.key].visible;
+                            c.sort = oMap[c.key].sort;
+                        }
+                    });
+                }
+            } catch (e) {}
+            return aDefaults;
+        },
+
+        _saveColumnSettings: function (aCols) {
+            try {
+                localStorage.setItem("bp-cust-column-settings", JSON.stringify(aCols));
+            } catch (e) {}
+        },
+
+        _applyColumnSettings: function () {
+            var aCols = this._loadColumnSettings();
+            var oTable = this.byId("bpTable");
+            if (!oTable) return;
+
+            // Map column config keys to column indices in the table
+            var aColKeys = ["Details", "SAPNumber", "Category", "Grouping", "Status", "CreatedAt", "Roles"];
+            var aColumns = oTable.getColumns();
+
+            aColKeys.forEach(function (sKey, i) {
+                var cfg = null;
+                aCols.forEach(function (c) { if (c.key === sKey) cfg = c; });
+                if (cfg && aColumns[i]) {
+                    aColumns[i].setVisible(cfg.visible !== false);
+                }
+            });
+
+            // Apply sort from the first column that has sort != "none"
+            var oBinding = oTable.getBinding("items");
+            if (!oBinding) return;
+            var sSortKey = null;
+            var bDesc = false;
+            for (var i = 0; i < aCols.length; i++) {
+                if (aCols[i].sort && aCols[i].sort !== "none") {
+                    sSortKey = aCols[i].path;
+                    bDesc = aCols[i].sort === "desc";
+                    break;
+                }
+            }
+            if (sSortKey) {
+                oBinding.sort(new sap.ui.model.Sorter(sSortKey, bDesc));
+            }
+        },
+
+        onColumnSettings: function () {
+            var that = this;
+            var aCols = jQuery.extend(true, [], this._loadColumnSettings());
+
+            if (!this._oColDialog) {
+                Fragment.load({
+                    id: this.getView().getId(),
+                    name: "bp.cust.ui.view.fragments.ColumnSettings",
+                    controller: this
+                }).then(function (oDialog) {
+                    that._oColDialog = oDialog;
+                    that.getView().addDependent(oDialog);
+                    that._openColDialog(aCols);
+                });
+            } else {
+                this._openColDialog(aCols);
+            }
+        },
+
+        _openColDialog: function (aCols) {
+            var oModel = new sap.ui.model.json.JSONModel(aCols);
+            this.getView().setModel(oModel, "colSettings");
+            this._oColDialog.open();
+        },
+
+        onColSettingsOK: function () {
+            var oModel = this.getView().getModel("colSettings");
+            var aCols = oModel.getData();
+            this._saveColumnSettings(aCols);
+            this._applyColumnSettings();
+            this._oColDialog.close();
+        },
+
+        onColSettingsCancel: function () {
+            this._oColDialog.close();
         }
     });
 });

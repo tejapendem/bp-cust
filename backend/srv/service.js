@@ -916,6 +916,15 @@ module.exports = cds.service.impl(async function () {
         const mobileNum = bp.MobileNumber || "";
         const tel = bp.Telephone || "";
         const title = bp.Title || "0003";
+        const room = bp.Room || "";
+        const floor = bp.Floor || "";
+        const careOf = bp.CareOf || "";
+        const street2 = bp.Street2 || "";
+        const street3 = bp.Street3 || "";
+        const street4 = bp.Street4 || "";
+        const street5 = bp.Street5 || "";
+        const district = bp.District || "";
+        const timeZone = bp.TimeZone || "";
 
         // 1. Build to_BusinessPartnerAddress
         const addresses = [{
@@ -925,10 +934,10 @@ module.exports = cds.service.impl(async function () {
             "ValidityEndDate": "9999-12-31T23:59:59Z",
             "AuthorizationGroup": "",
             "AddressUUID": "0911721a-db8d-1ede-b8a6-ef04ace846d9",
-            "AdditionalStreetPrefixName": "",
-            "AdditionalStreetSuffixName": "",
-            "AddressTimeZone": "UTC+3",
-            "CareOfName": "",
+            "AdditionalStreetPrefixName": street3,
+            "AdditionalStreetSuffixName": floor || street5,
+            "AddressTimeZone": timeZone || "UTC+3",
+            "CareOfName": careOf,
             "CityCode": "",
             "CityName": city,
             "CompanyPostalCode": "",
@@ -936,12 +945,12 @@ module.exports = cds.service.impl(async function () {
             "County": "",
             "DeliveryServiceNumber": "",
             "DeliveryServiceTypeCode": "",
-            "District": "",
+            "District": district,
             "FormOfAddress": title,
             "FullName": name,
             "HomeCityName": "",
             "HouseNumber": houseNum,
-            "HouseNumberSupplementText": "",
+            "HouseNumberSupplementText": room,
             "Language": lang,
             "POBox": "",
             "POBoxDeviatingCityName": "",
@@ -955,8 +964,8 @@ module.exports = cds.service.impl(async function () {
             "PrfrdCommMediumType": "",
             "Region": region,
             "StreetName": street,
-            "StreetPrefixName": "",
-            "StreetSuffixName": "",
+            "StreetPrefixName": street2,
+            "StreetSuffixName": street4,
             "TaxJurisdiction": "",
             "TransportZone": "",
             "AddressIDByExternalSystem": "",
@@ -1331,7 +1340,11 @@ module.exports = cds.service.impl(async function () {
                                     <th>Sales Org</th>
                                     <th>Dist. Channel</th>
                                     <th>Division</th>
+                                    <th>Cust. Group</th>
                                     <th>Currency</th>
+                                    <th>Exch. Rate Type</th>
+                                    <th>Pricing Proc.</th>
+                                    <th>Stats Group</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1339,18 +1352,27 @@ module.exports = cds.service.impl(async function () {
                                     <td>${sa.SalesOrganization || '-'}</td>
                                     <td>${sa.DistributionChannel || '-'}</td>
                                     <td>${sa.Division || '-'}</td>
+                                    <td>${sa.CustomerGroup || '-'}</td>
                                     <td>${sa.Currency || '-'}</td>
+                                    <td>${sa.ExchangeRateType || '-'}</td>
+                                    <td>${sa.CustomerPricingProcedure || '-'}</td>
+                                    <td>${sa.CustomerStatsGroup || '-'}</td>
                                 </tr>
                             </tbody>
                         </table>
                         <table style="font-size: 12px; margin-top: 5px;">
                             <tr>
-                                <td style="font-weight:bold; width:20%;">Payment Terms:</td><td style="width:30%;">${sa.PaymentTerms || '-'}</td>
-                                <td style="font-weight:bold; width:20%;">Incoterms:</td><td style="width:30%;">${sa.Incoterms || '-'}</td>
+                                <td style="font-weight:bold; width:18%;">Payment Terms:</td><td style="width:15%;">${sa.PaymentTerms || '-'}</td>
+                                <td style="font-weight:bold; width:18%;">Incoterms:</td><td style="width:15%;">${sa.Incoterms || '-'}</td>
+                                <td style="font-weight:bold; width:18%;">Acct Assign Group:</td><td style="width:16%;">${sa.AccountAssignmentGroup || '-'}</td>
                             </tr>
                             <tr>
-                                <td style="font-weight:bold;">Tax Category:</td><td>${sa.OutputTaxCategory || '-'}</td>
-                                <td style="font-weight:bold;">Tax Class:</td><td>${sa.TaxClassification || '-'}</td>
+                                <td style="font-weight:bold;">Tax Classification:</td><td>${sa.TaxClassification || '-'}</td>
+                                <td style="font-weight:bold;">Output Tax Country:</td><td>${sa.OutputTaxCountry || '-'}</td>
+                                <td style="font-weight:bold;">Output Tax Category:</td><td>${sa.OutputTaxCategory || '-'}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Customer Data 2:</td><td colspan="5">${sa.CustomerData2 || '-'}</td>
                             </tr>
                         </table>
                     </div>
@@ -1571,7 +1593,6 @@ module.exports = cds.service.impl(async function () {
                 <table style="width: 100%;">
                     <tr><td style="font-weight: bold; width: 120px;">Name:</td><td>${bp.Name}</td></tr>
                     <tr><td style="font-weight: bold;">ID:</td><td>${bp.BusinessPartnerNumber}</td></tr>
-                    <tr><td style="font-weight: bold;">Role:</td><td>${bp.BPRole}</td></tr>
                     <tr><td style="font-weight: bold;">Type:</td><td>${bp.BPType}</td></tr>
                 </table>
                 <p style="margin-top: 20px;">

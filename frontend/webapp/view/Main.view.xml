@@ -160,17 +160,18 @@
                                 visible="{userModel>/isAdmin}"
                                 press="onDeleteSelected"
                                 tooltip="Delete selected BPs"/>
-                            <Button icon="sap-icon://action-settings" type="Transparent" visible="{userModel>/isAdmin}"/>
+                            <Button icon="sap-icon://action-settings" type="Transparent" press="onColumnSettings"/>
                         </OverflowToolbar>
                     </headerToolbar>
                     
                     <columns>
-                        <Column width="20%"><Text text="Business Partner Details" /></Column>
+                        <Column width="15%"><Text text="Business Partner Details" /></Column>
+                        <Column width="15%"><Text text="SAP Number" /></Column>
                         <Column width="10%"><Text text="Category" /></Column>
                         <Column width="10%"><Text text="Grouping" /></Column>
                         <Column width="15%"><Text text="Status" /></Column>
                         <Column width="15%"><Text text="Created At" /></Column>
-                        <Column width="15%"><Text text="Assigned Roles" /></Column>
+                        <Column width="20%"><Text text="Assigned Roles" /></Column>
                     </columns>
                     
                     <items>
@@ -181,6 +182,8 @@
                                     <Title text="{Name}" titleStyle="H6" class="sapUiTinyMarginBottom" />
                                     <Text text="ID: {BusinessPartnerNumber}" />
                                 </VBox>
+                                
+                                <Text text="{SAPBPNumber}" />
                                 
                                 <ObjectStatus text="{BPType}" icon="sap-icon://company-view" state="Success" inverted="true" />
                                 

@@ -3,18 +3,18 @@
   "version": "1.0.0",
   "description": "Business Partner Creation Wizard",
   "dependencies": {
-    "@cap-js/postgres": "^1",
+    "@cap-js/postgres": "^2.3.0",
     "@sap-cloud-sdk/connectivity": "^4.6.0",
     "@sap-cloud-sdk/http-client": "^4.6.0",
     "@sap-cloud-sdk/mail-client": "^3.24.0",
-    "@sap/cds": "^8",
+    "@sap/cds": "^9.9.1",
     "@sap/xssec": "^4",
     "express": "^4",
     "nodemailer": "^6.10.1",
     "puppeteer": "^22.6.0"
   },
   "devDependencies": {
-    "@sap/cds-dk": "^8"
+    "@sap/cds-dk": "^9.9.2"
   },
   "cds": {
     "auto-deploy": false,
@@ -23,6 +23,11 @@
         "kind": "postgres",
         "pool": {
           "acquireTimeoutMillis": 60000
+        },
+        "[development]": {
+          "credentials": {
+            "schema": "dev_tables"
+          }
         }
       },
       "auth": {

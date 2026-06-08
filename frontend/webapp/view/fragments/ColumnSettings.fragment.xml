@@ -1,0 +1,30 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:layout="sap.ui.layout">
+    <Dialog title="Column Settings" contentWidth="550px" resizable="true" draggable="true">
+        <content>
+            <VBox class="sapUiSmallMargin">
+                <List items="{colSettings>/}" growing="false" width="100%">
+                    <items>
+                        <CustomListItem>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%" class="sapUiTinyMargin">
+                                <core:Icon src="sap-icon://sort" class="sapUiTinyMarginEnd" />
+                                <Title text="{colSettings>label}" titleStyle="H6" width="160px" class="sapUiTinyMarginEnd" />
+                                <Switch state="{colSettings>visible}" />
+                                <SegmentedButton selectedKey="{colSettings>sort}">
+                                    <items>
+                                        <SegmentedButtonItem key="none" text="Off" />
+                                        <SegmentedButtonItem key="asc" icon="sap-icon://sort-ascending" />
+                                        <SegmentedButtonItem key="desc" icon="sap-icon://sort-descending" />
+                                    </items>
+                                </SegmentedButton>
+                            </HBox>
+                        </CustomListItem>
+                    </items>
+                </List>
+            </VBox>
+        </content>
+        <buttons>
+            <Button text="Cancel" press="onColSettingsCancel" />
+            <Button text="Apply" type="Emphasized" press="onColSettingsOK" />
+        </buttons>
+    </Dialog>
+</core:FragmentDefinition>

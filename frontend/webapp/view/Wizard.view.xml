@@ -186,9 +186,6 @@
                                     <Label text="Street 3" visible="{wizardData>/showExtendedAddress}"/>
                                     <Input value="{wizardData>/Street3}" placeholder="Street 3" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
 
-                                    <Label text="Suppl." visible="{wizardData>/showExtendedAddress}"/>
-                                    <Input value="{wizardData>/StreetSupplement}" placeholder="Street Supplement" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
-
                                     <Label text="Street 4" visible="{wizardData>/showExtendedAddress}"/>
                                     <Input value="{wizardData>/Street4}" placeholder="Street 4" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
 
@@ -198,25 +195,11 @@
                                     <Label text="District" visible="{wizardData>/showExtendedAddress}"/>
                                     <Input value="{wizardData>/District}" placeholder="District" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
 
-                                    <Label text="Different City" visible="{wizardData>/showExtendedAddress}"/>
-                                    <Input value="{wizardData>/DifferentCity}" placeholder="Different City" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
-
                                     <Label text="Time Zone" visible="{wizardData>/showExtendedAddress}"/>
                                     <Input value="{wizardData>/TimeZone}" placeholder="Time Zone" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}">
                                         <layoutData><layout:GridData span="XL3 L3 M3 S4" /></layoutData>
                                     </Input>
-                                    <Label text="Tax Juris." visible="{wizardData>/showExtendedAddress}">
-                                        <layoutData><layout:GridData span="XL2 L2 M2 S3" /></layoutData>
-                                    </Label>
-                                    <Input value="{wizardData>/TaxJurisdiction}" placeholder="Tax Jurisdiction" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}">
-                                        <layoutData><layout:GridData span="XL3 L3 M3 S5" /></layoutData>
-                                    </Input>
 
-                                    <Label text="Transportation Zone" visible="{wizardData>/showExtendedAddress}"/>
-                                    <Input value="{wizardData>/TransportationZone}" placeholder="Transportation Zone" width="40%" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
-
-                                    <Label text="Structure Group" visible="{wizardData>/showExtendedAddress}"/>
-                                    <Input value="{wizardData>/StructureGroup}" placeholder="Structure Group" width="40%" editable="{= !${wizardData>/isReadOnly} }" visible="{wizardData>/showExtendedAddress}"/>
                                 </form:SimpleForm>
                             </VBox>
                         </HBox>

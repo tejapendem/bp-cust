@@ -900,7 +900,8 @@ sap.ui.define([
                 FirstName: oData.FirstName,
                 LastName: oData.LastName,
                 Name: oData.BusinessPartnerCategory === "1" ? (oData.FirstName + " " + oData.LastName).trim() : oData.Name, Title: oData.Title, SearchTerm1: oData.SearchTerm1, SearchTerm2: oData.SearchTerm2,
-                StreetAddress: oData.StreetAddress, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
+                StreetAddress: oData.StreetAddress, HouseNumber: oData.HouseNumber, City: oData.City, PostalCode: oData.PostalCode, Country: oData.Country, Region: oData.Region, Language: oData.Language, MobileCountryCode: oData.MobileCountryCode, MobileNumber: oData.MobileNumber, Telephone: oData.Telephone, Email: oData.Email,
+                Room: oData.Room, Floor: oData.Floor, CareOf: oData.CareOf, Street2: oData.Street2, Street3: oData.Street3, Street4: oData.Street4, Street5: oData.Street5, District: oData.District, TimeZone: oData.TimeZone,
                 TaxCategory: oData.TaxCategory, TaxNumber: oData.TaxNumber, TaxStatus: oData.TaxStatus
             };
 
