@@ -5,6 +5,6 @@
         "@cap-js/postgres": "^1"
     },
     "scripts": {
-        "start": "npx cds-deploy && tail -f /dev/null"
+        "start": "node deploy.js && tail -f /dev/null"
     }
 }

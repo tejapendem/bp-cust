@@ -1,7 +1,7 @@
 _schema-version: 3.3.0
 ID: bp-cust
 version: 1.0.0
-description: "Business Partner Creation Wizard - POC"
+description: "Business Partner Creation Wizard - QAS"
 parameters:
   enable-parallel-deployments: true
   deploy_mode: html5-repo
@@ -17,6 +17,9 @@ modules:
         - nodejs_buildpack
       memory: 2G
       disk-quota: 4G
+      env:
+        PGOPTIONS: "-c search_path=qas,public"
+        SAP_DESTINATION_NAME: QAS
     build-parameters:
       builder: custom
       commands:
@@ -42,6 +45,9 @@ modules:
         - nodejs_buildpack
       memory: 512M
       disk-quota: 512M
+      env:
+        DB_SCHEMA: qas
+        PGOPTIONS: "-c search_path=qas,public"
     requires:
       - name: bp-cust-db
 
@@ -105,7 +111,7 @@ resources:
       service-plan: application
       path: ./xs-security.json
       config:
-        xsappname: bp-cust-app-poc
+        xsappname: bp-cust-app-qa
         tenant-mode: dedicated
         oauth2-configuration:
           credential-types:
@@ -131,12 +137,12 @@ resources:
   - name: bp-cust-db
     type: org.cloudfoundry.existing-service
     parameters:
-      service-name: POC_PostgreSQL
+      service-name: QAS_PostgreSQL
 
   - name: bp-cust-destination
     type: org.cloudfoundry.existing-service
     parameters:
-      service-name: project1-destination-service
+      service-name: QAS
 
 build-parameters:
   before-all:

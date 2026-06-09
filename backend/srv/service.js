@@ -124,13 +124,13 @@ module.exports = cds.service.impl(async function () {
         try {
             let response;
             try {
-                const destService = await cds.connect.to('devlb');
+                const destService = await cds.connect.to('QAS');
                 const sApiPath = `/sap/opu/odata/sap/ZAPI_BP_INVOICE_T119_CALL_SRV/TaxpayerSet?sap-client=400&` +
                     `$filter=Tin eq '${sTaxNum}'`;
                 response = await destService.get(sApiPath);
             } catch (destErr) {
                 console.error(`[TAX VALIDATION] Destination error: ${destErr.message}`);
-                return { isValid: false, recordCount: 0, message: `System error: SAP destination 'devlb' unavailable.` };
+                return { isValid: false, recordCount: 0, message: `System error: SAP destination 'QAS' unavailable.` };
             }
 
             const aResults = (response && response.d && response.d.results) || (response && response.value) || [];
@@ -209,7 +209,7 @@ module.exports = cds.service.impl(async function () {
         try {
             let response;
             try {
-                const destService = await cds.connect.to('devlb');
+                const destService = await cds.connect.to('QAS');
                 const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&` +
                     `$filter=${fieldName} eq '${sTaxNum}'`;
                 response = await destService.get(sApiPath);
@@ -257,7 +257,7 @@ module.exports = cds.service.impl(async function () {
         console.log(`[SUGGESTIONS] Searching for customers matching: ${sSearch}`);
 
         try {
-            const destService = await cds.connect.to('devlb');
+            const destService = await cds.connect.to('QAS');
             const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=contains(Name, '${sSearch}')&$top=15`;
             const response = await destService.get(sApiPath);
             const aResults = (response && response.value) || [];
@@ -267,7 +267,7 @@ module.exports = cds.service.impl(async function () {
             console.error(`[SUGGESTIONS] Error with contains filter: ${err.message}`);
             // Fallback: try startswith
             try {
-                const destService = await cds.connect.to('devlb');
+                const destService = await cds.connect.to('QAS');
                 const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=startswith(Name, '${sSearch}')&$top=15`;
                 const response = await destService.get(sApiPath);
                 const aResults = (response && response.value) || [];
@@ -276,7 +276,7 @@ module.exports = cds.service.impl(async function () {
                 console.error(`[SUGGESTIONS] Error with startswith filter: ${err2.message}`);
                 // Safe fallback: try City eq 'Kampala' and filter in-memory
                 try {
-                    const destService = await cds.connect.to('devlb');
+                    const destService = await cds.connect.to('QAS');
                     const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=City eq 'Kampala'`;
                     const response = await destService.get(sApiPath);
                     const aResults = (response && response.value) || [];
@@ -677,9 +677,9 @@ module.exports = cds.service.impl(async function () {
                 return req.error(400, `Stored SAP Business Partner payload is invalid JSON: ${e.message}`);
             }
 
-            // 2. Connect to the 'devlb' destination and get base URL
-            logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'devlb'...`);
-            const destService = await cds.connect.to('devlb');
+            // 2. Connect to the SAP destination and get base URL
+            logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'QAS'...`);
+            const destService = await cds.connect.to('QAS');
 
             async function _resolveDevlbDestination() {
                 // Try destService.options.credentials (local dev via .env)
@@ -697,13 +697,13 @@ module.exports = cds.service.impl(async function () {
                     const authPass = dest.password || '';
                     if (baseUrl) return { baseUrl, authUser, authPass };
                 }
-                // Fallback: fetch devlb destination from destination service (BTP)
-                const dest = await getDestination({ destinationName: 'devlb' });
-                if (!dest) throw new Error("Destination 'devlb' not found in BTP destination service.");
+                // Fallback: fetch destination from destination service (BTP)
+                const dest = await getDestination({ destinationName: 'QAS' });
+                if (!dest) throw new Error(`Destination 'QAS' not found in BTP destination service.`);
                 const baseUrl = (dest.url || dest.URL || '').replace(/\/+$/, '');
                 const authUser = dest.username || '';
                 const authPass = dest.password || '';
-                if (!baseUrl) throw new Error("devlb destination resolved but has no url.");
+                if (!baseUrl) throw new Error(`QAS destination resolved but has no url.`);
                 return { baseUrl, authUser, authPass };
             }
 

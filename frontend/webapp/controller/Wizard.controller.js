@@ -572,7 +572,7 @@ sap.ui.define([
         },
 
         /**
-         * Dynamic suggestions for Name field using SAP Customer API via devlb destination
+         * Dynamic suggestions for Name field using SAP Customer API via QAS destination
          */
         onNameSuggest: function (oEvent) {
             var sValue = oEvent.getParameter("suggestValue");

@@ -7,4 +7,4 @@ server:
         backend:
           - path: /bp-api
             url: https://devlb.roofingsgroup.com
-            destination: devlb
+            destination: QAS
