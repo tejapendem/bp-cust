@@ -2183,13 +2183,28 @@
     font-weight: 600 !important;
     color: var(--sapContent_LabelColor, #6a6d70) !important;
     font-size: 0.8125rem !important;
-    padding: 0.7rem 1rem !important;
+    padding: 0.5rem 1rem !important;
     border-bottom: 1px solid #eeeeee !important;
 }
 
 .hpTable .sapMListTblCell {
-    padding: 0.65rem 1rem !important;
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.3rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
     vertical-align: middle !important;
+    line-height: 1.4 !important;
+}
+
+/* Target actual <tr> rows rendered by UI5 */
+.hpTable.sapMList tbody tr {
+    height: 3rem !important;
+}
+
+/* Prevent VBox inside BP name cell from adding extra vertical space */
+.hpTable .sapMListTblCell .sapMVBox {
+    gap: 0 !important;
+    row-gap: 0 !important;
 }
 
 .hpTableRow.sapMLIB:hover {
@@ -2198,8 +2213,9 @@
 
 /* ── BP Avatar ────────────────────────────────────────────── */
 .hpAvatar {
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 2rem;
+    height: 2rem;
+    min-width: 2rem;
     border-radius: 50%;
     background: linear-gradient(135deg, #90caf9, #64b5f6);
     flex-shrink: 0;

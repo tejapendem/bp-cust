@@ -11,6 +11,7 @@ sap.ui.define(
             onInit: function () {
                 var sHostname = window.location.hostname;
                 var bIsLocal = sHostname === "localhost" || sHostname === "127.0.0.1" || sHostname.includes("applicationstudio.cloud.sap");
+                var bInShell = !!(window.sap && sap.ushell && sap.ushell.Container);
 
                 // Initial default state
                 var oUserData = {
@@ -22,7 +23,9 @@ sap.ui.define(
                     assignedRoles: bIsLocal ? "admin" : "",
                     isRegistered: bIsLocal,
                     pendingApprovals: 0,
-                    pendingRequests: 0
+                    pendingRequests: 0,
+                    showAppHeader: !bInShell,
+                    showSidebarToggle: bInShell
                 };
 
                 var oUserModel = new JSONModel(oUserData);
@@ -132,6 +135,20 @@ sap.ui.define(
                 var oToolPage = this.byId("toolPage");
                 var bSideExpanded = oToolPage.getSideExpanded();
                 oToolPage.setSideExpanded(!bSideExpanded);
+                this._updateCollapseIcon(!bSideExpanded);
+            },
+
+            _updateCollapseIcon: function (bExpanded) {
+                var oSideNav = this.byId("sideNavigation");
+                if (!oSideNav) return;
+                var oFixedNavList = oSideNav.getFixedItem();
+                if (!oFixedNavList || !oFixedNavList.getItems) return;
+                oFixedNavList.getItems().forEach(function (oItem) {
+                    if (oItem.getKey() === "_collapse") {
+                        oItem.setIcon(bExpanded ? "sap-icon://close-command-field" : "sap-icon://open-command-field");
+                        oItem.setText(bExpanded ? "Collapse Sidebar" : "Expand Sidebar");
+                    }
+                });
             },
 
             onThemeSwitch: function (oEvent) {
@@ -170,6 +187,11 @@ sap.ui.define(
                 }
 
                 var sKey = oEvent.getParameter("item").getKey();
+
+                if (sKey === "_collapse") {
+                    this.onSideNavButtonPress();
+                    return;
+                }
 
                 // Admin-only pages - ensure route names match manifest.json exactly
                 if (sKey === "dashboard") {

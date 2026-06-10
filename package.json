@@ -61,21 +61,24 @@
       "[production]": {
         "auth": "xsuaa",
         "db": {
-          "kind": "postgres"
+          "kind": "postgres",
+          "credentials": {
+            "schema": "qas"
+          }
         }
       },
       "html5-repo": true,
       "sap_process_automation_mail": {
         "kind": "mail"
       },
-      "devlb": {
+      "QAS": {
         "kind": "rest",
         "credentials": {
           "requestTimeout": 30000
         },
         "[production]": {
           "credentials": {
-            "destination": "devlb"
+            "destination": "QAS"
           }
         }
       },
@@ -88,6 +91,9 @@
       "db": "backend/db",
       "srv": "backend/srv",
       "app": "frontend"
+    },
+    "features": {
+      "deploy_data_onconflict": "ignore"
     },
     "build": {
       "target": "gen",
@@ -116,7 +122,7 @@
     }
   },
   "scripts": {
-    "start": "cross-env CDS_LIVERELOAD=false cds-serve",
+    "start": "CDS_LIVERELOAD=false cds-serve",
     "deploy": "cds deploy"
   }
 }

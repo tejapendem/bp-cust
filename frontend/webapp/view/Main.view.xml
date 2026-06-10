@@ -52,7 +52,7 @@
                             <Title text="Filters" level="H4" class="sapUiSmallMarginBegin hpCardTitle" />
                         </HBox>
                         <VBox class="hpFilterBody">
-                            <fb:FilterBar id="filterbar" search="onSearch" clear="onClear" showClearOnFB="true" useToolbar="false" showAdaptFiltersButton="true">
+                            <fb:FilterBar id="filterbar" search="onSearch" clear="onClear" showClearOnFB="true" useToolbar="false">
                                 <fb:filterGroupItems>
 
                                     <fb:FilterGroupItem groupName="G1" name="LifecycleStatus" label="Status" visibleInFilterBar="true">

@@ -25,11 +25,11 @@ builder:
       - "/node_modules/**"
       - "/test/**"
       - "/localService/**"
+      - "/dist/**"
+      - "/dist-deploy/**"
   customTasks:
     - name: ui5-task-zipper
       afterTask: generateVersionInfo
       configuration:
         archiveName: webapp
         relativePaths: true
-        additionalFiles:
-          - xs-app.json

@@ -1,7 +1,14 @@
 {
-  "xsappname": "bp-cust-app-poc",
+  "xsappname": "bp-cust-app-qas",
   "tenant-mode": "dedicated",
   "description": "Security configuration for Business Partner app",
+  "oauth2-configuration": {
+    "credential-types": ["binding-secret", "x509"],
+    "redirect-uris": [
+      "https://roofings-rolling-mills-quality-uat-qas-bp-cust.cfapps.eu10-005.hana.ondemand.com/**",
+      "https://quality-uat.launchpad.cfapps.eu10.hana.ondemand.com/**"
+    ]
+  },
   "scopes": [
     {
       "name": "$XSAPPNAME.Viewer",

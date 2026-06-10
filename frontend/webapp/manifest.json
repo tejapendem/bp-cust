@@ -1,9 +1,13 @@
 {
   "_version": "1.49.0",
   "sap.app": {
-    "id": "bpcustui",
+    "id": "bp.cust.ui",
     "type": "application",
-    "i18n": "i18n/i18n.properties",
+    "i18n": {
+      "bundleUrl": "i18n/i18n.properties",
+      "supportedLocales": ["en"],
+      "fallbackLocale": "en"
+    },
     "applicationVersion": {
       "version": "1.0.0"
     },
@@ -15,6 +19,21 @@
         "type": "OData",
         "settings": {
           "odataVersion": "4.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "bp-cust-inbound": {
+          "semanticObject": "BPCust",
+          "action": "display",
+          "title": "Business Partner Creation Wizard",
+          "subTitle": "BP Creation",
+          "icon": "sap-icon://customer",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
         }
       }
     }
@@ -30,6 +49,14 @@
       "tablet": true,
       "phone": true
     }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "bp-cust.service"
   },
   "sap.ui5": {
     "rootView": {

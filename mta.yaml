@@ -97,6 +97,37 @@ modules:
         - npm run build
       supported-platforms: []
 
+  - name: bp-cust-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: bp-cust-destination
+        parameters:
+          content-target: true
+      - name: bp-cust-html5-repo-host
+        parameters:
+          service-key:
+            name: bp-cust-html5-repo-host-key
+      - name: bp-cust-auth
+        parameters:
+          service-key:
+            name: bp-cust-auth-key
+    parameters:
+      content:
+        subaccount:
+          destinations:
+            - Name: bp-cust-html5-repo
+              ServiceInstanceName: bp-cust-html5-repo-host
+              ServiceKeyName: bp-cust-html5-repo-host-key
+              sap.cloud.service: bp-cust.service
+            - Authentication: OAuth2UserTokenExchange
+              Name: bp-cust-auth
+              ServiceInstanceName: bp-cust-auth
+              ServiceKeyName: bp-cust-auth-key
+              sap.cloud.service: bp-cust.service
+          existing_destinations_policy: update
+    build-parameters:
+      no-source: true
+
 resources:
   - name: bp-cust-auth
     type: org.cloudfoundry.managed-service
@@ -105,14 +136,15 @@ resources:
       service-plan: application
       path: ./xs-security.json
       config:
-        xsappname: bp-cust-app-poc
+        xsappname: bp-cust-app-qas
         tenant-mode: dedicated
         oauth2-configuration:
           credential-types:
             - "binding-secret"
             - "x509"
           redirect-uris:
-            - https://*~{app-api/app-uri}/**
+            - https://roofings-rolling-mills-quality-uat-qas-bp-cust.cfapps.eu10-005.hana.ondemand.com/**
+            - https://quality-uat.launchpad.cfapps.eu10.hana.ondemand.com/**
     requires:
       - name: app-api
 
@@ -131,12 +163,12 @@ resources:
   - name: bp-cust-db
     type: org.cloudfoundry.existing-service
     parameters:
-      service-name: POC_PostgreSQL
+      service-name: QAS_PostgreSQL
 
   - name: bp-cust-destination
     type: org.cloudfoundry.existing-service
     parameters:
-      service-name: project1-destination-service
+      service-name: QAS
 
 build-parameters:
   before-all:

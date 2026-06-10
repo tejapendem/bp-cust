@@ -4,6 +4,21 @@
         "@sap/cds": "^8",
         "@cap-js/postgres": "^1"
     },
+    "cds": {
+        "requires": {
+            "db": {
+                "kind": "postgres",
+                "impl": "@cap-js/postgres",
+                "schema_evolution": true,
+                "credentials": {
+                    "schema": "qas"
+                }
+            }
+        },
+        "features": {
+            "deploy_data_onconflict": "ignore"
+        }
+    },
     "scripts": {
         "start": "npx cds-deploy && tail -f /dev/null"
     }

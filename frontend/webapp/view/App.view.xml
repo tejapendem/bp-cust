@@ -6,7 +6,7 @@
     displayBlock="true">
     <tnt:ToolPage id="toolPage" class="appToolPage">
         <tnt:header>
-            <tnt:ToolHeader class="appToolHeader">
+            <tnt:ToolHeader class="appToolHeader" visible="{userModel>/showAppHeader}">
                 <Button id="sideNavigationToggleButton" icon="sap-icon://menu2" type="Transparent" press=".onSideNavButtonPress" class="appMenuBtn" />
                 <ToolbarSpacer width="10px" />
                 <Image src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" height="1.5rem" />
@@ -29,6 +29,11 @@
                     <tnt:NavigationListItem text="Approval Inbox{= ${userModel>/pendingApprovals} > 0 ? '  •  ' + ${userModel>/pendingApprovals} : '' }" icon="sap-icon://inbox" key="approvalInbox" visible="{userModel>/isAdmin}" />
                     <tnt:NavigationListItem text="Approval Data" icon="sap-icon://accept" key="approvalData" visible="{userModel>/isAdmin}" />
                 </tnt:NavigationList>
+                <tnt:fixedItem>
+                    <tnt:NavigationList>
+                        <tnt:NavigationListItem visible="{userModel>/showSidebarToggle}" icon="sap-icon://close-command-field" text="Collapse Sidebar" key="_collapse" />
+                    </tnt:NavigationList>
+                </tnt:fixedItem>
             </tnt:SideNavigation>
         </tnt:sideContent>
         <tnt:mainContents>

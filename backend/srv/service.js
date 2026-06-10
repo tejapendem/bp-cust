@@ -1,5 +1,6 @@
 const cds = require('@sap/cds');
 const { getDestination } = require('@sap-cloud-sdk/connectivity');
+const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 const nodemailer = require('nodemailer');
 const puppeteer = require('puppeteer');
 const fs = require('fs');
@@ -124,13 +125,13 @@ module.exports = cds.service.impl(async function () {
         try {
             let response;
             try {
-                const destService = await cds.connect.to('devlb');
+                const destService = await cds.connect.to('QAS');
                 const sApiPath = `/sap/opu/odata/sap/ZAPI_BP_INVOICE_T119_CALL_SRV/TaxpayerSet?sap-client=400&` +
                     `$filter=Tin eq '${sTaxNum}'`;
                 response = await destService.get(sApiPath);
             } catch (destErr) {
                 console.error(`[TAX VALIDATION] Destination error: ${destErr.message}`);
-                return { isValid: false, recordCount: 0, message: `System error: SAP destination 'devlb' unavailable.` };
+                return { isValid: false, recordCount: 0, message: `System error: SAP destination 'QAS' unavailable.` };
             }
 
             const aResults = (response && response.d && response.d.results) || (response && response.value) || [];
@@ -209,7 +210,7 @@ module.exports = cds.service.impl(async function () {
         try {
             let response;
             try {
-                const destService = await cds.connect.to('devlb');
+                const destService = await cds.connect.to('QAS');
                 const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&` +
                     `$filter=${fieldName} eq '${sTaxNum}'`;
                 response = await destService.get(sApiPath);
@@ -257,7 +258,7 @@ module.exports = cds.service.impl(async function () {
         console.log(`[SUGGESTIONS] Searching for customers matching: ${sSearch}`);
 
         try {
-            const destService = await cds.connect.to('devlb');
+            const destService = await cds.connect.to('QAS');
             const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=contains(Name, '${sSearch}')&$top=15`;
             const response = await destService.get(sApiPath);
             const aResults = (response && response.value) || [];
@@ -267,7 +268,7 @@ module.exports = cds.service.impl(async function () {
             console.error(`[SUGGESTIONS] Error with contains filter: ${err.message}`);
             // Fallback: try startswith
             try {
-                const destService = await cds.connect.to('devlb');
+                const destService = await cds.connect.to('QAS');
                 const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=startswith(Name, '${sSearch}')&$top=15`;
                 const response = await destService.get(sApiPath);
                 const aResults = (response && response.value) || [];
@@ -276,7 +277,7 @@ module.exports = cds.service.impl(async function () {
                 console.error(`[SUGGESTIONS] Error with startswith filter: ${err2.message}`);
                 // Safe fallback: try City eq 'Kampala' and filter in-memory
                 try {
-                    const destService = await cds.connect.to('devlb');
+                    const destService = await cds.connect.to('QAS');
                     const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=City eq 'Kampala'`;
                     const response = await destService.get(sApiPath);
                     const aResults = (response && response.value) || [];
@@ -677,55 +678,46 @@ module.exports = cds.service.impl(async function () {
                 return req.error(400, `Stored SAP Business Partner payload is invalid JSON: ${e.message}`);
             }
 
-            // 2. Connect to the 'devlb' destination and get base URL
-            logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'devlb'...`);
-            const destService = await cds.connect.to('devlb');
+            // 2. Resolve QAS destination via Cloud SDK (handles OnPremise Cloud Connector proxy)
+            logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'QAS'...`);
+            const dest = await getDestination({ destinationName: 'QAS' });
+            if (!dest) throw new Error("Destination 'QAS' not found.");
 
-            async function _resolveDevlbDestination() {
-                // Try destService.options.credentials (local dev via .env)
-                if (destService.options.credentials && destService.options.credentials.url) {
-                    const baseUrl = destService.options.credentials.url.replace(/\/+$/, '');
-                    const authUser = destService.options.credentials.username || '';
-                    const authPass = destService.options.credentials.password || '';
-                    return { baseUrl, authUser, authPass };
-                }
-                // Try destService.options.destination (some CAP/dest-service setups)
-                if (destService.options.destination) {
-                    const dest = destService.options.destination;
-                    const baseUrl = (dest.url || dest.URL || '').replace(/\/+$/, '');
-                    const authUser = dest.username || '';
-                    const authPass = dest.password || '';
-                    if (baseUrl) return { baseUrl, authUser, authPass };
-                }
-                // Fallback: fetch devlb destination from destination service (BTP)
-                const dest = await getDestination({ destinationName: 'devlb' });
-                if (!dest) throw new Error("Destination 'devlb' not found in BTP destination service.");
-                const baseUrl = (dest.url || dest.URL || '').replace(/\/+$/, '');
-                const authUser = dest.username || '';
-                const authPass = dest.password || '';
-                if (!baseUrl) throw new Error("devlb destination resolved but has no url.");
-                return { baseUrl, authUser, authPass };
-            }
-
-            const { baseUrl, authUser, authPass } = await _resolveDevlbDestination();
-            const authHeader = 'Basic ' + Buffer.from(authUser + ':' + authPass).toString('base64');
-
-            // 3. Fetch CSRF token (includes session cookie)
+            // 3. Fetch CSRF token via Cloud SDK (routes through Cloud Connector for OnPremise)
             logs.push(`[${new Date().toLocaleTimeString()}] Fetching CSRF token...`);
-            const { csrfToken, cookie } = await _fetchCsrfToken(baseUrl, authHeader);
-            logs.push(`[${new Date().toLocaleTimeString()}] CSRF token obtained, session cookie acquired.`);
+            const csrfRes = await executeHttpRequest(dest, {
+                method: 'GET',
+                url: '/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata',
+                headers: { 'X-CSRF-Token': 'Fetch' }
+            });
+            const csrfToken = csrfRes.headers['x-csrf-token'] || csrfRes.headers['X-CSRF-Token'] || '';
+            const setCookie = csrfRes.headers['set-cookie'] || [];
+            const cookie = Array.isArray(setCookie) ? setCookie.map(c => c.split(';')[0]).join('; ') : (setCookie || '').split(';')[0];
+            if (!csrfToken) throw new Error('No CSRF token in response from $metadata');
+            logs.push(`[${new Date().toLocaleTimeString()}] CSRF token obtained.`);
 
-            // 4. Post A_BusinessPartner with CSRF token + cookie
+            // 4. Post A_BusinessPartner
             logs.push(`[${new Date().toLocaleTimeString()}] Pushing Business Partner payload...`);
             let bpResponse;
             let httpStatus = '';
             try {
-                bpResponse = await _sapPost(baseUrl + '/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner',
-                    bpPayload, authHeader, csrfToken, cookie);
+                const postRes = await executeHttpRequest(dest, {
+                    method: 'POST',
+                    url: '/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner',
+                    headers: {
+                        'X-CSRF-Token': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        ...(cookie ? { 'Cookie': cookie } : {})
+                    },
+                    data: bpPayload
+                });
+                bpResponse = postRes.data;
                 logs.push(`[${new Date().toLocaleTimeString()}] Business Partner posted successfully.`);
             } catch (postErr) {
-                httpStatus = postErr.status || '';
-                throw new Error(`Business Partner push failed: ${postErr.message}`, { cause: { httpStatus } });
+                httpStatus = postErr.response?.status || '';
+                const errBody = JSON.stringify(postErr.response?.data || postErr.message).substring(0, 500);
+                throw new Error(`Business Partner push failed: HTTP ${httpStatus}: ${errBody}`, { cause: { httpStatus } });
             }
 
             // 4. Parse response to extract Business Partner Number
@@ -785,8 +777,27 @@ module.exports = cds.service.impl(async function () {
 
                     logs.push(`[${new Date().toLocaleTimeString()}] Pushing Credit Segment payload...`);
                     try {
-                        await _sapPost(baseUrl + '/sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/CreditMgmtBusinessPartner',
-                            creditPayload, authHeader, csrfToken, cookie);
+                        // Fetch fresh CSRF token for Credit Management API
+                        const creditCsrfRes = await executeHttpRequest(dest, {
+                            method: 'GET',
+                            url: '/sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/$metadata',
+                            headers: { 'X-CSRF-Token': 'Fetch' }
+                        });
+                        const creditCsrf = creditCsrfRes.headers['x-csrf-token'] || creditCsrfRes.headers['X-CSRF-Token'] || '';
+                        const creditSetCookie = creditCsrfRes.headers['set-cookie'] || [];
+                        const creditCookie = Array.isArray(creditSetCookie) ? creditSetCookie.map(c => c.split(';')[0]).join('; ') : (creditSetCookie || '').split(';')[0];
+
+                        await executeHttpRequest(dest, {
+                            method: 'POST',
+                            url: '/sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/CreditMgmtBusinessPartner',
+                            headers: {
+                                'X-CSRF-Token': creditCsrf,
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                ...(creditCookie ? { 'Cookie': creditCookie } : {})
+                            },
+                            data: creditPayload
+                        });
                         logs.push(`[${new Date().toLocaleTimeString()}] SUCCESS: Credit Segment pushed successfully.`);
                         creditPushed = true;
                     } catch (creditErr) {
@@ -1522,9 +1533,12 @@ module.exports = cds.service.impl(async function () {
     }
 
     // Helper: fetch CSRF token + session cookie from SAP OData service
-    function _fetchCsrfToken(baseUrl, authHeader) {
+    function _fetchCsrfToken(serviceUrl, authHeader) {
         return new Promise((resolve, reject) => {
-            const u = new URL(baseUrl + '/sap/opu/odata/sap/API_BUSINESS_PARTNER');
+            const metadataUrl = serviceUrl.endsWith('/$metadata') ? serviceUrl
+                : serviceUrl.includes('/sap/opu/') ? serviceUrl + '/$metadata'
+                : serviceUrl + '/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata';
+            const u = new URL(metadataUrl);
             const mod = require('https');
             const opts = {
                 hostname: u.hostname, port: u.port, path: u.pathname + u.search,
