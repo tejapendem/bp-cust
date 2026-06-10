@@ -61,6 +61,7 @@ service BusinessPartnerService {
         bpNumber: String;
         logs: String;
     };
+    action testDestination() returns String;
     action validateVATNumber(taxNumber: String, taxCategory: String) returns {
         isValid: Boolean;
         recordCount: Integer;

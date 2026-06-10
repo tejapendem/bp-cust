@@ -11,6 +11,47 @@ module.exports = cds.service.impl(async function () {
         console.log(`[AUTH DEBUG] User: ${req.user.id}, Roles: ${req.user.roles || 'none'}, IsAuthenticated: ${req.user.id !== 'anonymous'}`);
     });
 
+    // TEST ACTION: Test devlb destination connectivity
+    this.on('testDestination', async (req) => {
+        const results = { steps: [] };
+        try {
+            // Step 1: Get destination
+            results.steps.push('Fetching destination devlb...');
+            const dest = await getDestination({ destinationName: 'devlb' });
+            results.destinationUrl = dest?.url || 'N/A';
+            results.destinationProxyType = dest?.proxyType || 'N/A';
+            results.destinationAuthentication = dest?.authentication || 'N/A';
+            results.destinationUser = dest?.username || 'N/A';
+            results.steps.push(`Destination resolved: URL=${dest?.url}, ProxyType=${dest?.proxyType}, Auth=${dest?.authentication}, User=${dest?.username}`);
+
+            if (!dest?.url) {
+                results.steps.push('ERROR: No URL in destination');
+                return results;
+            }
+
+            // Step 2: Try $metadata
+            results.steps.push(`Fetching: ${dest.url}/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata`);
+            try {
+                const metaRes = await executeHttpRequest(dest, {
+                    method: 'GET',
+                    url: '/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata',
+                    headers: { 'X-CSRF-Token': 'Fetch' }
+                });
+                results.steps.push(`$metadata response: HTTP ${metaRes.status}`);
+                results.csrfToken = metaRes.headers?.['x-csrf-token'] ? 'YES (length: ' + metaRes.headers['x-csrf-token'].length + ')' : 'NO';
+                results.steps.push(`CSRF token: ${results.csrfToken}`);
+            } catch (metaErr) {
+                results.steps.push(`$metadata FAILED: HTTP ${metaErr.response?.status || 'N/A'} - ${JSON.stringify(metaErr.response?.data || metaErr.message).substring(0, 300)}`);
+            }
+
+            return results;
+        } catch (err) {
+            results.steps.push(`FATAL ERROR: ${err.message}`);
+            return results;
+        }
+    });
+
+
     this.before('CREATE', 'BusinessPartners', async (req) => {
         const data = req.data;
         console.log("Incoming CREATE data:", JSON.stringify(data, null, 2));
@@ -125,13 +166,13 @@ module.exports = cds.service.impl(async function () {
         try {
             let response;
             try {
-                const destService = await cds.connect.to('QAS');
+                const destService = await cds.connect.to('devlb');
                 const sApiPath = `/sap/opu/odata/sap/ZAPI_BP_INVOICE_T119_CALL_SRV/TaxpayerSet?sap-client=400&` +
                     `$filter=Tin eq '${sTaxNum}'`;
                 response = await destService.get(sApiPath);
             } catch (destErr) {
                 console.error(`[TAX VALIDATION] Destination error: ${destErr.message}`);
-                return { isValid: false, recordCount: 0, message: `System error: SAP destination 'QAS' unavailable.` };
+                return { isValid: false, recordCount: 0, message: `System error: SAP destination 'devlb' unavailable.` };
             }
 
             const aResults = (response && response.d && response.d.results) || (response && response.value) || [];
@@ -210,7 +251,7 @@ module.exports = cds.service.impl(async function () {
         try {
             let response;
             try {
-                const destService = await cds.connect.to('QAS');
+                const destService = await cds.connect.to('devlb');
                 const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&` +
                     `$filter=${fieldName} eq '${sTaxNum}'`;
                 response = await destService.get(sApiPath);
@@ -258,7 +299,7 @@ module.exports = cds.service.impl(async function () {
         console.log(`[SUGGESTIONS] Searching for customers matching: ${sSearch}`);
 
         try {
-            const destService = await cds.connect.to('QAS');
+            const destService = await cds.connect.to('devlb');
             const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=contains(Name, '${sSearch}')&$top=15`;
             const response = await destService.get(sApiPath);
             const aResults = (response && response.value) || [];
@@ -268,7 +309,7 @@ module.exports = cds.service.impl(async function () {
             console.error(`[SUGGESTIONS] Error with contains filter: ${err.message}`);
             // Fallback: try startswith
             try {
-                const destService = await cds.connect.to('QAS');
+                const destService = await cds.connect.to('devlb');
                 const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=startswith(Name, '${sSearch}')&$top=15`;
                 const response = await destService.get(sApiPath);
                 const aResults = (response && response.value) || [];
@@ -277,7 +318,7 @@ module.exports = cds.service.impl(async function () {
                 console.error(`[SUGGESTIONS] Error with startswith filter: ${err2.message}`);
                 // Safe fallback: try City eq 'Kampala' and filter in-memory
                 try {
-                    const destService = await cds.connect.to('QAS');
+                    const destService = await cds.connect.to('devlb');
                     const sApiPath = `/sap/opu/odata4/sap/zapi_bp_cust_valid/srvd_a2x/sap/zsd_bpr_cust_valid/0001/Customer?sap-client=400&$filter=City eq 'Kampala'`;
                     const response = await destService.get(sApiPath);
                     const aResults = (response && response.value) || [];
@@ -678,23 +719,32 @@ module.exports = cds.service.impl(async function () {
                 return req.error(400, `Stored SAP Business Partner payload is invalid JSON: ${e.message}`);
             }
 
-            // 2. Resolve QAS destination via Cloud SDK (handles OnPremise Cloud Connector proxy)
-            logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'QAS'...`);
-            const dest = await getDestination({ destinationName: 'QAS' });
-            if (!dest) throw new Error("Destination 'QAS' not found.");
+            // 2. Resolve devlb destination via Cloud SDK (handles OnPremise Cloud Connector proxy)
+            logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'devlb'...`);
+            const dest = await getDestination({ destinationName: 'devlb' });
+            if (!dest) throw new Error("Destination 'devlb' not found.");
+            logs.push(`[${new Date().toLocaleTimeString()}] Destination resolved: URL=${dest.url}, ProxyType=${dest.proxyType || 'N/A'}, Authentication=${dest.authentication || 'N/A'}`);
 
             // 3. Fetch CSRF token via Cloud SDK (routes through Cloud Connector for OnPremise)
-            logs.push(`[${new Date().toLocaleTimeString()}] Fetching CSRF token...`);
-            const csrfRes = await executeHttpRequest(dest, {
-                method: 'GET',
-                url: '/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata',
-                headers: { 'X-CSRF-Token': 'Fetch' }
-            });
+            logs.push(`[${new Date().toLocaleTimeString()}] Fetching CSRF token from: ${dest.url}/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata`);
+            let csrfRes;
+            try {
+                csrfRes = await executeHttpRequest(dest, {
+                    method: 'GET',
+                    url: '/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata',
+                    headers: { 'X-CSRF-Token': 'Fetch' }
+                });
+            } catch (csrfErr) {
+                const csStatus = csrfErr.response?.status || 'N/A';
+                const csBody = JSON.stringify(csrfErr.response?.data || csrfErr.message).substring(0, 500);
+                logs.push(`[${new Date().toLocaleTimeString()}] CSRF fetch FAILED: HTTP ${csStatus} - ${csBody}`);
+                throw new Error(`CSRF token fetch failed: HTTP ${csStatus} - ${csBody}`);
+            }
             const csrfToken = csrfRes.headers['x-csrf-token'] || csrfRes.headers['X-CSRF-Token'] || '';
             const setCookie = csrfRes.headers['set-cookie'] || [];
             const cookie = Array.isArray(setCookie) ? setCookie.map(c => c.split(';')[0]).join('; ') : (setCookie || '').split(';')[0];
             if (!csrfToken) throw new Error('No CSRF token in response from $metadata');
-            logs.push(`[${new Date().toLocaleTimeString()}] CSRF token obtained.`);
+            logs.push(`[${new Date().toLocaleTimeString()}] CSRF token obtained successfully (length: ${csrfToken.length}).`);
 
             // 4. Post A_BusinessPartner
             logs.push(`[${new Date().toLocaleTimeString()}] Pushing Business Partner payload...`);
@@ -716,7 +766,11 @@ module.exports = cds.service.impl(async function () {
                 logs.push(`[${new Date().toLocaleTimeString()}] Business Partner posted successfully.`);
             } catch (postErr) {
                 httpStatus = postErr.response?.status || '';
-                const errBody = JSON.stringify(postErr.response?.data || postErr.message).substring(0, 500);
+                const errBody = JSON.stringify(postErr.response?.data || postErr.message).substring(0, 1000);
+                const errHeaders = JSON.stringify(postErr.response?.headers || {}).substring(0, 500);
+                logs.push(`[${new Date().toLocaleTimeString()}] POST failed: HTTP ${httpStatus}`);
+                logs.push(`[${new Date().toLocaleTimeString()}] Response headers: ${errHeaders}`);
+                logs.push(`[${new Date().toLocaleTimeString()}] Response body: ${errBody}`);
                 throw new Error(`Business Partner push failed: HTTP ${httpStatus}: ${errBody}`, { cause: { httpStatus } });
             }
 
@@ -1537,7 +1591,7 @@ module.exports = cds.service.impl(async function () {
         return new Promise((resolve, reject) => {
             const metadataUrl = serviceUrl.endsWith('/$metadata') ? serviceUrl
                 : serviceUrl.includes('/sap/opu/') ? serviceUrl + '/$metadata'
-                : serviceUrl + '/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata';
+                    : serviceUrl + '/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata';
             const u = new URL(metadataUrl);
             const mod = require('https');
             const opts = {

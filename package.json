@@ -71,14 +71,14 @@
       "sap_process_automation_mail": {
         "kind": "mail"
       },
-      "QAS": {
+      "devlb": {
         "kind": "rest",
         "credentials": {
           "requestTimeout": 30000
         },
         "[production]": {
           "credentials": {
-            "destination": "QAS"
+            "destination": "devlb"
           }
         }
       },
