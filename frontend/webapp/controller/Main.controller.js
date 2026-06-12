@@ -29,11 +29,36 @@ sap.ui.define([
         },
 
         _onMainMatched: function () {
-            this.onRefresh();
-            // Apply saved column visibility & sort settings
-            setTimeout(function (that) {
+            var that = this;
+            // Apply sort — retry until binding is available
+            this._applyDefaultSort();
+            var retryCount = 0;
+            var retryInterval = setInterval(function () {
+                if (that._applyDefaultSort() || retryCount > 10) {
+                    clearInterval(retryInterval);
+                }
+                retryCount++;
+            }, 100);
+            // Apply saved column visibility (needs table DOM rendered)
+            setTimeout(function () {
                 that._applyColumnSettings();
-            }, 500, this);
+            }, 600);
+        },
+
+        _applyDefaultSort: function () {
+            var oTable = this.byId("bpTable");
+            if (!oTable) return false;
+            var oBinding = oTable.getBinding("items");
+            if (!oBinding) return false;
+            var aSorters = oBinding.aSorters || [];
+            // Only apply if not already sorted descending by createdAt
+            var alreadySet = aSorters.some(function (s) {
+                return s.sPath === "createdAt" && s.bDescending;
+            });
+            if (!alreadySet) {
+                oBinding.sort(new sap.ui.model.Sorter("createdAt", true));
+            }
+            return true;
         },
 
         onCreatepress: function () {
@@ -471,6 +496,7 @@ sap.ui.define([
                 { key: "Grouping", label: "Grouping", path: "Grouping", visible: true, sort: "none" },
                 { key: "Status", label: "Status", path: "LifecycleStatus", visible: true, sort: "none" },
                 { key: "CreatedAt", label: "Created At", path: "createdAt", visible: true, sort: "desc" },
+                { key: "CreatedBy", label: "Created By", path: "createdBy", visible: false, sort: "none" },
                 { key: "Country", label: "Country", path: "Country", visible: false, sort: "none" },
                 { key: "Email", label: "Email", path: "Email", visible: false, sort: "none" },
                 { key: "Roles", label: "Assigned Roles", path: "BPRole", visible: true, sort: "none" }
@@ -507,7 +533,7 @@ sap.ui.define([
             var oTable = this.byId("bpTable");
             if (!oTable) return;
 
-            var aColKeys = ["Details", "SAPNumber", "Category", "Grouping", "Status", "CreatedAt", "Roles"];
+            var aColKeys = ["Details", "SAPNumber", "Category", "Grouping", "Status", "CreatedAt", "CreatedBy", "Roles"];
             var aColumns = oTable.getColumns();
 
             aColKeys.forEach(function (sKey, i) {

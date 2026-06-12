@@ -190,20 +190,21 @@
                             mode="MultiSelect"
                             items="{ path: '/BusinessPartners', sorter: { path: 'createdAt', descending: true } }"
                             sticky="ColumnHeaders"
-                            autoPopinMode="true"
+                            autoPopinMode="false"
                             showSeparators="Inner"
                             busyIndicatorDelay="0"
                             noDataText="No business partners found. Adjust your filters or create a new one."
                             class="hpTable">
 
                             <columns>
-                                <Column width="22%"><Text text="Business Partner" /></Column>
-                                <Column width="15%" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Block"><Text text="SAP Number" /></Column>
-                                <Column width="110px" hAlign="Center" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Inline"><Text text="Type" /></Column>
-                                <Column width="110px" hAlign="Center" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Inline"><Text text="Grouping" /></Column>
-                                <Column width="160px" demandPopin="true" minScreenWidth="Phone" popinDisplay="Inline"><Text text="Status" /></Column>
-                                <Column width="170px" demandPopin="true" minScreenWidth="Desktop" popinDisplay="Block"><Text text="Created" /></Column>
-                                <Column demandPopin="true" minScreenWidth="Desktop" popinDisplay="Block"><Text text="Assigned Roles" /></Column>
+                                <Column width="20%"><Text text="Business Partner" /></Column>
+                                <Column width="110px" demandPopin="false" minScreenWidth="Tablet"><Text text="SAP Number" /></Column>
+                                <Column width="90px" hAlign="Center" demandPopin="false" minScreenWidth="Tablet"><Text text="Type" /></Column>
+                                <Column width="90px" hAlign="Center" demandPopin="false" minScreenWidth="Tablet"><Text text="Grouping" /></Column>
+                                <Column width="140px" demandPopin="false" minScreenWidth="Phone"><Text text="Status" /></Column>
+                                <Column width="150px" demandPopin="false" minScreenWidth="Tablet"><Text text="Created" /></Column>
+                                <Column width="150px" demandPopin="false" minScreenWidth="Tablet"><Text text="Created By" /></Column>
+                                <Column width="160px" demandPopin="false" minScreenWidth="Tablet"><Text text="Assigned Roles" /></Column>
                             </columns>
 
                             <items>
@@ -244,6 +245,12 @@
                                         <HBox alignItems="Center">
                                             <core:Icon src="sap-icon://calendar" class="sapUiTinyMarginEnd hpDateIcon" color="#1565c0" />
                                             <Text text="{path: 'createdAt', formatter: '.formatDate'}" class="hpDateText" />
+                                        </HBox>
+
+                                        <!-- Created By -->
+                                        <HBox alignItems="Center">
+                                            <core:Icon src="sap-icon://customer" class="sapUiTinyMarginEnd hpDateIcon" color="#7c4dff" />
+                                            <Text text="{createdBy}" class="hpDateText" />
                                         </HBox>
 
                                         <!-- Assigned Roles -->

@@ -107,6 +107,12 @@
                                     press=".onReject"
                                     visible="{= ${workflowData>/status} === 'pending' }"
                                     class="aibRejectBtn" />
+                                <Button icon="sap-icon://email"
+                                    type="Transparent"
+                                    press=".onOpenMailPopover"
+                                    visible="{= ${workflowData>/status} === 'pending' }"
+                                    tooltip="Send Email"
+                                    class="sapUiSmallMarginBegin" />
                             </HBox>
                         </HBox>
 
@@ -193,9 +199,10 @@
                                 showSeparators="Inner"
                                 class="aibProgressTable">
                                 <columns>
-                                    <Column width="35%"><Text text="Step" /></Column>
-                                    <Column><Text text="Approver" /></Column>
-                                    <Column width="130px" hAlign="Center"><Text text="Status" /></Column>
+                                    <Column width="30%"><Text text="Step" /></Column>
+                                    <Column width="25%"><Text text="Approver" /></Column>
+                                    <Column width="25%"><Text text="Approved By" /></Column>
+                                    <Column width="20%" hAlign="Center"><Text text="Status" /></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
@@ -206,6 +213,10 @@
                                             </HBox>
                                             <VBox>
                                                 <Text text="{progressData>email}" class="aibApproverEmail" />
+                                            </VBox>
+                                            <VBox>
+                                                <Text text="{progressData>approvedBy}" visible="{= ${progressData>approvedBy} !== '' }" class="aibApprovedBy" />
+                                                <Text text="—" visible="{= ${progressData>approvedBy} === '' }" class="aibEmptyCell" />
                                             </VBox>
                                             <HBox justifyContent="Center">
                                                 <ObjectStatus
@@ -234,4 +245,5 @@
             </VBox>
         </content>
     </Page>
+    <core:Fragment fragmentName="bp.cust.ui.fragment.MailPopover" type="XML" />
 </mvc:View>

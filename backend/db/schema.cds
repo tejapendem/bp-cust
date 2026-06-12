@@ -183,7 +183,7 @@ entity ApprovalLevels : cuid, managed {
     level     : Integer;
     levelName : String(50);
     username  : String(100);
-    email     : String(100);
+    email     : String(1000); // JSON array of approver emails: ["a@b.com", "c@d.com"]
 }
 
 entity ApprovalWorkflows : cuid, managed {

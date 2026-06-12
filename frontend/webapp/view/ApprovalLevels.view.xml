@@ -68,7 +68,13 @@
                                     <!-- Approver Name -->
                                     <Input value="{username}" placeholder="Enter name" class="awcTableInput" />
                                     <!-- Email -->
-                                    <Input value="{email}" type="Email" placeholder="user@example.com" class="awcTableInput" />
+                                    <MultiComboBox
+                                        items="{path: '/Users', sLength: 100}"
+                                        selectionChange=".onEmailSelectionChange"
+                                        placeholder="Select approver email(s)"
+                                        class="awcTableInput">
+                                        <core:ListItem key="{email}" text="{email}" />
+                                    </MultiComboBox>
                                     <!-- Actions -->
                                     <HBox justifyContent="Center" alignItems="Center">
                                         <Button icon="sap-icon://delete" type="Transparent" press=".onDeleteRowItem" class="awcDeleteBtn" tooltip="Delete" />

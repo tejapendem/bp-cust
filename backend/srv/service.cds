@@ -2,6 +2,7 @@ using bp.cust as cust from '../db/schema';
 
 @path: '/service/bpcust'
 service BusinessPartnerService {
+    @odata.orderby: { createdAt: desc }
     entity BusinessPartners as projection on cust.BusinessPartners;
     entity BPSalesAreas as projection on cust.BPSalesAreas;
     entity BPCompanyCodes as projection on cust.BPCompanyCodes;

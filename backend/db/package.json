@@ -20,6 +20,6 @@
         }
     },
     "scripts": {
-        "start": "npx cds-deploy && tail -f /dev/null"
+        "start": "rm -rf db/data; npx cds-deploy; tail -f /dev/null"
     }
 }

@@ -421,11 +421,19 @@ module.exports = cds.service.impl(async function () {
         }
 
         // 3. Create the Approval Workflow entry with frozen level emails
+        // Handle multi-email format: if the email is a JSON array, store as-is
+        let level1Email = allLevels[0].email;
+        let level1EmailArray = [level1Email];
+        try {
+            const parsed = JSON.parse(level1Email);
+            if (Array.isArray(parsed)) level1EmailArray = parsed;
+        } catch (_) { /* single email string */ }
+
         const workflowEntry = {
             businessPartner_ID: bpID,
             currentLevel: 1,
             status: 'pending',
-            approverEmail: allLevels[0].email,
+            approverEmail: level1EmailArray.length > 1 ? JSON.stringify(level1EmailArray) : level1Email,
             levelEmails: JSON.stringify(levelEmailMap)
         };
         await INSERT.into(ApprovalWorkflows).entries(workflowEntry);
@@ -442,9 +450,11 @@ module.exports = cds.service.impl(async function () {
             true
         );
         const pdfBuffer = await _generateBPPdf(bp);
-        _sendEmail(workflowEntry.approverEmail, subject, null, html, pdfBuffer).catch(e =>
-            console.error(`[APPROVAL] Background email to Level 1 approver failed:`, e)
-        );
+        level1EmailArray.forEach(email => {
+            _sendEmail(email, subject, null, html, pdfBuffer).catch(e =>
+                console.error(`[APPROVAL] Background email to Level 1 approver ${email} failed:`, e)
+            );
+        });
 
         return `Submitted for Level 1 approval to ${allLevels[0].email}`;
     });
@@ -526,8 +536,13 @@ module.exports = cds.service.impl(async function () {
         const workflow = await SELECT.one.from(ApprovalWorkflows).where({ ID: workflowID });
         if (!workflow) return req.error(404, "Workflow not found");
 
-        // 2. Verify the approver is the current level approver
-        if (workflow.approverEmail !== approverEmail) {
+        // 2. Verify the approver is the current level approver (supports multi-email)
+        let aApproverEmails = [workflow.approverEmail];
+        try {
+            const parsed = JSON.parse(workflow.approverEmail || "[]");
+            if (Array.isArray(parsed)) aApproverEmails = parsed;
+        } catch (_) { /* single email string */ }
+        if (aApproverEmails.indexOf(approverEmail) === -1) {
             return req.error(403, "You are not authorized to approve this request");
         }
 
@@ -593,13 +608,21 @@ module.exports = cds.service.impl(async function () {
         }
 
         if (nextApproverEmail) {
+            // Handle multi-email for next level
+            let aNextEmails = [nextApproverEmail];
+            try {
+                const parsed = JSON.parse(nextApproverEmail);
+                if (Array.isArray(parsed)) aNextEmails = parsed;
+            } catch (_) { /* single email string */ }
+
             // Move to next level
+            const nextApproverValue = aNextEmails.length > 1 ? JSON.stringify(aNextEmails) : nextApproverEmail;
             await UPDATE(ApprovalWorkflows).set({
                 currentLevel: nextLevel,
-                approverEmail: nextApproverEmail
+                approverEmail: nextApproverValue
             }).where({ ID: workflowID });
 
-            // Send email to next level approver with full details
+            // Send email to next level approver(s) with full details
             const bp = await SELECT.one.from(BusinessPartners)
                 .where({ ID: workflow.businessPartner_ID })
                 .columns(b => {
@@ -616,9 +639,11 @@ module.exports = cds.service.impl(async function () {
                 true
             );
             const pdfBuffer = await _generateBPPdf(bp);
-            _sendEmail(nextApproverEmail, subject, null, html, pdfBuffer).catch(e =>
-                console.error(`[APPROVAL] Background email to next approver failed:`, e)
-            );
+            aNextEmails.forEach(email => {
+                _sendEmail(email, subject, null, html, pdfBuffer).catch(e =>
+                    console.error(`[APPROVAL] Background email to next approver ${email} failed:`, e)
+                );
+            });
         } else {
             // No more levels - finalize the approval
             await UPDATE(ApprovalWorkflows).set({ status: 'approved' }).where({ ID: workflowID });
@@ -696,7 +721,7 @@ module.exports = cds.service.impl(async function () {
 
     this.on('pushToSAP', async (req) => {
         const { bpID } = req.data;
-        const { BusinessPartners, SAPPushLogs } = this.entities;
+        const { BusinessPartners, SAPPushLogs, ApprovalWorkflows } = this.entities;
         const logs = [];
 
         logs.push(`[${new Date().toLocaleTimeString()}] Initiating push to SAP for Business Partner ID: ${bpID}...`);
@@ -877,6 +902,29 @@ module.exports = cds.service.impl(async function () {
                 logs: logStr,
                 timestamp: new Date()
             });
+
+            // Send notification to approvers on successful push
+            try {
+                const workflows = await SELECT.from(ApprovalWorkflows).where({ businessPartner_ID: bpID, status: 'approved' }).orderBy('currentLevel desc');
+                const latestWorkflow = workflows && workflows.length > 0 ? workflows[0] : null;
+                if (latestWorkflow) {
+                    let aApproverEmails = [latestWorkflow.approverEmail];
+                    try {
+                        const parsed = JSON.parse(latestWorkflow.approverEmail || "[]");
+                        if (Array.isArray(parsed)) aApproverEmails = parsed;
+                    } catch (_) {}
+                    const emailSubject = `SAP Business Partner Created: ${bpNumber} - ${bp.Name}`;
+                    const emailText = `Dear Approver,\n\nThe Business Partner ${bp.Name} has been successfully created in the SAP system.\n\nSAP BP Number: ${bpNumber}\nBusiness Partner: ${bp.Name}\nLocal Reference No.: ${bp.BusinessPartnerNumber}\n\nBest regards,\nBusiness Partner System`;
+                    aApproverEmails.forEach(email => {
+                        _sendEmail(email, emailSubject, emailText).catch(e =>
+                            console.error(`[PUSH] Email to approver ${email} failed:`, e)
+                        );
+                    });
+                    logs.push(`[${new Date().toLocaleTimeString()}] Notification sent to ${aApproverEmails.length} approver(s) for SAP BP: ${bpNumber}`);
+                }
+            } catch (wfErr) {
+                console.error(`[PUSH] Failed to send approval notification:`, wfErr);
+            }
 
             return {
                 success: true,
@@ -1648,6 +1696,37 @@ module.exports = cds.service.impl(async function () {
             req.write(body);
             req.end();
         });
+    }
+
+    // HTML Email Template for successful SAP push with SAP BP number
+    function _getSAPPushSuccessTemplate(bpName, sapBPNumber, localBPNumber) {
+        return `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 30px;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h1 style="color: #1a73e8; margin: 0; font-size: 24px;">SAP Business Partner Created</h1>
+                </div>
+                <hr style="border: 0; border-top: 2px solid #1a73e8; margin: 20px 0;" />
+                <p style="color: #333; font-size: 15px; line-height: 1.6;">Dear Approver,</p>
+                <p style="color: #333; font-size: 15px; line-height: 1.6;">
+                    The Business Partner <strong style="color: #1a73e8;">${bpName}</strong> has been successfully created in the SAP system.
+                </p>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background: #f8f9fa; border-radius: 6px;">
+                    <tr><td style="padding: 12px 16px; font-weight: bold; color: #555; width: 140px; border-bottom: 1px solid #e0e0e0;">SAP BP Number</td>
+                        <td style="padding: 12px 16px; color: #1a73e8; font-weight: bold; font-size: 16px; border-bottom: 1px solid #e0e0e0;">${sapBPNumber}</td></tr>
+                    <tr><td style="padding: 12px 16px; font-weight: bold; color: #555; width: 140px; border-bottom: 1px solid #e0e0e0;">Business Partner</td>
+                        <td style="padding: 12px 16px; color: #333; border-bottom: 1px solid #e0e0e0;">${bpName}</td></tr>
+                    <tr><td style="padding: 12px 16px; font-weight: bold; color: #555; width: 140px;">Local Reference No.</td>
+                        <td style="padding: 12px 16px; color: #333;">${localBPNumber}</td></tr>
+                </table>
+                <p style="color: #555; font-size: 14px; line-height: 1.6;">
+                    This BP is now fully active and available in the SAP system for transactions.
+                </p>
+                <p style="color: #333; font-size: 15px; line-height: 1.6; margin-top: 25px;">
+                    Best regards,<br />
+                    <strong style="color: #1a73e8;">Business Partner System</strong>
+                </p>
+            </div>
+        `;
     }
 
     // Professional HTML Email Template Generator

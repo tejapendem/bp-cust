@@ -146,7 +146,10 @@ sap.ui.define([
             // Non-admins only see their own pending items
             if (sRole !== "admin" && sStatus === "pending") {
                 aResults = aResults.filter(function (item) {
-                    return item.approverEmail === sUserEmail;
+                    var aEmails = [];
+                    try { aEmails = JSON.parse(item.approverEmail || "[]"); } catch (_) { aEmails = [item.approverEmail]; }
+                    if (!Array.isArray(aEmails)) aEmails = [item.approverEmail];
+                    return aEmails.indexOf(sUserEmail) !== -1;
                 });
             }
 
@@ -233,10 +236,24 @@ sap.ui.define([
                         } else if (oWorkflowData.status === "pending" && lvl.level < oWorkflowData.currentLevel) {
                             sStatus = "Approved";
                         }
+                        var sEmail = oLevelEmails[lvl.level] || lvl.email;
+                        if (sEmail) {
+                            try {
+                                var aParsed = JSON.parse(sEmail);
+                                if (Array.isArray(aParsed)) {
+                                    sEmail = aParsed.join(", ");
+                                }
+                            } catch (_) {}
+                        }
+                        var sApprovedBy = "";
+                        if ((sStatus === "Approved" || sStatus === "Rejected") && oLog && oLog.approver) {
+                            sApprovedBy = oLog.approver;
+                        }
                         return {
                             level: lvl.level,
                             levelName: lvl.levelName,
-                            email: oLevelEmails[lvl.level] || lvl.email,
+                            email: sEmail,
+                            approvedBy: sApprovedBy,
                             status: sStatus
                         };
                     });
@@ -303,6 +320,65 @@ sap.ui.define([
             }).catch(function (oErr) {
                 that._oBusyDialog.close();
                 MessageBox.error("Action failed: " + oErr.message);
+            });
+        },
+
+        _updateMailOptions: function () {
+            var oWF = this.getView().getModel("workflowData").getData();
+            if (!oWF || !oWF.ID) return [];
+            var aEmails = [];
+            try {
+                var parsed = JSON.parse(oWF.levelEmails || "{}");
+                Object.keys(parsed).forEach(function (k) {
+                    var v = parsed[k];
+                    if (Array.isArray(v)) {
+                        v.forEach(function (e) { if (e) aEmails.push(e); });
+                    } else if (v) {
+                        aEmails.push(v);
+                    }
+                });
+            } catch (_) {
+                if (oWF.approverEmail) aEmails.push(oWF.approverEmail);
+            }
+            return aEmails.filter(function (e, i, a) { return a.indexOf(e) === i; });
+        },
+
+        onOpenMailPopover: function (oEvent) {
+            var oView = this.getView();
+            var oFragment = oView.byId("mailPopover");
+            if (!oFragment) {
+                sap.ui.xmlfragment("bp.cust.ui.fragment.MailPopover", this);
+                oFragment = oView.byId("mailPopover");
+                oView.addDependent(oFragment);
+            }
+            var aEmails = this._updateMailOptions();
+            oFragment.setModel(new JSONModel({ emails: aEmails }), "mailData");
+            oFragment.openBy(oEvent.getSource());
+        },
+
+        onSendMail: function () {
+            var oFragment = this.getView().byId("mailPopover");
+            var oData = oFragment.getModel("mailData").getData();
+            var aSelected = (oData.selectedEmails || []).filter(Boolean);
+            if (aSelected.length === 0) {
+                MessageToast.show("Please select at least one recipient.");
+                return;
+            }
+            var oWF = this.getView().getModel("workflowData").getData();
+            var oModel = this.getOwnerComponent().getModel();
+            var that = this;
+            this._oBusyDialog.setText("Sending email…");
+            this._oBusyDialog.open();
+            var oCtx = oModel.bindContext("/sendEmail(...)");
+            oCtx.setParameter("to", aSelected.join(","));
+            oCtx.setParameter("workflowID", oWF.ID);
+            oCtx.execute().then(function () {
+                that._oBusyDialog.close();
+                MessageToast.show("Email sent.");
+                oFragment.close();
+            }).catch(function (oErr) {
+                that._oBusyDialog.close();
+                MessageBox.error("Failed to send email: " + oErr.message);
             });
         }
     });

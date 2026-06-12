@@ -269,7 +269,7 @@
                             <Label text="Tin Number" required="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 }"/>
                             <HBox alignItems="Center">
                                 <Input id="taxNumberInput" value="{wizardData>/TaxNumber}" placeholder="TIN / Tax ID Number" editable="{= !${wizardData>/isReadOnly} }" width="250px" liveChange="onTinNumberLiveChange"/>
-                                <Button id="validateVatBtn" text="Validate" icon="sap-icon://accept" type="Ghost" press="onValidateTaxNumber" class="sapUiSmallMarginBegin" visible="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 &amp;&amp; !${wizardData>/isReadOnly} }" enabled="{= !!${wizardData>/TaxNumber} }"/>
+                                <Button id="validateVatBtn" text="Validate" icon="sap-icon://accept" type="Ghost" press="onValidateTaxNumber" class="sapUiSmallMarginBegin" visible="{= ${wizardData>/TaxCategory} === 'UG01' &amp;&amp; !${wizardData>/isReadOnly} }" enabled="{= !!${wizardData>/TaxNumber} }"/>
                                 <core:Icon src="sap-icon://message-success" color="#2b7c2b" class="sapUiSmallMarginBegin" visible="{wizardData>/vatValidationSuccess}" />
                                 <core:Icon src="sap-icon://message-error" color="#bb0000" class="sapUiSmallMarginBegin" visible="{wizardData>/vatValidationFailed}" />
                                 <Text text="{wizardData>/vatValidationMessage}" class="sapUiSmallMarginBegin" />
@@ -278,7 +278,7 @@
                             <Label text="Tax Number"/>
                             <HBox alignItems="Center">
                                 <Input id="taxNumberDupInput" value="{wizardData>/TaxNumberDup}" placeholder="Auto-filled from Tin Number" editable="false" width="250px"/>
-                                <Button id="validateTaxDupBtn" text="Validate" icon="sap-icon://accept" type="Ghost" press="onValidateTaxNumberDup" class="sapUiSmallMarginBegin" visible="{= ${wizardData>/TaxCategory}.indexOf('UG') === 0 &amp;&amp; !${wizardData>/isReadOnly} }" enabled="{= !!${wizardData>/TaxNumberDup} }"/>
+                                <Button id="validateTaxDupBtn" text="Validate" icon="sap-icon://accept" type="Ghost" press="onValidateTaxNumberDup" class="sapUiSmallMarginBegin" visible="{= ${wizardData>/TaxCategory} === 'UG01' &amp;&amp; !${wizardData>/isReadOnly} }" enabled="{= !!${wizardData>/TaxNumberDup} }"/>
                                 <core:Icon src="sap-icon://message-success" color="#2b7c2b" class="sapUiSmallMarginBegin" visible="{wizardData>/taxDupValidationSuccess}" />
                                 <core:Icon src="sap-icon://message-error" color="#bb0000" class="sapUiSmallMarginBegin" visible="{wizardData>/taxDupValidationFailed}" />
                                 <Text text="{wizardData>/taxDupValidationMessage}" class="sapUiSmallMarginBegin" />

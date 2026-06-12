@@ -7,6 +7,47 @@ sap.ui.define([
     "use strict";
 
     return BaseController.extend("bp.cust.ui.controller.ApprovalLevels", {
+
+        onEmailSelectionChange: function (oEvent) {
+            var oMulti = oEvent.getSource();
+            var aItems = oMulti.getSelectedItems();
+            var aEmails = aItems.map(function (oItem) {
+                return oItem.getKey();
+            }).filter(Boolean);
+            var sJson = JSON.stringify(aEmails);
+            var oCtx = oMulti.getBindingContext();
+            if (oCtx) {
+                oCtx.setProperty("email", sJson);
+            }
+        },
+
+        _restoreAllCombos: function () {
+            var oTable = this.byId("approvalTable");
+            if (!oTable) return;
+            var aItems = oTable.getItems();
+            for (var i = 0; i < aItems.length; i++) {
+                var aCells = aItems[i].getCells();
+                var oMulti = null;
+                for (var j = 0; j < aCells.length; j++) {
+                    if (aCells[j] && aCells[j].getMetadata && aCells[j].getMetadata().getName() === "sap.m.MultiComboBox") {
+                        oMulti = aCells[j];
+                        break;
+                    }
+                }
+                if (!oMulti) continue;
+                var oCtx = oMulti.getBindingContext();
+                if (!oCtx) continue;
+                var sEmail = oCtx.getProperty("email");
+                if (!sEmail) continue;
+                try {
+                    var aEmails = JSON.parse(sEmail);
+                    if (Array.isArray(aEmails) && aEmails.length > 0) {
+                        oMulti.setSelectedKeys(aEmails);
+                    }
+                } catch (_) {}
+            }
+        },
+
         onInit: function () {
             var oUserModel = this.getOwnerComponent().getModel("userModel");
             if (oUserModel) {
@@ -18,6 +59,10 @@ sap.ui.define([
                         }.bind(this)
                     });
                 }
+            }
+            var oTable = this.byId("approvalTable");
+            if (oTable) {
+                oTable.attachEvent("updateFinished", this._restoreAllCombos, this);
             }
         },
 
@@ -75,18 +120,14 @@ sap.ui.define([
 
         onSave: function () {
             var oModel = this.getOwnerComponent().getModel();
-            if (oModel.hasPendingChanges()) {
-                sap.ui.core.BusyIndicator.show(0);
-                oModel.submitBatch("$auto").then(function () {
-                    sap.ui.core.BusyIndicator.hide();
-                    MessageBox.success("All changes saved to the backend.");
-                }).catch(function (oErr) {
-                    sap.ui.core.BusyIndicator.hide();
-                    MessageBox.error("Failed to save: " + oErr.message);
-                });
-            } else {
-                MessageToast.show("No changes to save.");
-            }
+            sap.ui.core.BusyIndicator.show(0);
+            oModel.submitBatch("$auto").then(function () {
+                sap.ui.core.BusyIndicator.hide();
+                MessageBox.success("All changes saved to the backend.");
+            }).catch(function (oErr) {
+                sap.ui.core.BusyIndicator.hide();
+                MessageBox.error("Failed to save: " + oErr.message);
+            });
         }
     });
 });

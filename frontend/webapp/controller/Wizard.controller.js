@@ -99,7 +99,7 @@ sap.ui.define([
 
                 // Reset fields to default
                 var oDefaults = this._getDefaultData();
-                oModel.setData(Object.assign(oModel.getData(), oDefaults));
+                oModel.setData(oDefaults);
                 
                 // Explicitly set TaxCategory again to be sure
                 oModel.setProperty("/TaxCategory", "UG01");
@@ -162,6 +162,12 @@ sap.ui.define([
                 BPType: "Customer",
                 Grouping: "ZP01",
                 Name: "", FirstName: "", LastName: "", Title: "0003", SearchTerm1: "", SearchTerm2: "",
+                MobileCountryCode: "+256", MobileNumber: "", Telephone: "", Email: "",
+                StreetAddress: "", HouseNumber: "", PostalCode: "", City: "",
+                Country: "UG", Region: "", Language: "EN",
+                BuildingCode: "", Room: "", Floor: "", CareOf: "",
+                Street2: "", Street3: "", Street4: "", Street5: "",
+                District: "", TimeZone: "",
                 TaxCategory: "UG01", TaxNumber: "", TaxStatus: "", TaxNumberDup: "",
                 vatValidationSuccess: false, vatValidationFailed: false, vatValidationMessage: "", vatValidated: false,
                 taxDupValidationSuccess: false, taxDupValidationFailed: false, taxDupValidationMessage: "", taxDupValidated: false,
@@ -487,9 +493,9 @@ sap.ui.define([
                     if (!oData.MobileNumber) {
                         aMissing.push("Mobile Number");
                     } else {
-                        var phoneRegex = /^\d+$/;
+                        var phoneRegex = /^\d{10}$/;
                         if (!phoneRegex.test(oData.MobileNumber)) {
-                            aMissing.push("Mobile Number (Digits only, no spaces, no signs like + or -)");
+                            aMissing.push("Mobile Number (exactly 10 digits required)");
                         }
                     }
                 }
@@ -499,9 +505,9 @@ sap.ui.define([
             } else if (sStepId.includes("step3")) {
                 if (!oData.TaxCategory) aMissing.push("Tax Category");
                 if (!oData.TaxNumber) aMissing.push("Tin Number");
-                // For UG categories (UG01-UG06), require Tin Number validation before proceeding
-                var bIsUgCategory = oData.TaxCategory && oData.TaxCategory.indexOf("UG") === 0;
-                if (bIsUgCategory && oData.TaxNumber && !oData.vatValidated) {
+                // For UG01 only, require Tin Number validation before proceeding
+                var bIsUg01 = oData.TaxCategory === "UG01";
+                if (bIsUg01 && oData.TaxNumber && !oData.vatValidated) {
                     MessageBox.warning("Please validate the Tin Number before proceeding.");
                     return false;
                 }

@@ -50,6 +50,7 @@
                             <Column><Text text="Email" /></Column>
                             <Column width="110px" hAlign="Center"><Text text="Status" /></Column>
                             <Column width="170px"><Text text="Last Updated" /></Column>
+                            <Column width="170px"><Text text="Approved By" /></Column>
                         </columns>
                         <items>
                             <ColumnListItem class="umTableRow">
@@ -71,6 +72,10 @@
                                             class="{= ${status} === 'active' ? 'umStatusActive' : 'umStatusInactive' }" />
                                     </HBox>
                                     <Text text="{path: 'modifiedAt', formatter: '.formatDate'}" class="umDateText" />
+                                    <HBox alignItems="Center">
+                                        <core:Icon src="sap-icon://approvals" class="sapUiTinyMarginEnd" color="#7c4dff" />
+                                        <Text text="{createdBy}" class="umDateText" />
+                                    </HBox>
                                 </cells>
                             </ColumnListItem>
                         </items>

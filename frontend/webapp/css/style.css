@@ -2197,7 +2197,7 @@
 }
 
 /* Target actual <tr> rows rendered by UI5 */
-.hpTable.sapMList tbody tr {
+.hpTable.sapMList tbody tr.sapMListTblRow {
     height: 3rem !important;
 }
 
@@ -2658,9 +2658,6 @@
     color: #e65100 !important;
 }
 
-.appAvatar.sapFAvatar {
-    /* default SAP styling — no overrides */
-}
 
 /* ── Side Navigation ──────────────────────────────────────── */
 .appSideNav.sapTntSideNavigation {
