@@ -436,6 +436,29 @@
     box-shadow: 0 0 0 2px rgba(123, 94, 167, 0.15) !important;
 }
 
+/* Email display (read-only) */
+.awcEmailDisplayText.sapMText {
+    font-size: 0.875rem !important;
+    color: #333 !important;
+    padding: 6px 8px !important;
+    background: #f5f0ff !important;
+    border-radius: 6px !important;
+    border: 1px solid #e0d6f5 !important;
+    word-break: break-all !important;
+}
+
+.awcEmailPlaceholder.sapMText {
+    font-size: 0.875rem !important;
+    color: #999 !important;
+    padding: 6px 8px !important;
+    font-style: italic !important;
+}
+
+/* Email MultiComboBox when editing */
+.awcEmailCombo.sapMMultiComboBox {
+    width: 100% !important;
+}
+
 /* Action buttons */
 .awcDeleteBtn.sapMBtn .sapMBtnInner {
     color: #c62828 !important;

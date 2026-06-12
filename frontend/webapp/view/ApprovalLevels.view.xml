@@ -67,14 +67,25 @@
                                     <Input value="{levelName}" placeholder="e.g. Finance Team Approval" class="awcTableInput" />
                                     <!-- Approver Name -->
                                     <Input value="{username}" placeholder="Enter name" class="awcTableInput" />
-                                    <!-- Email -->
-                                    <MultiComboBox
-                                        items="{path: '/Users', sLength: 100}"
-                                        selectionChange=".onEmailSelectionChange"
-                                        placeholder="Select approver email(s)"
-                                        class="awcTableInput">
-                                        <core:ListItem key="{email}" text="{email}" />
-                                    </MultiComboBox>
+                                    <!-- Email: display mode shows saved emails, edit mode shows MultiComboBox -->
+                                    <VBox>
+                                        <Text id="emailDisplayText"
+                                            text="{path: 'email', formatter: '.formatEmailDisplay'}"
+                                            class="awcEmailDisplayText"
+                                            visible="{path: 'email', formatter: '.formatEmailDisplayVisible'}" />
+                                        <Text text="No emails configured"
+                                            class="awcEmailPlaceholder"
+                                            visible="{path: 'email', formatter: '.formatEmailPlaceholderVisible'}" />
+                                        <MultiComboBox
+                                            id="emailMultiCombo"
+                                            items="{path: '/Users', length: 100}"
+                                            selectionChange=".onEmailSelectionChange"
+                                            placeholder="Select approver email(s)"
+                                            visible="false"
+                                            class="awcTableInput awcEmailCombo">
+                                            <core:ListItem key="{email}" text="{email}" />
+                                        </MultiComboBox>
+                                    </VBox>
                                     <!-- Actions -->
                                     <HBox justifyContent="Center" alignItems="Center">
                                         <Button icon="sap-icon://delete" type="Transparent" press=".onDeleteRowItem" class="awcDeleteBtn" tooltip="Delete" />
