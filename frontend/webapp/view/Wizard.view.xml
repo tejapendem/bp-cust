@@ -506,7 +506,6 @@
                                     <Column><Text text="Limit"/></Column>
                                     <Column><Text text="Currency"/></Column>
                                     <Column><Text text="Valid To"/></Column>
-                                    <Column hAlign="End" width="50px" visible="{= !${wizardData>/isReadOnly} }"></Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
@@ -517,14 +516,13 @@
                                             <Select selectedKey="{wizardData>CreditLimitRules}" items="{path: '/VH_CreditLimitRule', parameters: {$filter: 'isActive eq true'}}" forceSelection="false" enabled="false">
                                                 <core:Item key="{code}" text="{code} - {name}"/>
                                             </Select>
-                                            <RadioButtonGroup columns="2" selectedIndex="{= ${wizardData>LimitDefined} ? 0 : 1 }" editable="{= !${wizardData>/isReadOnly} }" select="onLimitDefinedChange">
+                                            <RadioButtonGroup columns="2" selectedIndex="0" enabled="false">
                                                 <RadioButton text="Defined" />
                                                 <RadioButton text="Not Defined" />
                                             </RadioButtonGroup>
                                             <Input value="{wizardData>CreditLimit}" type="Number" placeholder="100" editable="false"/>
                                             <Input value="{wizardData>LimitCurrency}" editable="false" width="70px"/>
-                                            <DatePicker value="{wizardData>ValidityDate}" valueFormat="yyyy-MM-dd" displayFormat="medium" editable="{= !${wizardData>/isReadOnly} }"/>
-                                            <Button icon="sap-icon://delete" type="Reject" press="onRemoveCreditSegment" visible="{= !${wizardData>/isReadOnly} }"/>
+                                            <DatePicker value="{wizardData>ValidityDate}" valueFormat="yyyy-MM-dd" displayFormat="medium" editable="false"/>
                                         </cells>
                                     </ColumnListItem>
                                 </items>
