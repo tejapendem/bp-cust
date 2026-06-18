@@ -476,6 +476,21 @@ module.exports = cds.service.impl(async function () {
             );
         });
 
+        // Send confirmation to the creator (authenticated user)
+        const creatorEmail = req.user?.id;
+        if (creatorEmail) {
+            const creatorSubject = `Business Partner ${bp.Name} Submitted for Approval`;
+            const creatorHtml = _getWorkflowEmailTemplate(
+                "Submission Confirmed",
+                `Your Business Partner request for <strong>${bp.Name}</strong> has been submitted for approval. You will be notified once all approvals are completed.`,
+                bp,
+                false
+            );
+            _sendEmail(creatorEmail, creatorSubject, null, creatorHtml).catch(e =>
+                console.error(`[APPROVAL] Background email to creator ${creatorEmail} failed:`, e)
+            );
+        }
+
         return `Submitted for Level 1 approval to ${allLevels[0].email}`;
     });
 
@@ -1014,7 +1029,7 @@ module.exports = cds.service.impl(async function () {
         const mobileCountry = bp.MobileCountryCode || "";
         const mobileNum = bp.MobileNumber || "";
         const tel = bp.Telephone || "";
-        const title = bp.Title || "0003";
+        const title = bp.BusinessPartnerCategory === "1" ? "" : (bp.Title || "0003");
         const room = bp.Room || "";
         const floor = bp.Floor || "";
         const careOf = bp.CareOf || "";
@@ -1859,6 +1874,41 @@ module.exports = cds.service.impl(async function () {
             await UPDATE(ApprovalWorkflows).set({ sapBPNumber: bpNumber, sapPushStatus: 'Pushed' }).where({ ID: workflowID });
 
             console.log(`[AUTO-PUSH] SUCCESS: BP ${bpID} pushed to SAP, SAP BP#: ${bpNumber}`);
+
+            // Send professional SAP BP notification to all approvers
+            try {
+                const workflows = await SELECT.from(ApprovalWorkflows)
+                    .where({ businessPartner_ID: bpID, status: 'approved' })
+                    .orderBy('currentLevel desc');
+                const latestWorkflow = workflows?.[0];
+                if (latestWorkflow) {
+                    let aApproverEmails = [latestWorkflow.approverEmail];
+                    try {
+                        const parsed = JSON.parse(latestWorkflow.approverEmail || "[]");
+                        if (Array.isArray(parsed)) aApproverEmails = parsed;
+                    } catch (_) {}
+                    const sapSubject = `SAP Business Partner Created: ${bpNumber}`;
+                    const sapHtml = _getSAPPushSuccessTemplate(bp.Name, bpNumber, bp.BusinessPartnerNumber);
+                    aApproverEmails.forEach(email => {
+                        _sendEmail(email, sapSubject, null, sapHtml).catch(e =>
+                            console.error(`[AUTO-PUSH] Email to approver ${email} failed:`, e)
+                        );
+                    });
+                    logs.push(`[${new Date().toLocaleTimeString()}] SAP BP notification sent to ${aApproverEmails.length} approver(s)`);
+                }
+            } catch (wfErr) {
+                console.error(`[AUTO-PUSH] Failed to notify approvers:`, wfErr);
+            }
+
+            // Send SAP BP notification to the requester (BP contact)
+            if (bp.Email) {
+                const requesterSubject = `SAP Business Partner Created: ${bpNumber}`;
+                const requesterHtml = _getSAPPushSuccessTemplate(bp.Name, bpNumber, bp.BusinessPartnerNumber);
+                _sendEmail(bp.Email, requesterSubject, null, requesterHtml).catch(e =>
+                    console.error(`[AUTO-PUSH] Email to requester ${bp.Email} failed:`, e)
+                );
+                logs.push(`[${new Date().toLocaleTimeString()}] SAP BP notification sent to requester: ${bp.Email}`);
+            }
 
         } catch (err) {
             logs.push(`[${new Date().toLocaleTimeString()}] ERROR: ${err.message}`);

@@ -191,7 +191,7 @@ entity ApprovalWorkflows : cuid, managed {
     businessPartner : Association to BusinessPartners;
     currentLevel    : Integer;
     status          : String(20); // 'pending', 'approved', 'rejected'
-    approverEmail   : String(100);
+    approverEmail   : String(1000);
     levelEmails     : LargeString; // JSON snapshot of {level: email} at submission time
     sapBPNumber     : String(20);
     sapPushStatus   : String(20);

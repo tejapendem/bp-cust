@@ -20,6 +20,6 @@
         }
     },
     "scripts": {
-        "start": "rm -rf db/data; node -e \"const c=require('@sap/cds');c.connect.to('db').then(async d=>{try{await d.run('DROP VIEW IF EXISTS BusinessPartnerService_ApprovalWorkflows CASCADE');console.log('OK: dropped old view')}catch(e){console.warn('Skip:',e.message)}process.exit(0)}).catch(e=>{console.error(e.message);process.exit(0)})\"; npx cds-deploy --model-only; tail -f /dev/null"
+        "start": "rm -rf db/data; npx cds-deploy --model-only; node -e \"const c=require('@sap/cds');c.connect.to('db').then(async d=>{try{await d.run('CREATE OR REPLACE VIEW qas.businesspartnerservice_approvalworkflows AS SELECT id,createdat,createdby,modifiedat,modifiedby,businesspartner_id,currentlevel,status,approveremail,levelemails,sapbpnumber,sappushstatus,sappushlogs FROM qas.bp_cust_approvalworkflows');console.log('OK: created view')}catch(e){console.error('Failed:',e.message)}process.exit(0)}).catch(e=>{console.error(e.message);process.exit(0)})\"; tail -f /dev/null"
     }
 }
