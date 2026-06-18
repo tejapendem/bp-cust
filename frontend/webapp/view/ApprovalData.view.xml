@@ -145,7 +145,7 @@
                                             color="{= ${approvedList>SAPPushStatus} === 'Pushed' ? '#2e7d32' : (${approvedList>SAPPushStatus} === 'Failed' ? '#c62828' : '#e65100') }"
                                             class="adStatusIcon" />
                                         <ObjectStatus
-                                            text="{approvedList>SAPPushStatus}"
+                                            text="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'Created' : (${approvedList>SAPPushStatus} === 'Failed' ? 'Failed' : 'Not Created') }"
                                             state="{= ${approvedList>SAPPushStatus} === 'Pushed' ? 'Success' : (${approvedList>SAPPushStatus} === 'Failed' ? 'Error' : 'Warning') }" />
                                         <Button icon="sap-icon://hint"
                                             visible="{= ${approvedList>SAPPushStatus} === 'Failed' || ${approvedList>SAPPushStatus} === 'Pushed' }"

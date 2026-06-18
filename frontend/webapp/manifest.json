@@ -179,6 +179,13 @@
           "target": [
             "TargetApprovalData"
           ]
+        },
+        {
+          "name": "AccessDenied",
+          "pattern": "access-denied",
+          "target": [
+            "TargetAccessDenied"
+          ]
         }
       ],
       "targets": {
@@ -213,6 +220,10 @@
         "TargetApprovalData": {
           "viewType": "XML",
           "viewName": "ApprovalData"
+        },
+        "TargetAccessDenied": {
+          "viewType": "XML",
+          "viewName": "AccessDenied"
         }
       }
     }

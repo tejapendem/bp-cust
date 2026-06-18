@@ -246,27 +246,6 @@ const extraUsers = [
       createdBy: 'system', modifiedBy: 'system' },
 ];
 
-const accessRequests = [
-    { ID: 'dd000004-0000-0000-0000-000000000001',
-      userEmail: 'john.doe@example.com', userName: 'John Doe',
-      requestedRole: 'viewer', reason: 'Need read-only access for audit purposes.',
-      status: 'pending',
-      createdAt: '2026-06-02T08:00:00.000Z', modifiedAt: '2026-06-02T08:00:00.000Z',
-      createdBy: 'john.doe@example.com', modifiedBy: 'john.doe@example.com' },
-    { ID: 'dd000004-0000-0000-0000-000000000002',
-      userEmail: 'mary.apio@roofingsgroup.com', userName: 'Mary Apio',
-      requestedRole: 'admin', reason: 'Taking over BP creation tasks from Sarah.',
-      status: 'pending',
-      createdAt: '2026-06-03T09:00:00.000Z', modifiedAt: '2026-06-03T09:00:00.000Z',
-      createdBy: 'mary.apio@roofingsgroup.com', modifiedBy: 'mary.apio@roofingsgroup.com' },
-    { ID: 'dd000004-0000-0000-0000-000000000003',
-      userEmail: 'peter.ouma@example.com', userName: 'Peter Ouma',
-      requestedRole: 'viewer', reason: 'Finance team review access.',
-      status: 'approved',
-      createdAt: '2026-05-20T10:00:00.000Z', modifiedAt: '2026-05-21T11:00:00.000Z',
-      createdBy: 'peter.ouma@example.com', modifiedBy: 'rajesh.pendem@canopusgbs.com' },
-];
-
 // ── helpers ──────────────────────────────────────────────────────────────────
 function run(sql, params = []) {
     return new Promise((res, rej) =>
@@ -332,17 +311,6 @@ async function upsertUser(u) {
     console.log(`  INSERT: User ${u.email} (${u.role})`);
 }
 
-async function upsertAR(ar) {
-    const exists = await allRows('SELECT ID FROM bp_cust_AccessRequests WHERE ID=?', [ar.ID]);
-    if (exists.length) { console.log(`  SKIP (exists): AccessRequest ${ar.ID}`); return; }
-    await run(`INSERT INTO bp_cust_AccessRequests
-        (ID,createdAt,createdBy,modifiedAt,modifiedBy,userEmail,userName,requestedRole,reason,status)
-        VALUES (?,?,?,?,?,?,?,?,?,?)`,
-        [ar.ID, ar.createdAt, ar.createdBy, ar.modifiedAt, ar.modifiedBy,
-         ar.userEmail, ar.userName, ar.requestedRole, ar.reason, ar.status]);
-    console.log(`  INSERT: AccessRequest ${ar.userEmail} (${ar.status})`);
-}
-
 // ── main ─────────────────────────────────────────────────────────────────────
 (async () => {
     try {
@@ -358,15 +326,11 @@ async function upsertAR(ar) {
         console.log('\n=== Seeding Extra Users ===');
         for (const u of extraUsers) await upsertUser(u);
 
-        console.log('\n=== Seeding Access Requests ===');
-        for (const ar of accessRequests) await upsertAR(ar);
-
         // Summary
         const bpCount   = (await allRows('SELECT COUNT(*) c FROM bp_cust_BusinessPartners'))[0].c;
         const wfCount   = (await allRows('SELECT COUNT(*) c FROM bp_cust_ApprovalWorkflows'))[0].c;
         const logCount  = (await allRows('SELECT COUNT(*) c FROM bp_cust_ApprovalLogs'))[0].c;
         const userCount = (await allRows('SELECT COUNT(*) c FROM bp_cust_Users'))[0].c;
-        const arCount   = (await allRows('SELECT COUNT(*) c FROM bp_cust_AccessRequests'))[0].c;
         const active    = (await allRows("SELECT COUNT(*) c FROM bp_cust_BusinessPartners WHERE LifecycleStatus='active'"))[0].c;
         const pushed    = (await allRows("SELECT COUNT(*) c FROM bp_cust_BusinessPartners WHERE SAPPushStatus='Pushed'"))[0].c;
         const failed    = (await allRows("SELECT COUNT(*) c FROM bp_cust_BusinessPartners WHERE SAPPushStatus='Failed'"))[0].c;
@@ -377,7 +341,6 @@ async function upsertAR(ar) {
         console.log(`   ApprovalWorkflows: ${wfCount} total`);
         console.log(`   ApprovalLogs     : ${logCount} total`);
         console.log(`   Users            : ${userCount} total`);
-        console.log(`   AccessRequests   : ${arCount} total`);
     } catch (err) {
         console.error('❌ Seed error:', err.message);
     } finally {

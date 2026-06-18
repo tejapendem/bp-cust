@@ -8,7 +8,8 @@ const path = require('path');
 
 module.exports = cds.service.impl(async function () {
     this.before('*', async (req) => {
-        console.log(`[AUTH DEBUG] User: ${req.user.id}, Roles: ${req.user.roles || 'none'}, IsAuthenticated: ${req.user.id !== 'anonymous'}`);
+        const roles = req.user.roles ? Object.keys(req.user.roles) : [];
+        console.log(`[AUTH DEBUG] User: ${req.user.id}, Roles: [${roles.join(', ')}], IsAuthenticated: ${req.user.id !== 'anonymous'}`);
     });
 
     // TEST ACTION: Test devlb destination connectivity
@@ -335,64 +336,69 @@ module.exports = cds.service.impl(async function () {
         }
     });
 
+    this.on('getWorkflowSAPStatus', async (req) => {
+        const { workflowID } = req.data;
+        try {
+            const { ApprovalWorkflows } = this.entities;
+            const row = await SELECT.one.from(ApprovalWorkflows).columns('sapBPNumber', 'sapPushStatus').where({ ID: workflowID });
+            return { sapBPNumber: row?.sapBPNumber || null, sapPushStatus: row?.sapPushStatus || null };
+        } catch (e) {
+            console.error('[getWorkflowSAPStatus] SQL error:', e.message);
+            return { sapBPNumber: null, sapPushStatus: null };
+        }
+    });
+
     this.on('getUserInfo', async (req) => {
         const userEmail = req.user?.id;
         console.log("[AUTH DEBUG] Starting getUserInfo for:", userEmail);
 
         if (!userEmail || userEmail === 'anonymous') {
             console.log("[AUTH DEBUG] User is anonymous or missing");
-            return { email: "", name: "Guest User", role: "guest", isAdmin: false, isRegistered: false, requestStatus: 'none' };
+            return { email: "", name: "Guest", role: "none", isAdmin: false, isViewer: false, hasAccess: false };
         }
 
-        let hasAdminScope = false;
-        try {
-            hasAdminScope = req.user.is('Admin') ||
-                req.user.is('admin') ||
-                req.user.attr?.role === 'admin' ||
-                (Array.isArray(req.user.roles) && req.user.roles.some(r => r.toLowerCase().includes('admin'))) ||
-                (Array.isArray(req.user.scopes) && req.user.scopes.some(s => s.toLowerCase().includes('admin')));
-            console.log("[AUTH DEBUG] hasAdminScope from JWT:", hasAdminScope);
-        } catch (e) {
-            console.error("Error checking scopes:", e);
+        const roleKeys = req.user.roles ? Object.keys(req.user.roles) : [];
+        const isAdmin = req.user.is('Admin') || req.user.is('admin') ||
+            roleKeys.some(r => r.toLowerCase().includes('admin'));
+
+        const isViewer = !isAdmin && (
+            req.user.is('Viewer') || req.user.is('viewer') ||
+            roleKeys.some(r => r.toLowerCase().includes('viewer'))
+        );
+
+        const hasAccess = isAdmin || isViewer;
+        const role = isAdmin ? 'admin' : (isViewer ? 'viewer' : 'none');
+
+        // Resolve full name from JWT attributes (set by CDS from XSUAA token claims)
+        const attr = req.user.attr || {};
+        const givenName  = attr.givenName  || attr.given_name  || '';
+        const familyName = attr.familyName || attr.family_name || '';
+        const fullName = (givenName + ' ' + familyName).trim() || userEmail.split('@')[0];
+
+        console.log(`[AUTH DEBUG] JWT roles: ${JSON.stringify(req.user.roles)}, isAdmin: ${isAdmin}, isViewer: ${isViewer}, name: ${fullName}`);
+
+        // Auto-sync the logged-in user into the Users table so User Management stays populated
+        if (hasAccess) {
+            try {
+                const { Users } = this.entities;
+                await UPSERT.into(Users).entries({
+                    email: userEmail,
+                    name: fullName,
+                    role: role,
+                    status: 'active'
+                });
+            } catch (syncErr) {
+                console.warn('[AUTH] Failed to sync user to Users table:', syncErr.message);
+            }
         }
 
-        const { Users, AccessRequests } = this.entities;
-        let user;
-        try {
-            // Case-insensitive lookup for email
-            user = await SELECT.one.from(Users).where('LOWER(email) =', userEmail.toLowerCase());
-            console.log("[AUTH DEBUG] DB user found:", user ? JSON.stringify(user) : "No");
-        } catch (dbErr) {
-            console.error("Database query failed (likely schema not deployed):", dbErr.message);
-            return { email: userEmail, name: userEmail.split('@')[0], role: 'guest', isAdmin: false, isRegistered: false, requestStatus: 'none' };
-        }
-
-        if (user) {
-            console.log("[AUTH DEBUG] User found in DB with role:", user.role);
-            return {
-                email: user.email,
-                name: user.name,
-                role: user.role,
-                isAdmin: user.role === 'admin',
-                isRegistered: true,
-                requestStatus: 'approved'
-            };
-        }
-
-
-        // Check for pending access requests
-        const accessRequest = await SELECT.one.from(AccessRequests)
-            .where('LOWER(userEmail) =', userEmail.toLowerCase())
-            .orderBy('createdAt desc');
-
-        console.log("[AUTH DEBUG] Returning guest with request status:", accessRequest?.status || 'none');
         return {
             email: userEmail,
-            name: userEmail.split('@')[0],
-            role: 'guest',
-            isAdmin: false,
-            isRegistered: false,
-            requestStatus: accessRequest?.status || 'none'
+            name: fullName,
+            role: role,
+            isAdmin: isAdmin,
+            isViewer: isViewer,
+            hasAccess: hasAccess
         };
     });
 
@@ -429,14 +435,28 @@ module.exports = cds.service.impl(async function () {
             if (Array.isArray(parsed)) level1EmailArray = parsed;
         } catch (_) { /* single email string */ }
 
-        const workflowEntry = {
-            businessPartner_ID: bpID,
-            currentLevel: 1,
-            status: 'pending',
-            approverEmail: level1EmailArray.length > 1 ? JSON.stringify(level1EmailArray) : level1Email,
-            levelEmails: JSON.stringify(levelEmailMap)
-        };
-        await INSERT.into(ApprovalWorkflows).entries(workflowEntry);
+        const level1ApproverValue = level1EmailArray.length > 1 ? JSON.stringify(level1EmailArray) : level1Email;
+        const levelEmailsJson = JSON.stringify(levelEmailMap);
+
+        // If a pending workflow already exists for this BP, update it instead of creating a duplicate
+        const existingWorkflow = await SELECT.one.from(ApprovalWorkflows)
+            .where({ businessPartner_ID: bpID, status: 'pending' });
+
+        if (existingWorkflow) {
+            await UPDATE(ApprovalWorkflows).set({
+                currentLevel: 1,
+                approverEmail: level1ApproverValue,
+                levelEmails: levelEmailsJson
+            }).where({ ID: existingWorkflow.ID });
+        } else {
+            await INSERT.into(ApprovalWorkflows).entries({
+                businessPartner_ID: bpID,
+                currentLevel: 1,
+                status: 'pending',
+                approverEmail: level1ApproverValue,
+                levelEmails: levelEmailsJson
+            });
+        }
 
         // 4. Update BP status to 'pending_approval'
         await UPDATE(BusinessPartners).set({ LifecycleStatus: 'pending_approval' }).where({ ID: bpID });
@@ -460,7 +480,7 @@ module.exports = cds.service.impl(async function () {
     });
 
     this.on('getAdminStats', async (req) => {
-        const { BusinessPartners, Users, AccessRequests, ApprovalLevels, ApprovalWorkflows } = this.entities;
+        const { BusinessPartners, Users, ApprovalLevels, ApprovalWorkflows } = this.entities;
 
         const activeBPs = await SELECT.from(BusinessPartners).where({ LifecycleStatus: 'active' });
         const draftBPs = await SELECT.from(BusinessPartners).where({ LifecycleStatus: 'draft' });
@@ -468,9 +488,6 @@ module.exports = cds.service.impl(async function () {
         const totalAdmins = await SELECT.from(Users).where({ role: 'admin' });
         const totalViewers = await SELECT.from(Users).where({ role: 'viewer' });
 
-        const pendingRequests = await SELECT.from(AccessRequests).where({ status: 'pending' });
-
-        // New Approval Stats
         const approvalLevels = await SELECT.from(ApprovalLevels);
         const pendingWorkflows = await SELECT.from(ApprovalWorkflows).where({ status: 'pending' });
         const approvedWorkflows = await SELECT.from(ApprovalWorkflows).where({ status: 'approved' });
@@ -481,48 +498,11 @@ module.exports = cds.service.impl(async function () {
             draftBPs: draftBPs.length,
             totalAdmins: totalAdmins.length,
             totalViewers: totalViewers.length,
-            pendingRequests: pendingRequests.length,
             approvalLevelsCount: approvalLevels.length,
             pendingWorkflows: pendingWorkflows.length,
             approvedWorkflows: approvedWorkflows.length,
             rejectedWorkflows: rejectedWorkflows.length
         };
-    });
-
-    this.before('CREATE', 'AccessRequests', async (req) => {
-        if (!req.data.userEmail || !req.data.userEmail.trim()) {
-            return req.error(400, 'User email is required to submit an access request');
-        }
-    });
-
-    this.after('CREATE', 'AccessRequests', async (data) => {
-        console.log("SUCCESS: New Access Request created for:", data.userEmail);
-
-        // Notify Admin (Rajesh Pendem) about the new access request
-        const adminEmail = 'rajesh.pendem@canopusgbs.com';
-        const subject = `New Access Request: ${data.userName}`;
-        const text = `User ${data.userName} (${data.userEmail}) has requested ${data.requestedRole} access.`;
-        await _sendEmail(adminEmail, subject, text);
-    });
-
-    this.after('UPDATE', 'AccessRequests', async (data, req) => {
-        if (data.status === 'approved') {
-            const { Users, AccessRequests } = this.entities;
-
-            // 1. Fetch the full request data (since 'data' only contains changed fields)
-            const fullRequest = await SELECT.one.from(AccessRequests).where({ ID: data.ID });
-
-            if (fullRequest && fullRequest.userEmail && fullRequest.userEmail.trim()) {
-                // 2. Promote the user to the Users table
-                await UPSERT.into(Users).entries({
-                    email: fullRequest.userEmail,
-                    name: fullRequest.userName,
-                    role: fullRequest.requestedRole,
-                    status: 'active'
-                });
-                console.log(`PROMOTION SUCCESS: User ${fullRequest.userEmail} promoted to ${fullRequest.requestedRole}`);
-            }
-        }
     });
 
     // Multi-level Approval Process
@@ -645,8 +625,9 @@ module.exports = cds.service.impl(async function () {
                 );
             });
         } else {
-            // No more levels - finalize the approval
+            // No more levels — finalize approval, set BP active, then auto-push to SAP
             await UPDATE(ApprovalWorkflows).set({ status: 'approved' }).where({ ID: workflowID });
+            await UPDATE(ApprovalWorkflows).set({ sapPushStatus: 'Pushing' }).where({ ID: workflowID });
             await UPDATE(BusinessPartners).set({ LifecycleStatus: 'active' }).where({ ID: workflow.businessPartner_ID });
 
             // Send approval email to requester
@@ -671,6 +652,11 @@ module.exports = cds.service.impl(async function () {
                     console.error(`[APPROVAL] Background email to requester failed:`, e)
                 );
             }
+
+            // Auto-push to SAP in the background — don't block the approver response
+            _autoPushToSAP(workflow.businessPartner_ID, workflowID, this.entities).catch(e =>
+                console.error(`[AUTO-PUSH] Background auto-push failed:`, e)
+            );
         }
 
         return `Level ${workflow.currentLevel} approval completed${nextApproverEmail ? ', moved to Level ' + nextLevel : ', fully approved'}`;
@@ -1750,19 +1736,143 @@ module.exports = cds.service.impl(async function () {
     }
 
     async function _isAdmin(req) {
-        // Check XSUAA scope first
         if (req.user.is('Admin') || req.user.is('admin')) return true;
-        // Check user.roles array
-        if (Array.isArray(req.user.roles)) {
-            if (req.user.roles.some(r => typeof r === 'string' && r.toLowerCase().includes('admin'))) return true;
-        }
-        // Fallback: check application Users table
+        const roleKeys = req.user.roles ? Object.keys(req.user.roles) : [];
+        return roleKeys.some(r => typeof r === 'string' && r.toLowerCase().includes('admin'));
+    }
+
+    // Auto-push to SAP after final approval — runs in background, updates ApprovalWorkflows with result
+    async function _autoPushToSAP(bpID, workflowID, entities) {
+        const { BusinessPartners, SAPPushLogs, ApprovalWorkflows } = entities;
+        const logs = [];
+
+        console.log(`[AUTO-PUSH] Starting auto-push for BP ${bpID}, workflow ${workflowID}`);
+        logs.push(`[${new Date().toLocaleTimeString()}] Auto-push triggered by final approval for BP ID: ${bpID}`);
+
         try {
-            const { Users } = cds.entities('BusinessPartnerService');
-            const user = await SELECT.one.from(Users)
-                .where('LOWER(email) =', req.user.id.toLowerCase());
-            if (user && user.role === 'admin') return true;
-        } catch (_) { /* ignore */ }
-        return false;
+            const bp = await SELECT.one.from(BusinessPartners).where({ ID: bpID });
+            if (!bp) throw new Error(`BP ${bpID} not found`);
+            if (!bp.SAPBUPAPayload) throw new Error('SAP payload is empty — save the BP form first');
+
+            let bpPayload;
+            try { bpPayload = JSON.parse(bp.SAPBUPAPayload); }
+            catch (e) { throw new Error(`Stored SAP payload is invalid JSON: ${e.message}`); }
+
+            logs.push(`[${new Date().toLocaleTimeString()}] Connecting to SAP destination 'devlb'...`);
+            const dest = await getDestination({ destinationName: 'devlb' });
+            if (!dest) throw new Error("Destination 'devlb' not found.");
+            logs.push(`[${new Date().toLocaleTimeString()}] Destination resolved: ${dest.url}`);
+
+            // Fetch CSRF token
+            const csrfRes = await executeHttpRequest(dest, {
+                method: 'GET',
+                url: '/sap/opu/odata/sap/API_BUSINESS_PARTNER/$metadata',
+                headers: { 'X-CSRF-Token': 'Fetch' }
+            });
+            const csrfToken = csrfRes.headers['x-csrf-token'] || csrfRes.headers['X-CSRF-Token'] || '';
+            const setCookie = csrfRes.headers['set-cookie'] || [];
+            const cookie = Array.isArray(setCookie) ? setCookie.map(c => c.split(';')[0]).join('; ') : (setCookie || '').split(';')[0];
+            if (!csrfToken) throw new Error('No CSRF token from SAP $metadata');
+            logs.push(`[${new Date().toLocaleTimeString()}] CSRF token obtained.`);
+
+            // POST Business Partner
+            let bpResponse;
+            try {
+                const postRes = await executeHttpRequest(dest, {
+                    method: 'POST',
+                    url: '/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_BusinessPartner',
+                    headers: {
+                        'X-CSRF-Token': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        ...(cookie ? { 'Cookie': cookie } : {})
+                    },
+                    data: bpPayload
+                });
+                bpResponse = postRes.data;
+                logs.push(`[${new Date().toLocaleTimeString()}] Business Partner pushed to SAP successfully.`);
+            } catch (postErr) {
+                const errBody = JSON.stringify(postErr.response?.data || postErr.message).substring(0, 500);
+                throw new Error(`SAP POST failed: HTTP ${postErr.response?.status || 'N/A'} - ${errBody}`);
+            }
+
+            // Parse SAP BP Number from response
+            let bpNumber = '';
+            const responseStr = typeof bpResponse === 'string' ? bpResponse : JSON.stringify(bpResponse);
+            if (bpResponse?.d?.BusinessPartner) bpNumber = bpResponse.d.BusinessPartner;
+            else if (bpResponse?.BusinessPartner) bpNumber = bpResponse.BusinessPartner;
+            if (!bpNumber) {
+                const m = responseStr.match(/"BusinessPartner"\s*:\s*"(\d+)"/i) ||
+                          responseStr.match(/A_BusinessPartner\('(\d+)'\)/i);
+                if (m) bpNumber = m[1];
+            }
+            if (!bpNumber) {
+                logs.push(`[${new Date().toLocaleTimeString()}] WARNING: Could not parse SAP BP number — using local reference.`);
+                bpNumber = bp.BusinessPartnerNumber || '';
+            } else {
+                if (bpNumber.length < 10) bpNumber = bpNumber.padStart(10, '0');
+                logs.push(`[${new Date().toLocaleTimeString()}] SAP BP Number: ${bpNumber}`);
+            }
+
+            // Update BusinessPartner with SAP number
+            await UPDATE(BusinessPartners).set({ SAPBPNumber: bpNumber, SAPPushStatus: 'Pushed', SAPPushLogs: logs.join('\n') }).where({ ID: bpID });
+
+            // Push Credit Segment if available
+            if (bp.SAPCreditPayload) {
+                try {
+                    let creditPayload = JSON.parse(bp.SAPCreditPayload);
+                    creditPayload.BusinessPartner = bpNumber;
+                    if (creditPayload.to_CreditMgmtAccountTP?.results) {
+                        creditPayload.to_CreditMgmtAccountTP.results.forEach(r => { r.BusinessPartner = bpNumber; });
+                    }
+                    const creditCsrfRes = await executeHttpRequest(dest, {
+                        method: 'GET',
+                        url: '/sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/$metadata',
+                        headers: { 'X-CSRF-Token': 'Fetch' }
+                    });
+                    const creditCsrf = creditCsrfRes.headers['x-csrf-token'] || creditCsrfRes.headers['X-CSRF-Token'] || '';
+                    const creditCookie = (creditCsrfRes.headers['set-cookie'] || []);
+                    const creditCookieStr = Array.isArray(creditCookie) ? creditCookie.map(c => c.split(';')[0]).join('; ') : creditCookie;
+                    await executeHttpRequest(dest, {
+                        method: 'POST',
+                        url: '/sap/opu/odata/sap/API_CRDTMBUSINESSPARTNER/CreditMgmtBusinessPartner',
+                        headers: {
+                            'X-CSRF-Token': creditCsrf,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            ...(creditCookieStr ? { 'Cookie': creditCookieStr } : {})
+                        },
+                        data: creditPayload
+                    });
+                    logs.push(`[${new Date().toLocaleTimeString()}] Credit segment pushed successfully.`);
+                } catch (creditErr) {
+                    logs.push(`[${new Date().toLocaleTimeString()}] WARNING: Credit segment push failed: ${creditErr.message}`);
+                }
+            }
+
+            // Insert SAPPushLog
+            await INSERT.into(SAPPushLogs).entries({
+                businessPartner_ID: bpID, status: 'Pushed', logs: logs.join('\n'), timestamp: new Date()
+            });
+
+            // Update workflow SAP fields via CDS ORM
+            await UPDATE(ApprovalWorkflows).set({ sapBPNumber: bpNumber, sapPushStatus: 'Pushed' }).where({ ID: workflowID });
+
+            console.log(`[AUTO-PUSH] SUCCESS: BP ${bpID} pushed to SAP, SAP BP#: ${bpNumber}`);
+
+        } catch (err) {
+            logs.push(`[${new Date().toLocaleTimeString()}] ERROR: ${err.message}`);
+            console.error(`[AUTO-PUSH] FAILED for BP ${bpID}:`, err.message);
+
+            try {
+                await UPDATE(BusinessPartners).set({ SAPPushStatus: 'Failed', SAPPushLogs: logs.join('\n') }).where({ ID: bpID });
+                await INSERT.into(SAPPushLogs).entries({
+                    businessPartner_ID: bpID, status: 'Failed', logs: logs.join('\n'), timestamp: new Date()
+                });
+                await UPDATE(ApprovalWorkflows).set({ sapPushStatus: 'Failed' }).where({ ID: workflowID });
+            } catch (updateErr) {
+                console.error(`[AUTO-PUSH] Failed to update failure status:`, updateErr.message);
+            }
+        }
     }
 });

@@ -26,9 +26,6 @@
                     <Switch state="{userModel>/isAdmin}" change=".onRoleToggle" customTextOn="ON" customTextOff="OFF" />
                 </HBox>
 
-                <VBox width="100%" class="sapUiMediumMarginTop" alignItems="Start">
-                    <Link text="Manage Access" press=".onManageAccessPress" />
-                </VBox>
             </VBox>
         </content>
         <footer>

@@ -171,12 +171,13 @@ entity Users : managed {
     status    : String(20) default 'active'; // 'active', 'inactive'
 }
 
+// Kept for DB schema compatibility — no longer exposed via service or used in application logic
 entity AccessRequests : cuid, managed {
     userEmail     : String(100);
     userName      : String(100);
     requestedRole : String(20);
     reason        : String(500);
-    status        : String(20) default 'pending'; // 'pending', 'approved', 'rejected'
+    status        : String(20) default 'pending';
 }
 
 entity ApprovalLevels : cuid, managed {
@@ -192,6 +193,9 @@ entity ApprovalWorkflows : cuid, managed {
     status          : String(20); // 'pending', 'approved', 'rejected'
     approverEmail   : String(100);
     levelEmails     : LargeString; // JSON snapshot of {level: email} at submission time
+    sapBPNumber     : String(20);
+    sapPushStatus   : String(20);
+    sapPushLogs     : LargeString;
     logs            : Composition of many ApprovalLogs on logs.parent = $self;
 }
 

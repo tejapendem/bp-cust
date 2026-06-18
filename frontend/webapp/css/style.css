@@ -3760,3 +3760,11 @@ body[data-theme="dark"] .sapUiFormElement label {
 /* ============================================================
    End App Shell
    ============================================================ */
+/* ── Auto-Push SAP BP Number display ───────────────────── */
+.aibSapBpRow { padding: 6px 16px; background: #f0f4ff; border-radius: 6px; }
+.aibSapBpNumber.sapMText { font-weight: 700; color: #1565c0; font-size: 0.95rem; }
+.aibSapPushingText.sapMText { color: #e65100; font-style: italic; font-size: 0.85rem; }
+.aibSapFailedText.sapMText { color: #c62828; font-size: 0.85rem; }
+
+@keyframes aibSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.aibSpinIcon { display: inline-block; animation: aibSpin 1.2s linear infinite; }

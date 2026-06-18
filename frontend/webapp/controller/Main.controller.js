@@ -11,27 +11,13 @@ sap.ui.define([
 
     return BaseController.extend("bp.cust.ui.controller.Main", {
         onInit: function () {
-            // Access control - only registered users can access this page
-            var oUserModel = this.getOwnerComponent().getModel("userModel");
-            if (oUserModel) {
-                var bIsRegistered = oUserModel.getProperty("/isRegistered");
-                if (!bIsRegistered) {
-                    sap.m.MessageBox.warning("You need to request access to use this page.", {
-                        onClose: function () {
-                            this.getOwnerComponent().getRouter().navTo("Main");
-                        }.bind(this)
-                    });
-                }
-            }
-
-            this.getOwnerComponent().getRouter().getRoute("Main").attachPatternMatched(this._onMainMatched, this);
             this._bSortDescending = true;
+            this.getOwnerComponent().getRouter().getRoute("Main").attachPatternMatched(this._onMainMatched, this);
         },
 
         _onMainMatched: function () {
-            var that = this;
-            // Apply sort — retry until binding is available
             this._applyDefaultSort();
+            var that = this;
             var retryCount = 0;
             var retryInterval = setInterval(function () {
                 if (that._applyDefaultSort() || retryCount > 10) {
@@ -39,7 +25,6 @@ sap.ui.define([
                 }
                 retryCount++;
             }, 100);
-            // Apply saved column visibility (needs table DOM rendered)
             setTimeout(function () {
                 that._applyColumnSettings();
             }, 600);
@@ -489,9 +474,9 @@ sap.ui.define([
         // ─────────────────────────────────────────────
         _getColumnConfigs: function () {
             return [
-                { key: "Details", label: "Business Partner Details", path: "Name", visible: true, sort: "none" },
+                { key: "Details", label: "Reference Number", path: "Name", visible: true, sort: "none" },
                 { key: "BPNumber", label: "BP Number", path: "BusinessPartnerNumber", visible: false, sort: "none" },
-                { key: "SAPNumber", label: "SAP Number", path: "SAPBPNumber", visible: true, sort: "none" },
+                { key: "SAPNumber", label: "SAP BP Number", path: "SAPBPNumber", visible: true, sort: "none" },
                 { key: "Category", label: "Category", path: "BPType", visible: true, sort: "none" },
                 { key: "Grouping", label: "Grouping", path: "Grouping", visible: true, sort: "none" },
                 { key: "Status", label: "Status", path: "LifecycleStatus", visible: true, sort: "none" },
@@ -514,7 +499,7 @@ sap.ui.define([
                     aDefaults.forEach(function (c) {
                         if (oMap[c.key]) {
                             c.visible = oMap[c.key].visible;
-                            c.sort = oMap[c.key].sort;
+                            // Never restore sort from localStorage — always keep createdAt desc as default
                         }
                     });
                 }

@@ -24,15 +24,12 @@
                 </HBox>
 
                 <!-- ── Users Card ───────────────────────────────────── -->
-                <VBox class="umCard sapUiMediumMarginTop">
-                    <HBox alignItems="Center" justifyContent="SpaceBetween" class="umCardHeader umCardHeaderUsers">
-                        <HBox alignItems="Center">
-                            <FlexBox justifyContent="Center" alignItems="Center" class="umCardIconCircle umIconUsers">
-                                <core:Icon src="sap-icon://employee" size="1.2rem" color="#1565c0" />
-                            </FlexBox>
-                            <Title text="Users" level="H3" class="sapUiSmallMarginBegin" />
-                        </HBox>
-                        <Button icon="sap-icon://delete" text="Delete Selected" type="Transparent" press=".onDeleteUsers" class="umDeleteBtn" tooltip="Delete Selected Users" />
+                <VBox class="umCard sapUiMediumMarginTop sapUiMediumMarginBottom">
+                    <HBox alignItems="Center" class="umCardHeader umCardHeaderUsers">
+                        <FlexBox justifyContent="Center" alignItems="Center" class="umCardIconCircle umIconUsers">
+                            <core:Icon src="sap-icon://employee" size="1.2rem" color="#1565c0" />
+                        </FlexBox>
+                        <Title text="Users" level="H3" class="sapUiSmallMarginBegin" />
                     </HBox>
 
                     <Table id="userTable"
@@ -40,17 +37,16 @@
                         growing="true"
                         growingThreshold="20"
                         busyIndicatorDelay="0"
-                        noDataText="No users registered yet."
-                        mode="MultiSelect"
+                        noDataText="No users found. Users appear here automatically when they log in with an assigned role collection."
+                        mode="None"
                         showSeparators="Inner"
                         class="umTable">
                         <columns>
-                            <Column width="22%"><Text text="Name" /></Column>
-                            <Column width="140px"><Text text="Role" /></Column>
+                            <Column width="30%"><Text text="Name" /></Column>
+                            <Column width="120px"><Text text="Role" /></Column>
                             <Column><Text text="Email" /></Column>
                             <Column width="110px" hAlign="Center"><Text text="Status" /></Column>
-                            <Column width="170px"><Text text="Last Updated" /></Column>
-                            <Column width="170px"><Text text="Approved By" /></Column>
+                            <Column width="170px"><Text text="Last Login" /></Column>
                         </columns>
                         <items>
                             <ColumnListItem class="umTableRow">
@@ -61,114 +57,14 @@
                                         </FlexBox>
                                         <Text text="{name}" class="umUserName sapUiSmallMarginBegin" />
                                     </HBox>
-                                    <Select selectedKey="{role}" change=".onUserRoleChange" class="umRoleSelect">
-                                        <core:Item key="admin" text="Admin" />
-                                        <core:Item key="viewer" text="Viewer" />
-                                    </Select>
+                                    <Text
+                                        text="{= ${role} === 'admin' ? 'Admin' : 'Viewer' }"
+                                        class="{= ${role} === 'admin' ? 'umRoleBadgeAdmin' : 'umRoleBadgeViewer' }" />
                                     <Text text="{email}" class="umEmailText" />
                                     <HBox justifyContent="Center">
                                         <Text
                                             text="{status}"
                                             class="{= ${status} === 'active' ? 'umStatusActive' : 'umStatusInactive' }" />
-                                    </HBox>
-                                    <Text text="{path: 'modifiedAt', formatter: '.formatDate'}" class="umDateText" />
-                                    <HBox alignItems="Center">
-                                        <core:Icon src="sap-icon://approvals" class="sapUiTinyMarginEnd" color="#7c4dff" />
-                                        <Text text="{createdBy}" class="umDateText" />
-                                    </HBox>
-                                </cells>
-                            </ColumnListItem>
-                        </items>
-                    </Table>
-                </VBox>
-
-                <!-- ── Pending Requests Card ────────────────────────── -->
-                <VBox class="umCard umCardWarning sapUiMediumMarginTop">
-                    <HBox alignItems="Center" class="umCardHeader umCardHeaderPending">
-                        <FlexBox justifyContent="Center" alignItems="Center" class="umCardIconCircle umIconPending">
-                            <core:Icon src="sap-icon://pending" size="1.2rem" color="#e65100" />
-                        </FlexBox>
-                        <Title text="Pending Access Requests" level="H3" class="sapUiSmallMarginBegin" />
-                    </HBox>
-
-                    <Table id="pendingRequestsTable"
-                        items="{ path: '/AccessRequests', filters: [{ path: 'status', operator: 'EQ', value1: 'pending' }] }"
-                        showSeparators="Inner"
-                        busyIndicatorDelay="0"
-                        noDataText="No pending access requests."
-                        class="umTable">
-                        <columns>
-                            <Column width="25%"><Text text="User" /></Column>
-                            <Column width="140px" hAlign="Center"><Text text="Requested Role" /></Column>
-                            <Column><Text text="Reason" /></Column>
-                            <Column width="200px" hAlign="Center"><Text text="Actions" /></Column>
-                        </columns>
-                        <items>
-                            <ColumnListItem class="umTableRow">
-                                <cells>
-                                    <VBox>
-                                        <Text text="{userName}" class="umUserName" />
-                                        <Text text="{userEmail}" class="umEmailText" />
-                                    </VBox>
-                                    <HBox justifyContent="Center">
-                                        <Text
-                                            text="{requestedRole}"
-                                            class="{= ${requestedRole} === 'admin' ? 'umRoleBadgeAdmin' : 'umRoleBadgeViewer' }" />
-                                    </HBox>
-                                    <Text text="{reason}" class="umReasonText" />
-                                    <HBox justifyContent="Center" alignItems="Center">
-                                        <Button text="Approve"
-                                            icon="sap-icon://accept"
-                                            press=".onApproveRequest"
-                                            class="umApproveBtn sapUiTinyMarginEnd" />
-                                        <Button text="Reject"
-                                            icon="sap-icon://decline"
-                                            press=".onRejectRequest"
-                                            class="umRejectBtn" />
-                                    </HBox>
-                                </cells>
-                            </ColumnListItem>
-                        </items>
-                    </Table>
-                </VBox>
-
-                <!-- ── Request History Card ─────────────────────────── -->
-                <VBox class="umCard sapUiMediumMarginTop sapUiMediumMarginBottom">
-                    <HBox alignItems="Center" class="umCardHeader umCardHeaderHistory">
-                        <FlexBox justifyContent="Center" alignItems="Center" class="umCardIconCircle umIconHistory">
-                            <core:Icon src="sap-icon://history" size="1.2rem" color="#5c3d9e" />
-                        </FlexBox>
-                        <Title text="Request History" level="H3" class="sapUiSmallMarginBegin" />
-                    </HBox>
-
-                    <Table id="requestHistoryTable"
-                        items="{ path: '/AccessRequests', filters: [{ path: 'status', operator: 'NE', value1: 'pending' }] }"
-                        showSeparators="Inner"
-                        busyIndicatorDelay="0"
-                        noDataText="No request history."
-                        class="umTable">
-                        <columns>
-                            <Column width="25%"><Text text="User" /></Column>
-                            <Column width="140px" hAlign="Center"><Text text="Requested Role" /></Column>
-                            <Column width="120px" hAlign="Center"><Text text="Status" /></Column>
-                            <Column width="180px"><Text text="Updated" /></Column>
-                        </columns>
-                        <items>
-                            <ColumnListItem class="umTableRow">
-                                <cells>
-                                    <VBox>
-                                        <Text text="{userName}" class="umUserName" />
-                                        <Text text="{userEmail}" class="umEmailText" />
-                                    </VBox>
-                                    <HBox justifyContent="Center">
-                                        <Text
-                                            text="{requestedRole}"
-                                            class="{= ${requestedRole} === 'admin' ? 'umRoleBadgeAdmin' : 'umRoleBadgeViewer' }" />
-                                    </HBox>
-                                    <HBox justifyContent="Center">
-                                        <Text
-                                            text="{status}"
-                                            class="{= ${status} === 'approved' ? 'umStatusApproved' : 'umStatusRejected' }" />
                                     </HBox>
                                     <Text text="{path: 'modifiedAt', formatter: '.formatDate'}" class="umDateText" />
                                 </cells>

@@ -550,18 +550,32 @@
         <content>
             <VBox class="sapUiMediumMargin">
                 <MessageStrip text="Review all data before submitting." type="Warning" showIcon="true" class="sapUiSmallMarginBottom"/>
-                <form:SimpleForm layout="ColumnLayout" columnsL="2" columnsM="2" editable="false">
-                    <core:Title text="General Data"/>
-                    <Label text="Category"/><Text text="{wizardData>/BusinessPartnerCategory}"/>
-                    <Label text="Type"/><Text text="{wizardData>/BPType}"/>
-                    <Label text="Grouping"/><Text text="{wizardData>/Grouping}"/>
-                    
-                    <core:Title text="Address"/>
-                    <Label text="Title" visible="{= ${wizardData>/BusinessPartnerCategory} !== '1' }"/><Text text="{wizardData>/Title}" visible="{= ${wizardData>/BusinessPartnerCategory} !== '1' }"/>
-                    <Label text="Name" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }"/><Text text="{wizardData>/Name}" visible="{= ${wizardData>/BusinessPartnerCategory} !== 'Person' }"/>
-                    <Label text="Name" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }"/><Text text="{wizardData>/FirstName} {wizardData>/LastName}" visible="{= ${wizardData>/BusinessPartnerCategory} === 'Person' }"/>
-                    <Label text="Search Terms"/><Text text="{wizardData>/SearchTerm1} / {wizardData>/SearchTerm2}"/>
-                </form:SimpleForm>
+                <HBox wrap="Wrap" class="sapUiSmallMarginBottom">
+                    <!-- General Data -->
+                    <VBox width="48%" class="sapUiSmallMarginEnd">
+                        <form:SimpleForm layout="ResponsiveGridLayout" labelSpanL="5" labelSpanM="5" columnsL="1" columnsM="1" editable="false">
+                            <core:Title text="General Data"/>
+                            <Label text="Category"/>
+                            <Text text="{= ${wizardData>/BusinessPartnerCategory} === '1' ? 'Person' : 'Organization' }"/>
+                            <Label text="Type"/>
+                            <Text text="{wizardData>/BPType}"/>
+                            <Label text="Grouping"/>
+                            <Text text="{wizardData>/Grouping}"/>
+                        </form:SimpleForm>
+                    </VBox>
+                    <!-- Address -->
+                    <VBox width="48%">
+                        <form:SimpleForm layout="ResponsiveGridLayout" labelSpanL="5" labelSpanM="5" columnsL="1" columnsM="1" editable="false">
+                            <core:Title text="Address"/>
+                            <Label text="Title" visible="{= ${wizardData>/BusinessPartnerCategory} !== '1' }"/>
+                            <Text text="{wizardData>/Title}" visible="{= ${wizardData>/BusinessPartnerCategory} !== '1' }"/>
+                            <Label text="Name"/>
+                            <Text text="{= ${wizardData>/BusinessPartnerCategory} === '1' ? ${wizardData>/FirstName} + ' ' + ${wizardData>/LastName} : ${wizardData>/Name} }"/>
+                            <Label text="Search Terms"/>
+                            <Text text="{wizardData>/SearchTerm1} / {wizardData>/SearchTerm2}"/>
+                        </form:SimpleForm>
+                    </VBox>
+                </HBox>
                 
 
                 <Title text="Sales Areas" level="H4" class="sapUiSmallMarginTop"/>

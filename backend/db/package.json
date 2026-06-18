@@ -20,6 +20,6 @@
         }
     },
     "scripts": {
-        "start": "rm -rf db/data; npx cds-deploy; tail -f /dev/null"
+        "start": "rm -rf db/data; node -e \"const c=require('@sap/cds');c.connect.to('db').then(async d=>{try{await d.run('DROP VIEW IF EXISTS BusinessPartnerService_ApprovalWorkflows CASCADE');console.log('OK: dropped old view')}catch(e){console.warn('Skip:',e.message)}process.exit(0)}).catch(e=>{console.error(e.message);process.exit(0)})\"; npx cds-deploy --model-only; tail -f /dev/null"
     }
 }

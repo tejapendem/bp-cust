@@ -1,10 +1,9 @@
 sap.ui.define(
     [
         "bp/cust/ui/controller/BaseController",
-        "sap/ui/model/json/JSONModel",
-        "sap/ui/core/Fragment"
+        "sap/ui/model/json/JSONModel"
     ],
-    function (BaseController, JSONModel, Fragment) {
+    function (BaseController, JSONModel) {
         "use strict";
 
         return BaseController.extend("bp.cust.ui.controller.App", {
@@ -13,17 +12,16 @@ sap.ui.define(
                 var bIsLocal = sHostname === "localhost" || sHostname === "127.0.0.1" || sHostname.includes("applicationstudio.cloud.sap");
                 var bInShell = !!(window.sap && sap.ushell && sap.ushell.Container);
 
-                // Initial default state
                 var oUserData = {
-                    name: bIsLocal ? "Rajesh Pendem (Local)" : "Guest User",
+                    name: bIsLocal ? "Rajesh Pendem (Local)" : "",
                     email: bIsLocal ? "rajesh.pendem@canopusgbs.com" : "",
-                    role: bIsLocal ? "admin" : "guest",
+                    role: bIsLocal ? "admin" : "none",
                     isAdmin: bIsLocal,
-                    initials: bIsLocal ? "RP" : "GU",
+                    isViewer: false,
+                    hasAccess: bIsLocal,
+                    initials: bIsLocal ? "RP" : "",
                     assignedRoles: bIsLocal ? "admin" : "",
-                    isRegistered: bIsLocal,
                     pendingApprovals: 0,
-                    pendingRequests: 0,
                     showAppHeader: !bInShell,
                     showSidebarToggle: bInShell
                 };
@@ -31,16 +29,11 @@ sap.ui.define(
                 var oUserModel = new JSONModel(oUserData);
                 this.getOwnerComponent().setModel(oUserModel, "userModel");
 
-                // Always try to fetch the actual user info from the database
                 this._checkUserInfo();
 
-                // Refresh pending counts whenever the route changes (admin pages)
                 this.getRouter().attachRouteMatched(this._onAnyRouteMatched, this);
 
-                // Apply density class
                 this.getView().addStyleClass("sapUiSizeCompact");
-
-                // Restore saved theme
                 this._restoreTheme();
             },
 
@@ -56,61 +49,38 @@ sap.ui.define(
                 var oODataModel = this.getOwnerComponent().getModel();
                 var that = this;
 
-                // Call the backend function to get the logged-in user details
                 var oCtx = oODataModel.bindContext("/getUserInfo(...)");
                 oCtx.execute().then(function () {
                     var oData = oCtx.getBoundContext().getObject();
                     console.log("[Frontend] getUserInfo response:", JSON.stringify(oData));
-                    if (oData && oData.email) {
-                        oUserModel.setProperty("/email", oData.email);
-                        oUserModel.setProperty("/name", oData.name);
-                        oUserModel.setProperty("/role", oData.role);
-                        oUserModel.setProperty("/isAdmin", oData.isAdmin);
-                        oUserModel.setProperty("/initials", (oData.name || "GU").substring(0, 2).toUpperCase());
-                        oUserModel.setProperty("/assignedRoles", oData.role);
-                        oUserModel.setProperty("/isRegistered", oData.isRegistered);
 
-                        console.log("[Frontend] User updated - role:", oData.role, "isAdmin:", oData.isAdmin, "isRegistered:", oData.isRegistered);
+                    if (!oData || !oData.hasAccess) {
+                        // No BP_Admin or BP_Viewer role collection — redirect to Access Denied
+                        console.log("[Frontend] User has no required role collection — redirecting to AccessDenied");
+                        that.getOwnerComponent().getRouter().navTo("AccessDenied");
+                        return;
+                    }
 
-                        // If user is not registered (new user), show request access dialog
-                        if (oData.isRegistered === false) {
-                            that._showRequestAccessDialog();
-                        }
+                    oUserModel.setProperty("/email", oData.email);
+                    oUserModel.setProperty("/name", oData.name);
+                    oUserModel.setProperty("/role", oData.role);
+                    oUserModel.setProperty("/isAdmin", oData.isAdmin);
+                    oUserModel.setProperty("/isViewer", oData.isViewer);
+                    oUserModel.setProperty("/hasAccess", oData.hasAccess);
+                    oUserModel.setProperty("/initials", (oData.name || "U").substring(0, 2).toUpperCase());
+                    oUserModel.setProperty("/assignedRoles", oData.role);
 
-                        // Load pending counts for admin users
-                        if (oData.isAdmin) {
-                            that._loadPendingCounts();
-                        }
-                    } else {
-                        // Guest user - show request access dialog automatically
-                        that._showRequestAccessDialog();
+                    console.log("[Frontend] User role:", oData.role, "isAdmin:", oData.isAdmin);
+
+                    if (oData.isAdmin) {
+                        that._loadPendingCounts();
                     }
                 }).catch(function (oErr) {
-                    // If it fails, we keep the default local/guest state
-                    console.log("UserInfo fetch skipped or failed: using defaults.");
-                    // Show request access for guest
-                    that._showRequestAccessDialog();
+                    console.error("[Frontend] getUserInfo failed:", oErr);
+                    that.getOwnerComponent().getRouter().navTo("AccessDenied");
                 });
             },
 
-            _showRequestAccessDialog: function () {
-                var oView = this.getView();
-                if (!this._pRequestDialog) {
-                    this._pRequestDialog = Fragment.load({
-                        id: oView.getId(),
-                        name: "bp.cust.ui.view.fragments.RequestAccess",
-                        controller: this
-                    }).then(function (oDialog) {
-                        oView.addDependent(oDialog);
-                        return oDialog;
-                    });
-                }
-                this._pRequestDialog.then(function (oDialog) {
-                    oDialog.open();
-                });
-            },
-
-            // Fetch admin pending counts for sidebar badges
             _loadPendingCounts: function () {
                 var oUserModel = this.getView().getModel("userModel");
                 var oODataModel = this.getOwnerComponent().getModel();
@@ -121,12 +91,10 @@ sap.ui.define(
                     var oData = oCtx.getBoundContext().getObject();
                     if (oData) {
                         oUserModel.setProperty("/pendingApprovals", oData.pendingWorkflows || 0);
-                        oUserModel.setProperty("/pendingRequests", oData.pendingRequests || 0);
                     }
                 }).catch(function () { /* silently ignore */ });
             },
 
-            // Public — let other controllers refresh after they take an action
             refreshPendingCounts: function () {
                 this._loadPendingCounts();
             },
@@ -152,12 +120,10 @@ sap.ui.define(
             },
 
             onThemeSwitch: function (oEvent) {
-                var bState = oEvent.getParameter("state"); // true for Dark, false for Light
+                var bState = oEvent.getParameter("state");
                 var sTheme = bState ? "sap_horizon_dark" : "sap_horizon";
                 sap.ui.getCore().applyTheme(sTheme);
-                // Toggle data-theme on body so our custom CSS can react too
                 document.body.setAttribute("data-theme", bState ? "dark" : "light");
-                // Persist preference
                 try { localStorage.setItem("bp-cust-theme", bState ? "dark" : "light"); } catch (e) {}
             },
 
@@ -176,13 +142,11 @@ sap.ui.define(
 
             onItemSelect: function (oEvent) {
                 var oUserModel = this.getView().getModel("userModel");
-                var bIsRegistered = oUserModel.getProperty("/isRegistered");
                 var bIsAdmin = oUserModel.getProperty("/isAdmin");
-                var sRole = oUserModel.getProperty("/role");
+                var bHasAccess = oUserModel.getProperty("/hasAccess");
 
-                // Block navigation for non-registered users
-                if (!bIsRegistered) {
-                    sap.m.MessageBox.warning("You need to request access to use this application.");
+                if (!bHasAccess) {
+                    this.getOwnerComponent().getRouter().navTo("AccessDenied");
                     return;
                 }
 
@@ -193,7 +157,6 @@ sap.ui.define(
                     return;
                 }
 
-                // Admin-only pages - ensure route names match manifest.json exactly
                 if (sKey === "dashboard") {
                     if (!bIsAdmin) { sap.m.MessageBox.warning("Access Denied"); return; }
                     this.getOwnerComponent().getRouter().navTo("Dashboard");
@@ -224,7 +187,7 @@ sap.ui.define(
                 var oView = this.getView();
 
                 if (!this._pProfilePopover) {
-                    this._pProfilePopover = Fragment.load({
+                    this._pProfilePopover = sap.ui.core.Fragment.load({
                         id: oView.getId(),
                         name: "bp.cust.ui.view.fragments.ProfilePopover",
                         controller: this
@@ -250,56 +213,6 @@ sap.ui.define(
                     this.getOwnerComponent().getRouter().navTo("Main");
                 }
                 sap.m.MessageToast.show("Role switched to " + sNewRole);
-            },
-
-            onManageAccessPress: function () {
-                var oView = this.getView();
-                if (!this._pRequestDialog) {
-                    this._pRequestDialog = Fragment.load({
-                        id: oView.getId(),
-                        name: "bp.cust.ui.view.fragments.RequestAccess",
-                        controller: this
-                    }).then(function (oDialog) {
-                        oView.addDependent(oDialog);
-                        return oDialog;
-                    });
-                }
-                this._pRequestDialog.then(function (oDialog) {
-                    oDialog.open();
-                });
-            },
-
-            onCancelRequest: function () {
-                this.byId("requestAccessDialog").close();
-            },
-
-            onSubmitRequest: function () {
-                var oView = this.getView();
-                var oModel = oView.getModel();
-
-                var sName = this.byId("requestName").getValue();
-                var sEmail = this.byId("requestEmail").getValue();
-                var sRequestedRole = this.byId("requestedRole").getSelectedKey();
-                var sReason = this.byId("requestReason").getValue();
-
-                if (!sName || !sEmail || !sReason) {
-                    sap.m.MessageBox.error("Please fill in all mandatory fields.");
-                    return;
-                }
-
-                var oPayload = {
-                    userEmail: sEmail,
-                    userName: sName,
-                    requestedRole: sRequestedRole,
-                    reason: sReason,
-                    status: "pending"
-                };
-
-                var oListBinding = oModel.bindList("/AccessRequests", null, null, null, { $$updateGroupId: "$auto" });
-                oListBinding.create(oPayload);
-
-                sap.m.MessageToast.show("Access request submitted successfully.");
-                this.byId("requestAccessDialog").close();
             },
 
             onLogoutPress: function () {

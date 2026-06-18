@@ -45,8 +45,7 @@ service BusinessPartnerService {
     entity VH_OutputTaxCategory as projection on cust.VH_OutputTaxCategory;
 
     entity Users as projection on cust.Users;
-    
-    entity AccessRequests as projection on cust.AccessRequests;
+
     entity ApprovalLevels as projection on cust.ApprovalLevels;
     entity ApprovalWorkflows as projection on cust.ApprovalWorkflows;
     entity ApprovalLogs as projection on cust.ApprovalLogs;
@@ -89,11 +88,19 @@ service BusinessPartnerService {
     function searchCustomersByName(name: String) returns String;
 
     @(requires: 'authenticated-user')
+    function getWorkflowSAPStatus(workflowID: UUID) returns {
+        sapBPNumber: String;
+        sapPushStatus: String;
+    };
+
+    @(requires: 'authenticated-user')
     function getUserInfo() returns {
         email: String;
         name: String;
         role: String;
         isAdmin: Boolean;
+        isViewer: Boolean;
+        hasAccess: Boolean;
     };
 
     @(requires: 'authenticated-user')
@@ -102,7 +109,6 @@ service BusinessPartnerService {
         draftBPs: Integer;
         totalAdmins: Integer;
         totalViewers: Integer;
-        pendingRequests: Integer;
         approvalLevelsCount: Integer;
         pendingWorkflows: Integer;
         approvedWorkflows: Integer;
@@ -139,13 +145,6 @@ annotate BusinessPartnerService.Users with @(restrict: [
 
 annotate BusinessPartnerService.ApprovalLevels with @(restrict: [
     { grant: ['READ'], to: ['admin', 'Admin', 'authenticated-user'] },
-    { grant: '*', to: ['admin', 'Admin'] }
-]);
-
-// Explicitly allow CREATE for all authenticated users, and READ for admins/owners
-annotate BusinessPartnerService.AccessRequests with @(restrict: [
-    { grant: 'CREATE', to: 'authenticated-user' },
-    { grant: ['READ', 'UPDATE'], to: ['admin', 'Admin', 'authenticated-user'] },
     { grant: '*', to: ['admin', 'Admin'] }
 ]);
 

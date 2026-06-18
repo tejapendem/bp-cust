@@ -8,23 +8,6 @@
         <content>
             <VBox class="hpOuterPadding">
 
-                <!-- ========================================================
-                     Restricted Access (Guest)
-                     ======================================================== -->
-                <VBox visible="{= ${userModel>/role} === 'guest' }" alignItems="Center" justifyContent="Center" class="hpGuestCard">
-                    <FlexBox justifyContent="Center" alignItems="Center" class="hpGuestIcon">
-                        <core:Icon src="sap-icon://locked" size="2.5rem" color="#7B5EA7" />
-                    </FlexBox>
-                    <Title text="Access Restricted" level="H2" class="hpGuestTitle sapUiSmallMarginTop" />
-                    <Text text="You are currently signed in as a Guest. Access to the Business Partner Directory is restricted." class="hpGuestText sapUiSmallMarginTop sapUiMediumMarginBottom" />
-                    <Button text="Request Access" press="onManageAccessPress" icon="sap-icon://key" class="hpRequestBtn" />
-                </VBox>
-
-                <!-- ========================================================
-                     Authenticated user content
-                     ======================================================== -->
-                <VBox visible="{= ${userModel>/role} !== 'guest' }">
-
                     <!-- ── Page Header ──────────────────────────────────── -->
                     <HBox alignItems="Center" justifyContent="SpaceBetween" class="hpPageHeader">
                         <HBox alignItems="Center">
@@ -197,8 +180,8 @@
                             class="hpTable">
 
                             <columns>
-                                <Column width="20%"><Text text="Business Partner" /></Column>
-                                <Column width="110px" demandPopin="false" minScreenWidth="Tablet"><Text text="SAP Number" /></Column>
+                                <Column width="20%"><Text text="Reference Number" /></Column>
+                                <Column width="110px" demandPopin="false" minScreenWidth="Tablet"><Text text="SAP BP Number" /></Column>
                                 <Column width="90px" hAlign="Center" demandPopin="false" minScreenWidth="Tablet"><Text text="Type" /></Column>
                                 <Column width="90px" hAlign="Center" demandPopin="false" minScreenWidth="Tablet"><Text text="Grouping" /></Column>
                                 <Column width="140px" demandPopin="false" minScreenWidth="Phone"><Text text="Status" /></Column>
@@ -237,7 +220,7 @@
 
                                         <!-- Status -->
                                         <HBox alignItems="Center">
-                                            <Text text="{= ${SAPPushStatus} === 'Pushed' ? 'Pushed' : (${LifecycleStatus} === 'draft' ? 'Draft' : (${LifecycleStatus} === 'pending_approval' ? 'Pending Approval' : 'Active')) }"
+                                            <Text text="{= ${SAPPushStatus} === 'Pushed' ? 'Created' : (${LifecycleStatus} === 'draft' ? 'Draft' : (${LifecycleStatus} === 'pending_approval' ? 'Pending Approval' : 'Active')) }"
                                                 class="{= ${SAPPushStatus} === 'Pushed' ? 'hpStatusPushed' : (${LifecycleStatus} === 'draft' ? 'hpStatusDraft' : (${LifecycleStatus} === 'pending_approval' ? 'hpStatusPending' : 'hpStatusActive')) }" />
                                         </HBox>
 
@@ -265,8 +248,6 @@
                             </items>
                         </Table>
                     </VBox>
-
-                </VBox>
 
             </VBox>
         </content>

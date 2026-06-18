@@ -26,7 +26,6 @@ sap.ui.define([
                 draftBPs: 0,
                 totalAdmins: 0,
                 totalViewers: 0,
-                pendingRequests: 0,
                 approvalLevelsCount: 0,
                 pendingWorkflows: 0,
                 approvedWorkflows: 0,

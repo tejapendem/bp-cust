@@ -116,6 +116,33 @@
                             </HBox>
                         </HBox>
 
+                        <!-- SAP BP Number banner — visible only on approved items -->
+                        <HBox visible="{= ${workflowData>/status} === 'approved' }"
+                              alignItems="Center"
+                              class="aibSapBpRow sapUiSmallMarginTop">
+                            <core:Icon src="sap-icon://create-entry-time" size="1rem" color="#1565c0" class="sapUiTinyMarginEnd" />
+                            <Label text="SAP BP Number:" class="sapUiSmallMarginEnd" />
+                            <!-- Loading state -->
+                            <HBox visible="{= ${workflowData>/sapPushStatus} === 'Pushing' }" alignItems="Center">
+                                <core:Icon src="sap-icon://synchronize" size="0.9rem" color="#e65100" class="sapUiTinyMarginEnd aibSpinIcon" />
+                                <Text text="Pushing to SAP…" class="aibSapPushingText" />
+                            </HBox>
+                            <!-- Success state -->
+                            <HBox visible="{= ${workflowData>/sapPushStatus} === 'Pushed' }" alignItems="Center">
+                                <core:Icon src="sap-icon://sys-enter-2" size="0.9rem" color="#2e7d32" class="sapUiTinyMarginEnd" />
+                                <Text text="{workflowData>/sapBPNumber}" class="aibSapBpNumber" />
+                            </HBox>
+                            <!-- Failed state -->
+                            <HBox visible="{= ${workflowData>/sapPushStatus} === 'Failed' }" alignItems="Center">
+                                <core:Icon src="sap-icon://message-error" size="0.9rem" color="#c62828" class="sapUiTinyMarginEnd" />
+                                <Text text="Push failed" class="aibSapFailedText" />
+                            </HBox>
+                            <!-- Null / not yet -->
+                            <HBox visible="{= !${workflowData>/sapPushStatus} }" alignItems="Center">
+                                <Text text="—" class="aibEmptyCell" />
+                            </HBox>
+                        </HBox>
+
                         <!-- Info Cards Row -->
                         <HBox class="aibInfoCardRow" wrap="Wrap">
 

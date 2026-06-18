@@ -160,19 +160,6 @@
                             <Text text="App users" class="dashTileSub" />
                         </VBox>
 
-                        <VBox class="dashTile dashTileRed">
-                            <HBox alignItems="Center" justifyContent="SpaceBetween">
-                                <FlexBox justifyContent="Center" alignItems="Center" class="dashTileIcon dashTileIconRed">
-                                    <core:Icon src="sap-icon://notification-2" size="1.2rem" color="#c62828" />
-                                </FlexBox>
-                                <Text text="{= ${stats>/pendingRequests} > 0 ? 'Action Req.' : 'All clear' }"
-                                      class="{= ${stats>/pendingRequests} > 0 ? 'dashTileTrend dashTrendRed' : 'dashTileTrend dashTrendGreen' }" />
-                            </HBox>
-                            <Text text="{stats>/pendingRequests}" class="dashTileNumber" />
-                            <Text text="Pending Requests" class="dashTileLabel" />
-                            <Text text="Awaiting approval" class="dashTileSub" />
-                        </VBox>
-
                         <VBox class="dashChartTile">
                             <Text text="Role Distribution" class="dashChartTitle" />
                             <mc:ComparisonMicroChart size="M" class="dashCompChart">

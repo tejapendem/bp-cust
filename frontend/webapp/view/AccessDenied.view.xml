@@ -1,0 +1,53 @@
+<mvc:View controllerName="bp.cust.ui.controller.AccessDenied"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+    <Page showHeader="false" backgroundDesign="Standard">
+        <content>
+            <FlexBox
+                height="100%"
+                alignItems="Center"
+                justifyContent="Center"
+                direction="Column"
+                class="sapUiLargeMargin">
+
+                <core:Icon
+                    src="sap-icon://locked"
+                    size="5rem"
+                    color="#BB0000"
+                    class="sapUiMediumMarginBottom" />
+
+                <Title
+                    text="Access Denied"
+                    level="H1"
+                    textAlign="Center"
+                    class="sapUiSmallMarginBottom" />
+
+                <Text
+                    text="Service not available for your user."
+                    textAlign="Center"
+                    wrapping="true"
+                    class="sapUiSmallMarginBottom"
+                    width="400px" />
+
+                <Text
+                    text="Contact your administrator to obtain the required role collection."
+                    textAlign="Center"
+                    wrapping="true"
+                    class="sapUiTinyMarginBottom sapUiSmallMarginTop"
+                    width="420px" />
+
+                <HBox
+                    class="sapUiMediumMarginTop"
+                    justifyContent="Center">
+                    <Button
+                        text="Logout"
+                        type="Emphasized"
+                        press=".onLogoutPress" />
+                </HBox>
+
+            </FlexBox>
+        </content>
+    </Page>
+</mvc:View>

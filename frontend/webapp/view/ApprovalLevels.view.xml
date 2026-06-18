@@ -75,7 +75,7 @@
                                             visible="{path: 'email', formatter: '.formatEmailDisplayVisible'}" />
                                         <Text text="No emails configured"
                                             class="awcEmailPlaceholder"
-                                            visible="{path: 'email', formatter: '.formatEmailPlaceholderVisible'}" />
+                                            visible="false" />
                                         <MultiComboBox
                                             id="emailMultiCombo"
                                             items="{path: '/Users', length: 100}"

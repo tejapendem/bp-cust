@@ -12,19 +12,6 @@ sap.ui.define([
     return BaseController.extend("bp.cust.ui.controller.Wizard", {
 
         onInit: function () {
-            // Access control - only registered users can access this page
-            var oUserModel = this.getOwnerComponent().getModel("userModel");
-            if (oUserModel) {
-                var bIsRegistered = oUserModel.getProperty("/isRegistered");
-                if (!bIsRegistered) {
-                    sap.m.MessageBox.warning("You need to request access to use this page.", {
-                        onClose: function () {
-                            this.getOwnerComponent().getRouter().navTo("Main");
-                        }.bind(this)
-                    });
-                }
-            }
-
             var oViewModel = new JSONModel({
                 progress: 14,
                 progressText: "14%",
@@ -1080,13 +1067,9 @@ sap.ui.define([
                                             that.onNavBack();
                                         }
                                     });
-                                }).catch(function () {
-                                    MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
-                                        onClose: function () {
-                                            that._oBusyDialog.close();
-                                            that.onNavBack();
-                                        }
-                                    });
+                                }).catch(function (oActionErr) {
+                                    that._oBusyDialog.close();
+                                    MessageBox.error("BP created but approval workflow failed.\n\n" + that._getErrorMessage(oActionErr) + "\n\nPlease configure Approval Levels in Admin settings first.");
                                 });
                             } else {
                                 MessageBox.success(sMsg + (sBp ? "\n\nBP Reference No: " + sBp : ""), {
